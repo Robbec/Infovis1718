@@ -1,15 +1,16 @@
 var hypergraph = d3.select("#hypergraph");
+var hypergraphSvg = hypergraph.append("div")
+.classed("hypergraph-svg", true);
 var infobox = d3.select("#infobox");
-var svg = hypergraph.append("svg");
+var svg = hypergraphSvg.append("svg");
 var width = 500;
 var height = 500;
 svg.attr("width", width)
 .attr("height", height);
 
-// tooltip aanmaken (opacity en inhoud wordt gezet bij hover over bolletje)
-// var tt = hypergraph.append("div")
-// .attr("class", "tooltip")
-// .style("opacity", 0);
+// tooltip aanmaken (inhoud wordt ingevuld bij hover over bolletje)
+var tooltip = hypergraphSvg.append("div")
+.classed("tooltip", true);
 
 // voorlopig enkel de 6 opties (gebruikt voor indexering)
 var options = ["Artificiele intelligentie", "Computationele informatica", "Gedistribueerde systemen", "Mens-machine communicatie", "Software engineering", "Veilige software", "Verdere optie", "Masterproef", "AVO"];
@@ -37,24 +38,23 @@ d3.csv("cw-1.csv").then(function (data) {
     data[i].cy = 25 + Math.floor((50 + i * 50) / (width - 50)) * 50;
   }
   
-  console.log(data);
-  
-  var circle = svg.selectAll("circle")
+  var course = svg.selectAll("circle")
   .data(data);
   
-  circle.enter().append("circle")
-  .attr("r", 10)
+  course.enter()
+  .append("circle")
   .attr("cx", d => d.cx)
   .attr("cy", d => d.cy)
+  .attr("r", 10)
   .classed("verplicht", function (d) {
     for (var i = 0; i < options.length; i++) {
-    // TODO Pas dit aan.
+      // TODO Pas dit aan.
       return d[options[i]] == 1;
     }
   })
   .classed("keuze", function (d) {
     for (var i = 0; i < options.length; i++) {
-    // TODO Pas dit aan.
+      // TODO Pas dit aan.
       return d[options[i]] == 2;
     }
   })
@@ -66,26 +66,22 @@ d3.csv("cw-1.csv").then(function (data) {
   })   
   //tooltip bij mouse over
   .on("mouseover", function (d) {
+    tooltip.classed("active", true)
+    .text(d.OPO) // inhoud van tooltip kan nog uitgebreid worden
+    .style("left", (d.cx + 20) + "px")
+    .style("top", (d.cy - 12) + "px");
+  })
+  .on("mouseout", function (d) {
+    tooltip.classed("active", false);
+  })
+  .on("click", function(d) {
+    d3.selectAll("circle").classed("active", false);
+    d3.select("#infobox h3").remove();
+    d3.select(".points").remove();
+    d3.select(this).classed("active", true);
     infobox.append("h3").text(d.OPO);
     infobox.append("div")
     .attr("class", "points")
     .text(d.Studiepunten + " SP");
-    // tt.transition()
-    // .duration(200)
-    // .style("opacity", .9);
-    // tt.html(d.OPO) // inhoud van tooltip kan nog uitgebreid worden
-    // .style("left", (d3.event.pageX) + "px")
-    // .style("top", (d3.event.pageY - 28) + "px");
-  })
-  .on("mouseout", function (d) {
-    d3.select("#infobox h3").remove();
-    d3.select(".points").remove();
-    // tt.transition()
-    // .duration(500)
-    // .style("opacity", 0);
-  })
-  .on("click", function(d) {
-    d3.selectAll("circle").classed("active", false);
-    d3.select(this).classed("active", true);
   });
 });

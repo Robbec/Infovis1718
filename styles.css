@@ -26,6 +26,18 @@ body {
   width: 60%
 }
 
+.hypergraph-svg {
+  position: relative;
+}
+
+.course {
+  position: relative;
+}
+
+.course:hover .course-name {
+  visibility: visible;
+}
+
 circle {
   cursor: pointer;
   fill-opacity: 0.6;
@@ -34,19 +46,26 @@ circle {
   stroke-width: 0;
 }
 
+.tooltip {
+  background-color: #000;
+  border-radius: 4px;
+  color: #fff;
+  font-size: 0.75rem;
+  max-width: 150px;
+  opacity: 0;
+  padding: 0.25rem 0.5rem;
+  position: absolute;
+  transition: opacity 0.3s;
+  z-index: 1;
+}
+
+.tooltip.active {
+  opacity: 0.6;
+}
+
 .active {
   opacity: 1;
 }
-
-/* .tooltip { */
-  /* background: lightsteelblue; */
-  /* border: 0px; */
-  /* border-radius: 8px; */
-  /* font: 12px sans-serif; */
-  /* padding: 2px; */
-  /* position: absolute; */
-  /* text-align: center; */
-/* } */
 
 .verplicht {
   stroke-opacity: 1;
