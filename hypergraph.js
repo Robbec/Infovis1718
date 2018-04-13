@@ -31,6 +31,10 @@ function colorOfCourse(d) {
 }
 
 d3.csv("cw-1.csv").then(function (data) {
+  // initialiseer de waarden voor "Geïnteresseerd"
+  for (var i = 0; i < data.length; i++) {
+    data[i].geinteresseerd = 1;
+  }
   
   // berekenen van positie is nog werk aan (moet uiteindelijk toch cluster)
   for (var i = 0; i < data.length; i++) {
@@ -74,14 +78,33 @@ d3.csv("cw-1.csv").then(function (data) {
   .on("mouseout", function (d) {
     tooltip.classed("active", false);
   })
-  .on("click", function(d) {
+  .on("click", function(d) {    
+    // set all active courses to non-active
     d3.selectAll("circle").classed("active", false);
     d3.select("#infobox h3").remove();
     d3.select(".points").remove();
+    d3.select(".checkbox-container").remove();
+    
+    // activate the selected course
     d3.select(this).classed("active", true);
     infobox.append("h3").text(d.OPO);
     infobox.append("div")
     .attr("class", "points")
     .text(d.Studiepunten + " SP");
+    var checkbox = infobox.append("label")
+    .text("Niet geïnteresseerd in dit vak");
+    checkbox.attr("class","checkbox-container")
+    .append("input")
+    .attr("type", "checkbox");
+    checkbox.append("span")
+    .attr("class", "checkmark");
+  });
+  
+  // TODO De bedoeling is het veld "Geïnteresseerd" van het actieve vak op 0 te zetten en de bijhorende cirkel te verbergen door er een klasse aan te geven. Dit werkt nog niet.
+  console.log(d3.selectAll("input"));
+  d3.selectAll("input").on("change", function () {
+    d3.select("circle.active").classed("not-interested", function () {
+      this.checked;
+    });
   });
 });
