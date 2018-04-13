@@ -30,7 +30,9 @@ function colorOfCourse(d) {
   return "#000000"; // anders default zwart
 }
 
-d3.csv("cw-1.csv").then(function (data) {
+d3.csv("cw-2.csv").then(function (data) {
+  console.log(data);
+  
   // initialiseer de waarden voor "Geïnteresseerd"
   for (var i = 0; i < data.length; i++) {
     data[i].geinteresseerd = 1;
