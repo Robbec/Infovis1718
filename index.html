@@ -14,7 +14,14 @@
   <body>
     <div class="left">
       <h2>Alle vakken</h2>
-      <div class="hypergraph"></div>
+      <svg class="hypergraph">
+        <pattern id="diagonalHatch" patternUnits="userSpaceOnUse" width="4" height="4">
+          <path d="M-1,1 l2,-2
+          M0,4 l4,-4
+          M3,5 l2,-2" 
+          style="stroke:black; stroke-width:1" />
+        </pattern>
+      </svg>
     </div>
     <div class="right">
       <label class="switch switch-interested">
@@ -23,7 +30,7 @@
         <span class="slider"></span>
       </label>
       <div class="infobox">
-        Duid een van de vakken aan voor meer informatie.
+        <p>Klik op een van de vakken voor meer informatie over dat vak.</p>
       </div>
     </div>
   </body>
