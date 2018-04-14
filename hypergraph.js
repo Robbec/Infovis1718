@@ -1,15 +1,17 @@
-var hypergraph = d3.select("#hypergraph");
-var hypergraphSvg = hypergraph.append("div")
-.classed("hypergraph-svg", true);
-var infobox = d3.select("#infobox");
-var svg = hypergraphSvg.append("svg");
+var left = d3.select(".left");
+var right = d3.select(".right");
+var hypergraph = left.select(".hypergraph");
+var infobox = right.select(".infobox");
+
+// maak een svg voor de hypergraph
+var svg = hypergraph.append("svg");
 var width = 500;
 var height = 500;
 svg.attr("width", width)
 .attr("height", height);
 
 // tooltip aanmaken (inhoud wordt ingevuld bij hover over bolletje)
-var tooltip = hypergraphSvg.append("div")
+var tooltip = hypergraph.append("div")
 .classed("tooltip", true);
 
 // voorlopig enkel de 6 opties (gebruikt voor indexering)
@@ -83,9 +85,9 @@ d3.csv("cw-2.csv").then(function (data) {
   .on("click", function(d) {    
     // set all active courses to non-active
     d3.selectAll("circle").classed("active", false);
-    d3.select("#infobox h3").remove();
+    infobox.select("h3").remove();
     d3.select(".points").remove();
-    d3.select(".checkbox-container").remove();
+    d3.select(".checkbox-interested").remove();
     
     // activate the selected course
     d3.select(this).classed("active", true);
@@ -95,18 +97,49 @@ d3.csv("cw-2.csv").then(function (data) {
     .text(d.Studiepunten + " SP");
     var checkbox = infobox.append("label")
     .text("Niet geïnteresseerd in dit vak");
-    checkbox.attr("class","checkbox-container")
+    checkbox.attr("class","checkbox-interested")
     .append("input")
     .attr("type", "checkbox");
     checkbox.append("span")
     .attr("class", "checkmark");
   });
+});
+
+var switchInterested = right.select(".switch-interested").select("input");
+
+// voeg de klasse .not-interested toe aan een vak waarvoor de checkbox aangevinkt is
+infobox.on("change", function () {
+  var switchInterestedChecked = switchInterested.property("checked");
+  var activeCourse = d3.select("circle.active");
+  var checked = infobox.select(".checkbox-interested")
+  .select("input")
+  .property("checked");
   
-  // TODO De bedoeling is het veld "Geïnteresseerd" van het actieve vak op 0 te zetten en de bijhorende cirkel te verbergen door er een klasse aan te geven. Dit werkt nog niet.
-  console.log(d3.selectAll("input"));
-  d3.selectAll("input").on("change", function () {
-    d3.select("circle.active").classed("not-interested", function () {
-      this.checked;
-    });
-  });
+  if (checked && switchInterestedChecked) {
+    activeCourse.classed("is-not-interested", true);
+  }
+  else if (checked && !switchInterestedChecked) {
+    activeCourse.classed("not-interested", true);
+  }
+  else {
+    activeCourse.classed("not-interested", false)
+    .classed("is-not-interested", false);
+  }
+});
+
+switchInterested.on("change", function () {
+  if (switchInterested.property("checked")) {
+    d3.selectAll("circle")
+    .classed("is-not-interested", function () {
+      return d3.select(this).classed("not-interested");
+    })
+    .classed("not-interested", false);
+  }
+  else {
+    d3.selectAll("circle")
+    .classed("not-interested", function () {
+      return d3.select(this).classed("is-not-interested");
+    })
+    .classed("is-not-interested", false);
+  }
 });
