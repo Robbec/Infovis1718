@@ -69,7 +69,8 @@ circle {
   opacity: 0.6;
 }
 
-.active {
+.active,
+.prerequisite {
   opacity: 1;
 }
 

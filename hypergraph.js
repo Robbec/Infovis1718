@@ -102,6 +102,13 @@ d3.csv("cw-2.csv").then(function (data) {
       return thisCourse.attr("r") * 1.35;
     });
     
+    // geef de klasse .prerequisite alleen aan de prerequisites van het actieve vak
+    d3.selectAll("circle")
+    .classed("prerequisite", function (dcircle) {
+      var id = dcircle.ID;
+      return d["Gelijktijdig volgen"].split(" ").includes(id);
+    });
+    
     // maak nieuwe inhoud aan in de infobox:
     // 1) titel van het actieve vak
     infobox.append("h3").text(d.OPO);
