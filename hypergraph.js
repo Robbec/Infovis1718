@@ -35,17 +35,13 @@ function colorOfCourse(d) {
 d3.csv("cw-2.csv").then(function (data) {
   console.log(data);
   
-  // initialiseer de waarden voor "Geïnteresseerd"
-  for (var i = 0; i < data.length; i++) {
-    data[i].geinteresseerd = 1;
-  }
-  
   // berekenen van positie is nog werk aan (moet uiteindelijk toch cluster)
   for (var i = 0; i < data.length; i++) {
     data[i].cx = 25 + (i * 50) % (width - 50);
     data[i].cy = 25 + Math.floor((50 + i * 50) / (width - 50)) * 50;
   }
   
+  // bind de cirkels in de svg aan de data
   var course = svg.selectAll("circle")
   .data(data);
   
@@ -72,42 +68,64 @@ d3.csv("cw-2.csv").then(function (data) {
   .attr("stroke", function (d) {
     return colorOfCourse(d);
   })   
-  //tooltip bij mouse over
   .on("mouseover", function (d) {
+    // toon een tooltip voor het gehoverde vak
     tooltip.classed("active", true)
-    .text(d.OPO) // inhoud van tooltip kan nog uitgebreid worden
+    .text(d.OPO)
     .style("left", (d.cx + 20) + "px")
     .style("top", (d.cy - 12) + "px");
   })
   .on("mouseout", function (d) {
+    // verberg de tooltip voor het vak waarover gehoverd werd
     tooltip.classed("active", false);
   })
-  .on("click", function(d) {    
-    // set all active courses to non-active
+  .on("click", function(d) {
+    var thisCourse = d3.select(this);
+    
+    // verklein de straal van het actieve vak
+    var activeCourse = d3.select("circle.active");
+    activeCourse.attr("r", function () {
+      return activeCourse.attr("r") / 1.35;
+    });
+    
+    // zet het actieve vak op non-actief
     d3.selectAll("circle").classed("active", false);
+    
+    // verwijder alle inhoud in de infobox
     infobox.select("h3").remove();
     d3.select(".points").remove();
     d3.select(".checkbox-interested").remove();
     
-    // activate the selected course
-    d3.select(this).classed("active", true);
+    // activeer het geselecteerde vak
+    thisCourse.classed("active", true)
+    .attr("r", function () {
+      return thisCourse.attr("r") * 1.35;
+    });
+    
+    // maak nieuwe inhoud aan in de infobox:
+    // 1) titel van het actieve vak
     infobox.append("h3").text(d.OPO);
+    // 2) studiepunten van het actieve vak
     infobox.append("div")
     .attr("class", "points")
     .text(d.Studiepunten + " SP");
+    // 3) checkbox "Niet geïnteresseerd" voor het actieve vak
     var checkbox = infobox.append("label")
-    .text("Niet geïnteresseerd in dit vak");
+    .text("Niet geïnteresseerd in dit vak.");
     checkbox.attr("class","checkbox-interested")
     .append("input")
-    .attr("type", "checkbox");
+    .attr("type", "checkbox")
+    .property("checked", thisCourse.classed("not-interested"))
+    .property("checked", thisCourse.classed("is-not-interested"));
     checkbox.append("span")
     .attr("class", "checkmark");
   });
 });
 
+// waarde van de switch die vakken al dan niet verbergt waarin de gebruiker niet geïnteresseerd is
 var switchInterested = right.select(".switch-interested").select("input");
 
-// voeg de klasse .not-interested toe aan een vak waarvoor de checkbox aangevinkt is
+// verander de klasse van het actieve vak als de checkbox "Niet geïnteresseerd" van status verandert
 infobox.on("change", function () {
   var switchInterestedChecked = switchInterested.property("checked");
   var activeCourse = d3.select("circle.active");
@@ -115,19 +133,24 @@ infobox.on("change", function () {
   .select("input")
   .property("checked");
   
+  // voeg de klasse .is-not-interested toe als een vak gemarkeerd is als "Niet geïnteresseerd" en getoond moet worden in de hypergraph
   if (checked && switchInterestedChecked) {
     activeCourse.classed("is-not-interested", true);
   }
+  // voeg de klasse .not-interested toe als een vak gemarkeerd is als "Niet geïnteresseerd" en verborgen moet worden in de hypergraph
   else if (checked && !switchInterestedChecked) {
     activeCourse.classed("not-interested", true);
   }
+  // verwijder de klassen .not-interested en .is-not-interested als een vak niet gemarkeerd is als "Niet geïnteresseerd"
   else {
     activeCourse.classed("not-interested", false)
     .classed("is-not-interested", false);
   }
 });
 
+// verander de klasse van de vakken waarin de gebruiker niet geïnteresseerd is als de status van de switch verandert
 switchInterested.on("change", function () {
+  // wijzig de klassen .not-interested naar .is-not-interested als de switch wordt ingeschakeld
   if (switchInterested.property("checked")) {
     d3.selectAll("circle")
     .classed("is-not-interested", function () {
@@ -135,6 +158,7 @@ switchInterested.on("change", function () {
     })
     .classed("not-interested", false);
   }
+  // wijzig de klassen .is-not-interested naar .not-interested als de switch wordt uitgeschakeld
   else {
     d3.selectAll("circle")
     .classed("not-interested", function () {
