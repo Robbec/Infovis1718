@@ -1,5 +1,6 @@
 var left = d3.select(".left");
 var right = d3.select(".right");
+var hypergraphContainer = left.select(".hypergraph-container");
 var hypergraph = left.select(".hypergraph");
 var infobox = right.select(".infobox");
 
@@ -9,7 +10,7 @@ hypergraph.attr("width", width)
 .attr("height", height);
 
 // tooltip aanmaken (inhoud wordt ingevuld bij hover over bolletje)
-var tooltip = hypergraph.append("div")
+var tooltip = hypergraphContainer.append("div")
 .classed("tooltip", true);
 
 // voorlopig enkel de 6 opties (gebruikt voor indexering)
