@@ -32,18 +32,26 @@ d3.csv("cw-2.csv").then(function (data) {
   options.forEach((key, idx) => optionColors[key] = colors[idx]);
 
   function colorOfCourse(d) {
-    // als het vak bij een optie hoort, dan krijgt het de kleur van die optie met voorkeur voor verplicht
-    var color;
-    for (var i = 0; i < options.length; i++) {
+    //default kul-blauw
+    var kulBlue = "#1d8db0"
+    var color = kulBlue;
+    i = 0;
+    //plichtvakken krijgen kleur van optie
+    while (i < options.length && color == kulBlue) {
       if (d[options[i]] == 1) {
         color = optionColors[options[i]];
       }
-      else if (d[options[i]] == 2) {
+      i++;
+    }
+    //enkel om te testen
+    i = 0;
+    while (i < options.length && color == kulBlue) {
+      if (d[options[i]] == 2) {
         color = optionColors[options[i]];
       }
+      i++
     }
     return color;
-    //return "#43a2ca"; // anders default zwart
   }
 
   // berekenen van positie is nog werk aan (moet uiteindelijk toch cluster)
