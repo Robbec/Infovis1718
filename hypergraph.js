@@ -14,26 +14,37 @@ var tooltip = hypergraphContainer.append("div")
 .classed("tooltip", true);
 
 // voorlopig enkel de 6 opties (gebruikt voor indexering)
-var options = ["Artificiele intelligentie", "Computationele informatica", "Gedistribueerde systemen", "Mens-machine communicatie", "Software engineering", "Veilige software", "Verdere optie", "Masterproef", "AVO"];
+//var options = ["Artificiele intelligentie", "Computationele informatica", "Gedistribueerde systemen", "Mens-machine communicatie", "Software engineering", "Veilige software", "Verdere optie", "Masterproef", "AVO"];
 
-// kleurenpalet aan opties koppelen
-colors = d3.schemeCategory10;
-var optionColors = {};
-options.forEach((key, idx) => optionColors[key] = colors[idx]);
 
-function colorOfCourse(d) {
-  // als het vak bij een optie hoort, dan krijgt het de kleur van die optie
-  for (var i = 0; i < options.length; i++) {
-    if (d[options[i]] != 0) {
-      return optionColors[options[i]];
-    }
-  }
-  return "#000000"; // anders default zwart
-}
+
+
 
 d3.csv("cw-2.csv").then(function (data) {
   var columnNames = Object.keys(d3.values(data)[0]);
-  var test = columnNames.slice(8, columnNames.length - 1);
+  var options = columnNames.slice(8, columnNames.length - 1);
+
+  // kleurenpalet aan opties koppelen
+  // Ziet er niet uit, maar Category10 heeft er 1 te weinig en v5 ondersteunt Category20 niet,
+  //  later eigen kleurenschema maken
+  colors = d3.schemePaired;
+  var optionColors = {};
+  options.forEach((key, idx) => optionColors[key] = colors[idx]);
+
+  function colorOfCourse(d) {
+    // als het vak bij een optie hoort, dan krijgt het de kleur van die optie met voorkeur voor verplicht
+    var color;
+    for (var i = 0; i < options.length; i++) {
+      if (d[options[i]] == 1) {
+        color = optionColors[options[i]];
+      }
+      else if (d[options[i]] == 2) {
+        color = optionColors[options[i]];
+      }
+    }
+    return color;
+    //return "#43a2ca"; // anders default zwart
+  }
 
   // berekenen van positie is nog werk aan (moet uiteindelijk toch cluster)
   for (var i = 0; i < data.length; i++) {
@@ -52,8 +63,8 @@ d3.csv("cw-2.csv").then(function (data) {
   .attr("r", 10)
   .attr("class", function (d) {
     var clusterName = "";
-    for (var i = 0; i < test.length; i++) {
-      var option = test[i];
+    for (var i = 0; i < options.length; i++) {
+      var option = options[i];
       if (d[option] != 0) {
         if (clusterName != "") {
           clusterName += " - ";
@@ -63,13 +74,13 @@ d3.csv("cw-2.csv").then(function (data) {
     }
     return clusterName;
   })
-  .classed("verplicht", function (d) {
+  .classed("compulsory", function (d) {
     for (var i = 0; i < options.length; i++) {
       // TODO Pas dit aan.
       return d[options[i]] == 1;
     }
   })
-  .classed("keuze", function (d) {
+  .classed("elective", function (d) {
     for (var i = 0; i < options.length; i++) {
       // TODO Pas dit aan.
       return d[options[i]] == 2;
