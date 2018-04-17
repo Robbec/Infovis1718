@@ -42,6 +42,21 @@ d3.csv("cw-2.csv").then(function (data) {
   var course = hypergraph.selectAll("circle")
   .data(data);
   
+  for (var j = 0; j < options.length; j++) {
+    var optionGroup = hypergraph.append("g")
+    .classed("optionGroup", true);
+    var option = optionGroup.append("circle")
+    .classed("option", true);
+    var coursesGroup = optionGroup.append("g");
+    var courses = data.filter(function (d, i) {
+      return d[options[j]] == 1;
+    });
+    for (var k = 0; k < courses.length; k++) {
+      coursesGroup.append("circle")
+      .attr("r", 10);
+    };
+  };
+  
   course.enter()
   .append("circle")
   .attr("cx", d => d.cx)
