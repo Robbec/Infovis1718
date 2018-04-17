@@ -70,17 +70,54 @@ d3.csv("cw-2.csv").then(function (data) {
   .attr("cy", d => d.cy)
   .attr("r", 10)
   .attr("class", function (d) {
+    var className = "";
+
+    //fase tag
+    className += "fase" + d["Fase"];
+    className += " ";
+
+    //semester tag
+    if (d["Semester"] == 1) {
+      className += "term1";
+    }
+    else if (d["Semester"] == 2) {
+      className += "term2";
+    }
+    else {
+      className += "termBoth"
+    }
+    className += " ";
+
+    //studiepunten tag
+    className += "credits" + d["Studiepunten"];
+    className += " ";
+
+    //studiepunten project tag
+    className += "projectCredits" + d["Project"];
+    className += " ";
+
+    //studiepunten project tag
+    className += "examCredits" + d["Examen"];
+    className += " ";
+
     var clusterName = "";
     for (var i = 0; i < options.length; i++) {
       var option = options[i];
-      if (d[option] != 0) {
-        if (clusterName != "") {
-          clusterName += " - ";
-        }
-        clusterName += option;
+      //spaties in optie vervangen door underscore omdat classes worden gesplitst op spaties
+      var noSpaceOption = option.replace(/\s/g, '_');
+      if (d[option] == 1) {
+        className += "compulsory" + noSpaceOption;
+        className += " ";
+        clusterName += "-" + noSpaceOption;
+      }
+      else if (d[option] == 2) {
+        className += "elective" + noSpaceOption;
+        className += " ";
+        clusterName += "-" + noSpaceOption;
       }
     }
-    return clusterName;
+    className += clusterName;
+    return className;
   })
   .classed("compulsory", function (d) {
     for (var i = 0; i < options.length; i++) {
