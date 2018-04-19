@@ -87,7 +87,8 @@ d3.csv("cw-2.csv").then(function (data) {
       // force simulation bepaalt positie
       var simulation = d3.forceSimulation(data)
       .force("charge", d3.forceManyBody())
-      .force("link", d3.forceLink(links).distance(25).strength(0.6))
+      .force("collide",d3.forceCollide(11))
+      .force("link", d3.forceLink(links).distance(20).strength(1))
       .force("x", d3.forceX())
       .force("y", d3.forceY())
       .on("tick", refresh);
