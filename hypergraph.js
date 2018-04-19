@@ -6,6 +6,8 @@ var infobox = right.select(".infobox");
 
 var width = 500;
 var height = 500;
+var xo = 250;
+var yo = 250;
 hypergraph.attr("width", width)
 .attr("height", height);
 
@@ -32,6 +34,10 @@ d3.csv("cw-2.csv").then(function (data) {
   var optionColors = {};
   options.forEach((key, idx) => optionColors[key] = colors[idx]);
   
+  function getFillColor(d) {
+
+  }
+
   function colorOfCourse(d) {
     //default kul-blauw
     var kulBlue = "#1d8db0"
@@ -45,6 +51,7 @@ d3.csv("cw-2.csv").then(function (data) {
       i++;
     }
     //enkel om te testen
+    /*
     i = 0;
     while (i < options.length && color == kulBlue) {
       if (d[options[i]] == 2) {
@@ -52,18 +59,38 @@ d3.csv("cw-2.csv").then(function (data) {
       }
       i++
     }
+    */
     return color;
   }
-  
-  // berekenen van positie is nog werk aan (moet uiteindelijk toch cluster)
-  for (var i = 0; i < data.length; i++) {
-    data[i].cx = 25 + (i * 50) % (width - 50);
-    data[i].cy = 25 + Math.floor((50 + i * 50) / (width - 50)) * 50;
-  }
+
+  links = [];
+
+    // create links based on options
+    data.forEach(d => {
+        options.forEach(o => {
+            if (d[o] == 1 || d[o] == 2) {
+                links.push({
+                    source: data.length + options.indexOf(o),
+                    target: data.indexOf(d)
+                });
+            }
+        })
+    });
+
+    // nodes zijn data en opties
+    options.forEach(o => data.push({ ID: o, OPO: o }));
   
   // bind de cirkels in de hypergraph aan de data
   var course = hypergraph.selectAll("circle")
   .data(data);
+
+      // force simulation bepaalt positie
+      var simulation = d3.forceSimulation(data)
+      .force("charge", d3.forceManyBody())
+      .force("link", d3.forceLink(links).distance(25).strength(0.6))
+      .force("x", d3.forceX())
+      .force("y", d3.forceY())
+      .on("tick", refresh);
   
   // for (var j = 0; j < options.length; j++) {
     // var optionGroup = hypergraph.append("g")
@@ -82,8 +109,8 @@ d3.csv("cw-2.csv").then(function (data) {
   
   course.enter()
   .append("circle")
-  .attr("cx", d => d.cx)
-  .attr("cy", d => d.cy)
+  .attr("cx", d => d.x)
+  .attr("cy", d => d.y)
   .attr("r", 10)
   .classed("verplicht", function (d) {
     for (var i = 0; i < options.length; i++) {
@@ -107,8 +134,8 @@ d3.csv("cw-2.csv").then(function (data) {
     // toon een tooltip voor het gehoverde vak
     tooltip.classed("active", true)
     .text(d.OPO)
-    .style("left", (d.cx + 20) + "px")
-    .style("top", (d.cy - 12) + "px");
+    .style("left", (d.x + xo + 20) + "px")
+    .style("top", (d.y + yo - 12) + "px");
   })
   .on("mouseout", function (d) {
     // verberg de tooltip voor het vak waarover gehoverd werd
@@ -187,6 +214,32 @@ d3.csv("cw-2.csv").then(function (data) {
     checkboxChoose2.append("span")
     .attr("class", "checkmark");
   });
+
+  var lines = hypergraph.selectAll("line")
+            .data(links);
+
+        lines.enter()
+            .append("line")
+            .attr("x1", l => l.source.x + xo)
+            .attr("y1", l => l.source.y + yo)
+            .attr("x2", l => l.target.x + xo)
+            .attr("y2", l => l.target.y + yo)
+            .classed("link",true);
+
+  function refresh() {
+    hypergraph.selectAll("circle")
+        .data(data)
+        .attr("cx", d => d.x + xo)
+        .attr("cy", d => d.y + yo);
+
+    hypergraph.selectAll("line")
+        .data(links)
+        .attr("x1", l => l.source.x + xo)
+        .attr("y1", l => l.source.y + yo)
+        .attr("x2", l => l.target.x + xo)
+        .attr("y2", l => l.target.y + yo);
+}
+
 });
 
 // waarde van de switch die vakken al dan niet verbergt waarin de gebruiker niet geïnteresseerd is

@@ -71,6 +71,11 @@ circle {
   stroke: url(#diagonalHatch);
 }
 
+.link{
+  stroke:gray;
+  stroke-width:1;
+}
+
 .tooltip {
   background-color: #000;
   border-radius: 4px;

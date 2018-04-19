@@ -32,7 +32,7 @@ G0B34B,Knowledge and the Web,3,1,6,6.0,0.0,,0,0,0,0,0,2,0,0,0,0,0,0,1
 H02C3A,Knowledge Representation,3,2,4,0.0,4.0,,0,0,0,0,0,2,0,0,0,0,0,0,1
 H02C6A,Data Mining,3,2,4,0.0,4.0,,0,0,0,0,0,2,0,0,0,0,0,0,1
 H02C8B,Text based Information Retrieval,3,2,6,2.0,4.0,,0,0,0,0,0,2,0,0,0,0,0,0,1
-H0T25A,Machine Learning: Project,3,2,3,3.0,0.0,H02C1A ,0,0,0,0,0,2,0,0,0,0,0,0,1
+H0T25A,Machine Learning: Project,3,2,3,3.0,0.0,H02C1Aï¿½,0,0,0,0,0,2,0,0,0,0,0,0,1
 H02A6A,Speech Recognition,3,1,4,0.0,4.0,,0,0,0,0,0,2,0,0,0,0,0,0,1
 H02B1A,Natural Language Processing,3,1,4,0.0,4.0,,0,0,0,0,0,2,0,0,0,0,0,0,1
 H02A4A,Robotics,3,2,4,4.0,0.0,,0,0,0,0,0,2,0,0,0,0,0,0,1
@@ -55,7 +55,7 @@ H03F7A,Wavelets with Applications in Signal and Image Processing,3,1,6,5.0,1.0,,
 H05U5A,Capita selecta ingenieurswetenschappen I.1. (Athens / Summer Course),1,1,3,3.0,0.0,,0,0,0,0,0,0,0,0,0,1,0,0,1
 H05U6A,Capita selecta ingenieurswetenschappen I.2. (Athens / Summer Course),1,2,3,3.0,0.0,,0,0,0,0,0,0,0,0,0,1,0,0,1
 H04G9B,Compilerconstructie,3,1,5,1.3,3.8,,0,0,0,0,0,0,0,0,0,1,0,0,1
-H04I9A,Industriële stage: Computerwetenschappen / Industrial Internship: Computer Science,2,1,6,6.0,0.0,,0,0,0,0,0,0,0,0,0,1,0,0,1
+H04I9A,Industriï¿½le stage: Computerwetenschappen / Industrial Internship: Computer Science,2,1,6,6.0,0.0,,0,0,0,0,0,0,0,0,0,1,0,0,1
 H04K9A,Capita selecta ingenieurswetenschappen II.1. (Athens / Summer Course),2,1,3,3.0,0.0,,0,0,0,0,0,0,0,0,0,1,0,0,1
 H05U7A,Capita selecta ingenieurswetenschappen II.2. (Athens / Summer Course),2,2,3,3.0,0.0,,0,0,0,0,0,0,0,0,0,1,0,0,1
 H04J4A,Masterproef,2,3,24,24.0,0.0,,0,0,0,0,0,0,0,0,0,0,1,0,1
@@ -91,4 +91,3 @@ W0AE0A,Lessen voor de 21ste eeuw,3,3,4,4.0,0.0,,0,0,0,0,0,0,0,0,0,0,0,1,1
 S0B88A,Genderstudies,3,3,4,4.0,0.0,,0,0,0,0,0,0,0,0,0,0,0,1,1
 H04B3A,Engels in de bedrijfsomgeving,3,3,3,3.0,0.0,,0,0,0,0,0,0,0,0,0,0,0,1,1
 H04B4A,Frans in de bedrijfsomgeving,3,3,3,3.0,0.0,,0,0,0,0,0,0,0,0,0,0,0,1,1
-,,,,,,Totaal:,,4,3,5,7,10,16,8,8,6,6,1,32,
