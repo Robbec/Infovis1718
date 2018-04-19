@@ -28,7 +28,7 @@ d3.csv("cw-2.csv").then(function (data) {
   // kleurenpalet aan opties koppelen
   // Ziet er niet uit, maar Category10 heeft er 1 te weinig en v5 ondersteunt Category20 niet,
   //  later eigen kleurenschema maken
-  colors = d3.schemePaired;
+  var colors = d3.schemePaired;
   var optionColors = {};
   options.forEach((key, idx) => optionColors[key] = colors[idx]);
   
@@ -65,20 +65,20 @@ d3.csv("cw-2.csv").then(function (data) {
   var course = hypergraph.selectAll("circle")
   .data(data);
   
-  for (var j = 0; j < options.length; j++) {
-    var optionGroup = hypergraph.append("g")
-    .classed("optionGroup", true);
-    var option = optionGroup.append("circle")
-    .classed("option", true);
-    var coursesGroup = optionGroup.append("g");
-    var courses = data.filter(function (d, i) {
-      return d[options[j]] == 1;
-    });
-    for (var k = 0; k < courses.length; k++) {
-      coursesGroup.append("circle")
-      .attr("r", 10);
-    };
-  };
+  // for (var j = 0; j < options.length; j++) {
+    // var optionGroup = hypergraph.append("g")
+    // .classed("optionGroup", true);
+    // var option = optionGroup.append("circle")
+    // .classed("option", true);
+    // var coursesGroup = optionGroup.append("g");
+    // var courses = data.filter(function (d, i) {
+      // return d[options[j]] == 1;
+    // });
+    // for (var k = 0; k < courses.length; k++) {
+      // coursesGroup.append("circle")
+      // .attr("r", 10);
+    // };
+  // };
   
   course.enter()
   .append("circle")
