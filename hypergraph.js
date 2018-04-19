@@ -103,17 +103,17 @@ d3.csv("cw-2.csv").then(function (data) {
   });
   console.log(links);
   // nodes zijn data en opties
-  
+
   var extraNodes = [];
   options.forEach(o => extraNodes.push({ ID: o, OPO: o }));
-  comboNodes.forEach(n => extraNodes.push({ID: n, OPO: n}));
+  comboNodes.forEach(n => extraNodes.push({ ID: n, OPO: n }));
   var nodes = [...data, ...extraNodes];
 
   // force simulation bepaalt positie
   var simulation = d3.forceSimulation(nodes)
     .force("charge", d3.forceManyBody())
     .force("collide", d3.forceCollide(11))
-    .force("link", d3.forceLink(links).distance(function(l){ return l.dist}).strength(2))
+    .force("link", d3.forceLink(links).distance(function (l) { return l.dist }).strength(2))
     .force("x", d3.forceX(xo).strength(.08))
     .force("y", d3.forceY(yo).strength(.08))
     .force("center", d3.forceCenter(xo, yo))
@@ -133,6 +133,17 @@ d3.csv("cw-2.csv").then(function (data) {
   // .attr("r", 10);
   // };
   // };
+
+  var lines = hypergraph.selectAll("line")
+    .data(links);
+
+  lines.enter()
+    .append("line")
+    .attr("x1", l => l.source.x)
+    .attr("y1", l => l.source.y)
+    .attr("x2", l => l.target.x)
+    .attr("y2", l => l.target.y)
+    .classed("link", true);
 
   // bind de cirkels in de hypergraph aan de data
   var course = hypergraph.selectAll("circle")
@@ -246,22 +257,9 @@ d3.csv("cw-2.csv").then(function (data) {
         .attr("class", "checkmark");
     });
 
-  var lines = hypergraph.selectAll("line")
-    .data(links);
 
-  lines.enter()
-    .append("line")
-    .attr("x1", l => l.source.x)
-    .attr("y1", l => l.source.y)
-    .attr("x2", l => l.target.x)
-    .attr("y2", l => l.target.y)
-    .classed("link", true);
 
   function refresh() {
-    hypergraph.selectAll("circle")
-      .data(nodes)
-      .attr("cx", d => d.x)
-      .attr("cy", d => d.y);
 
     hypergraph.selectAll("line")
       .data(links)
@@ -269,6 +267,12 @@ d3.csv("cw-2.csv").then(function (data) {
       .attr("y1", l => l.source.y)
       .attr("x2", l => l.target.x)
       .attr("y2", l => l.target.y);
+
+    hypergraph.selectAll("circle")
+      .data(nodes)
+      .attr("cx", d => d.x)
+      .attr("cy", d => d.y);
+
   }
 
 });

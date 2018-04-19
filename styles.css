@@ -74,7 +74,6 @@ circle {
 .link{
   stroke:gray;
   stroke-width:1;
-  z-index: -1;
 }
 
 .tooltip {
