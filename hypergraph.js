@@ -90,7 +90,7 @@ d3.csv("cw-2.csv").then(function (data) {
           links.push({
             source: data.length + options.indexOf(o),
             target: data.length + options.length + comboNodes.indexOf(comboName),
-            dist: 70
+            dist: 45
           });
         });
       }
@@ -114,8 +114,9 @@ d3.csv("cw-2.csv").then(function (data) {
     .force("charge", d3.forceManyBody())
     .force("collide", d3.forceCollide(11))
     .force("link", d3.forceLink(links).distance(function(l){ return l.dist}).strength(2))
-    .force("x", d3.forceX(xo))
-    .force("y", d3.forceY(yo))
+    .force("x", d3.forceX(xo).strength(.08))
+    .force("y", d3.forceY(yo).strength(.08))
+    .force("center", d3.forceCenter(xo, yo))
     .on("tick", refresh);
 
   // for (var j = 0; j < options.length; j++) {
