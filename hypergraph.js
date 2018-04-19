@@ -78,7 +78,8 @@ d3.csv("cw-2.csv").then(function (data) {
       // course belongs to only one option
       links.push({
         source: data.length + options.indexOf(ops[0]),
-        target: data.indexOf(d)
+        target: data.indexOf(d),
+        dist: 15
       });
     } else if (ops.length > 1) {
       // course belongs to more than one option
@@ -88,17 +89,19 @@ d3.csv("cw-2.csv").then(function (data) {
         ops.forEach(o => {
           links.push({
             source: data.length + options.indexOf(o),
-            target: data.length + options.length + comboNodes.indexOf(comboName)
+            target: data.length + options.length + comboNodes.indexOf(comboName),
+            dist: 70
           });
         });
       }
       links.push({
         source: data.length + options.length + comboNodes.indexOf(comboName),
-        target: data.indexOf(d)
+        target: data.indexOf(d),
+        dist: 15
       });
     }
   });
-
+  console.log(links);
   // nodes zijn data en opties
   
   var extraNodes = [];
@@ -110,9 +113,9 @@ d3.csv("cw-2.csv").then(function (data) {
   var simulation = d3.forceSimulation(nodes)
     .force("charge", d3.forceManyBody())
     .force("collide", d3.forceCollide(11))
-    .force("link", d3.forceLink(links).distance(15).strength(2))
-    .force("x", d3.forceX())
-    .force("y", d3.forceY())
+    .force("link", d3.forceLink(links).distance(function(l){ return l.dist}).strength(2))
+    .force("x", d3.forceX(xo))
+    .force("y", d3.forceY(yo))
     .on("tick", refresh);
 
   // for (var j = 0; j < options.length; j++) {
@@ -161,8 +164,8 @@ d3.csv("cw-2.csv").then(function (data) {
       // toon een tooltip voor het gehoverde vak
       tooltip.classed("active", true)
         .text(d.OPO)
-        .style("left", (d.x + xo + 20) + "px")
-        .style("top", (d.y + yo - 12) + "px");
+        .style("left", (d.x + 20) + "px")
+        .style("top", (d.y - 12) + "px");
     })
     .on("mouseout", function (d) {
       // verberg de tooltip voor het vak waarover gehoverd werd
@@ -247,24 +250,24 @@ d3.csv("cw-2.csv").then(function (data) {
 
   lines.enter()
     .append("line")
-    .attr("x1", l => l.source.x + xo)
-    .attr("y1", l => l.source.y + yo)
-    .attr("x2", l => l.target.x + xo)
-    .attr("y2", l => l.target.y + yo)
+    .attr("x1", l => l.source.x)
+    .attr("y1", l => l.source.y)
+    .attr("x2", l => l.target.x)
+    .attr("y2", l => l.target.y)
     .classed("link", true);
 
   function refresh() {
     hypergraph.selectAll("circle")
       .data(nodes)
-      .attr("cx", d => d.x + xo)
-      .attr("cy", d => d.y + yo);
+      .attr("cx", d => d.x)
+      .attr("cy", d => d.y);
 
     hypergraph.selectAll("line")
       .data(links)
-      .attr("x1", l => l.source.x + xo)
-      .attr("y1", l => l.source.y + yo)
-      .attr("x2", l => l.target.x + xo)
-      .attr("y2", l => l.target.y + yo);
+      .attr("x1", l => l.source.x)
+      .attr("y1", l => l.source.y)
+      .attr("x2", l => l.target.x)
+      .attr("y2", l => l.target.y);
   }
 
 });
