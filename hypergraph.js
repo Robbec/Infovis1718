@@ -39,28 +39,6 @@ d3.csv("cw-4.csv").then(function (data) {
     return kulBlue;
   }
 
-  function colorOfCourse(d) {
-    //default kul-blauw
-    var color = kulBlue;
-    i = 0;
-    //plichtvakken krijgen kleur van optie
-    while (i < options.length && color == kulBlue) {
-      if (d[options[i]] == 1) {
-        color = optionColors[options[i]];
-      }
-      i++;
-    }
-    //enkel om te testen
-    // i = 0;
-    // while (i < options.length && color == kulBlue) {
-    //   if (d[options[i]] == 2) {
-    //     color = optionColors[options[i]];
-    //   }
-    //   i++
-    // }
-    return color;
-  }
-
   var links = [];
   var comboNodes = [];
 
@@ -143,6 +121,17 @@ d3.csv("cw-4.csv").then(function (data) {
     .attr("y2", l => l.target.y)
     .classed("link", true);
 
+  function getClusterColor(d) {
+    //default kul-blauw
+    var color = getFillColor(d);
+    var optionIndex = options.indexOf(d.ID);
+    //plichtvakken krijgen kleur van optie
+    if (optionIndex != -1) {
+      color = optionColors[d.ID];
+    }
+    return color;
+  }
+
   // bind rechthoeken aan clusterdata
   var clusters = hypergraph.selectAll("rect")
     .data(extraNodes);
@@ -158,7 +147,7 @@ d3.csv("cw-4.csv").then(function (data) {
     .attr("width", rectWidth)
     .attr("height", rectHeight)
     .attr("fill", function (d) {
-      return getFillColor(d);
+      return getClusterColor(d);
     })
     .on("mouseover", function (d) {
       // toon een tooltip voor het gehoverde vak
@@ -171,6 +160,28 @@ d3.csv("cw-4.csv").then(function (data) {
       // verberg de tooltip voor het vak waarover gehoverd werd
       tooltip.classed("active", false);
     });
+
+  function colorOfCourse(d) {
+    //default kul-blauw
+    var color = getFillColor(d);
+    i = 0;
+    //plichtvakken krijgen kleur van optie
+    while (i < options.length && color == kulBlue) {
+      if (d[options[i]] == 1) {
+        color = optionColors[options[i]];
+      }
+      i++;
+    }
+    //enkel om te testen
+    // i = 0;
+    // while (i < options.length && color == kulBlue) {
+    //   if (d[options[i]] == 2) {
+    //     color = optionColors[options[i]];
+    //   }
+    //   i++
+    // }
+    return color;
+  }
 
   // bind de cirkels in de hypergraph aan de data
   var course = hypergraph.selectAll("circle")
