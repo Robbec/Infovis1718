@@ -143,9 +143,38 @@ d3.csv("cw-4.csv").then(function (data) {
     .attr("y2", l => l.target.y)
     .classed("link", true);
 
+  // bind rechthoeken aan clusterdata
+  var clusters = hypergraph.selectAll("rect")
+    .data(extraNodes);
+
+  // variabelen omdat deze worden hergebruikt in update om verbindingen in het midden te krijgen
+  var rectWidth = 10;
+  var rectHeight = 10;
+
+  clusters.enter()
+    .append("rect")
+    .attr("x", d => d.x)
+    .attr("y", d => d.y)
+    .attr("width", rectWidth)
+    .attr("height", rectHeight)
+    .attr("fill", function (d) {
+      return getFillColor(d);
+    })
+    .on("mouseover", function (d) {
+      // toon een tooltip voor het gehoverde vak
+      tooltip.classed("active", true)
+        .text(d.OPO)
+        .style("left", (d.x + 20) + "px")
+        .style("top", (d.y - 12) + "px");
+    })
+    .on("mouseout", function (d) {
+      // verberg de tooltip voor het vak waarover gehoverd werd
+      tooltip.classed("active", false);
+    });
+
   // bind de cirkels in de hypergraph aan de data
   var course = hypergraph.selectAll("circle")
-    .data(nodes);
+    .data(data);
 
   course.enter()
     .append("circle")
@@ -154,13 +183,11 @@ d3.csv("cw-4.csv").then(function (data) {
     .attr("r", 10)
     .classed("verplicht", function (d) {
       for (var i = 0; i < options.length; i++) {
-        // TODO Pas dit aan.
         return d[options[i]] == 1;
       }
     })
     .classed("keuze", function (d) {
       for (var i = 0; i < options.length; i++) {
-        // TODO Pas dit aan.
         return d[options[i]] == 2;
       }
     })
@@ -267,9 +294,14 @@ d3.csv("cw-4.csv").then(function (data) {
       .attr("y2", l => l.target.y);
 
     hypergraph.selectAll("circle")
-      .data(nodes)
+      .data(data)
       .attr("cx", d => d.x)
       .attr("cy", d => d.y);
+
+    hypergraph.selectAll("rect")
+      .data(extraNodes)
+      .attr("x", d => d.x - rectWidth/2)
+      .attr("y", d => d.y - rectHeight/2);
 
   }
 
