@@ -29,7 +29,7 @@ body {
 .right {
   display: flex;
   flex-flow: column;
-  width: 40%;  
+  width: 40%;
 }
 
 .hypergraph-container {
@@ -44,10 +44,16 @@ body {
   visibility: visible;
 }
 
+rect {
+  cursor: pointer;
+  /* fill-opacity: 0.6; */
+  opacity: 0.6;
+}
+
 circle {
   cursor: pointer;
-  fill-opacity: 0.6;
-  opacity: 0.25;
+  /* fill-opacity: 0.6; */
+  opacity: 0.6;
   stroke-width: 4;
 }
 
@@ -224,4 +230,4 @@ input:focus + .slider {
 
 input:checked + .slider:before {
   transform: translateX(1.75rem);
-}  
+}

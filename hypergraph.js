@@ -11,6 +11,8 @@ var yo = 250;
 hypergraph.attr("width", width)
   .attr("height", height);
 
+var kulBlue = "#1d8db0";
+
 // tooltip aanmaken (inhoud wordt ingevuld bij hover over bolletje)
 var tooltip = hypergraphContainer.append("div")
   .classed("tooltip", true);
@@ -23,44 +25,18 @@ var tooltip = hypergraphContainer.append("div")
 // var optionColors = {};
 // options.forEach((key, idx) => optionColors[key] = colors[idx]);
 
-d3.csv("cw-2.csv").then(function (data) {
+d3.csv("cw-4.csv").then(function (data) {
   var columnNames = Object.keys(d3.values(data)[0]);
   var options = columnNames.slice(8, columnNames.length - 1);
 
   // kleurenpalet aan opties koppelen
-  // Ziet er niet uit, maar Category10 heeft er 1 te weinig en v5 ondersteunt Category20 niet,
-  //  later eigen kleurenschema maken
-  var colors = d3.schemePaired;
+  // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=12
+  var colors = ['rgb(178,223,138)','rgb(51,160,44)','rgb(251,154,153)','rgb(227,26,28)','rgb(253,191,111)','rgb(255,127,0)','rgb(202,178,214)','rgb(106,61,154)','rgb(255,255,153)','rgb(177,89,40)', 'rgb(166,206,227)','rgb(31,120,180)'];
   var optionColors = {};
   options.forEach((key, idx) => optionColors[key] = colors[idx]);
 
   function getFillColor(d) {
-
-  }
-
-  function colorOfCourse(d) {
-    //default kul-blauw
-    var kulBlue = "#1d8db0"
-    var color = kulBlue;
-    i = 0;
-    //plichtvakken krijgen kleur van optie
-    while (i < options.length && color == kulBlue) {
-      if (d[options[i]] == 1) {
-        color = optionColors[options[i]];
-      }
-      i++;
-    }
-    //enkel om te testen
-    /*
-    i = 0;
-    while (i < options.length && color == kulBlue) {
-      if (d[options[i]] == 2) {
-        color = optionColors[options[i]];
-      }
-      i++
-    }
-    */
-    return color;
+    return kulBlue;
   }
 
   var links = [];
@@ -104,9 +80,16 @@ d3.csv("cw-2.csv").then(function (data) {
   console.log(links);
   // nodes zijn data en opties
 
-  var extraNodes = [];
-  options.forEach(o => extraNodes.push({ ID: o, OPO: o }));
-  comboNodes.forEach(n => extraNodes.push({ ID: n, OPO: n }));
+//   var extraNodes = [];
+// options.forEach(o => extraNodes.push({ ID: o, OPO: o }));
+// comboNodes.forEach(n => extraNodes.push({ ID: n, OPO: n }));
+// var nodes = [...data, ...extraNodes];
+
+  var optionNodes = [];
+  var optionCombinationNodes = [];
+  options.forEach(o => optionNodes.push({ ID: o, OPO: o }));
+  comboNodes.forEach(n => optionCombinationNodes.push({ ID: n, OPO: n }));
+  var extraNodes = [...optionNodes, ...optionCombinationNodes];
   var nodes = [...data, ...extraNodes];
 
   // force simulation bepaalt positie
@@ -130,9 +113,105 @@ d3.csv("cw-2.csv").then(function (data) {
     .attr("y2", l => l.target.y)
     .classed("link", true);
 
+  function getOptionClusterColor(d) {
+    //default kul-blauw
+    var color = getFillColor(d);
+    var optionIndex = options.indexOf(d.ID);
+    //plichtvakken krijgen kleur van optie
+    if (optionIndex != -1) {
+      color = optionColors[d.ID];
+    }
+    return color;
+  }
+
+  // bind rechthoeken aan clusterdata
+  var optionClusters = hypergraph.selectAll("optionNode")
+    .data(optionNodes);
+
+  optionClusters.enter()
+    .append("rect")
+    .classed("optionNode", true)
+    .attr("x", d => d.x)
+    .attr("y", d => d.y)
+    .attr("width", 10)
+    .attr("height", 10)
+    .attr("fill", function (d) {
+      return getOptionClusterColor(d);
+    })
+    .on("mouseover", function (d) {
+      // toon een tooltip voor het gehoverde vak
+      tooltip.classed("active", true)
+        .text(d.OPO)
+        .style("left", (d.x + 20) + "px")
+        .style("top", (d.y - 12) + "px");
+    })
+    .on("mouseout", function (d) {
+      // verberg de tooltip voor het vak waarover gehoverd werd
+      tooltip.classed("active", false);
+    });
+
+  function getOptionCombinationClusterColor(d) {
+    //default kul-blauw
+    var color = getFillColor(d);
+    var optionIndex = options.indexOf(d.ID);
+    //plichtvakken krijgen kleur van optie
+    if (optionIndex != -1) {
+      color = optionColors[d.ID];
+    }
+    return color;
+  }
+
+  // bind rechthoeken aan clusterdata
+  var optionCombinationClusters = hypergraph.selectAll("optionCombinationNode")
+    .data(optionCombinationNodes);
+
+  optionCombinationClusters.enter()
+    .append("rect")
+    .classed("optionNode", true)
+    .attr("x", d => d.x)
+    .attr("y", d => d.y)
+    .attr("width", 20)
+    .attr("height", 10)
+    .attr("fill", function (d) {
+      return getOptionCombinationClusterColor(d);
+    })
+    .on("mouseover", function (d) {
+      // toon een tooltip voor het gehoverde vak
+      tooltip.classed("active", true)
+        .text(d.OPO)
+        .style("left", (d.x + 20) + "px")
+        .style("top", (d.y - 12) + "px");
+    })
+    .on("mouseout", function (d) {
+      // verberg de tooltip voor het vak waarover gehoverd werd
+      tooltip.classed("active", false);
+    });
+
+  function colorOfCourse(d) {
+    //default kul-blauw
+    var color = getFillColor(d);
+    i = 0;
+    //plichtvakken krijgen kleur van optie
+    while (i < options.length && color == kulBlue) {
+      if (d[options[i]] == 1) {
+        color = optionColors[options[i]];
+      }
+      i++;
+    }
+    //enkel om te testen
+    // i = 0;
+    // while (i < options.length && color == kulBlue) {
+    //   if (d[options[i]] == 2) {
+    //     color = optionColors[options[i]];
+    //   }
+    //   i++
+    // }
+    return color;
+  }
+
   // bind de cirkels in de hypergraph aan de data
   var course = hypergraph.selectAll("circle")
-    .data(nodes);
+    .data(data);
 
   course.enter()
     .append("circle")
@@ -141,18 +220,16 @@ d3.csv("cw-2.csv").then(function (data) {
     .attr("r", 10)
     .classed("verplicht", function (d) {
       for (var i = 0; i < options.length; i++) {
-        // TODO Pas dit aan.
         return d[options[i]] == 1;
       }
     })
     .classed("keuze", function (d) {
       for (var i = 0; i < options.length; i++) {
-        // TODO Pas dit aan.
         return d[options[i]] == 2;
       }
     })
     .attr("fill", function (d) {
-      return colorOfCourse(d);
+      return getFillColor(d);
     })
     .attr("stroke", function (d) {
       return colorOfCourse(d);
@@ -254,9 +331,14 @@ d3.csv("cw-2.csv").then(function (data) {
       .attr("y2", l => l.target.y);
 
     hypergraph.selectAll("circle")
-      .data(nodes)
+      .data(data)
       .attr("cx", d => d.x)
       .attr("cy", d => d.y);
+
+    hypergraph.selectAll("rect")
+      .data(extraNodes)
+      .attr("x", d => d.x - 10/2)
+      .attr("y", d => d.y - 10/2);
 
   }
 
