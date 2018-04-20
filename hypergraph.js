@@ -51,15 +51,13 @@ d3.csv("cw-2.csv").then(function (data) {
       i++;
     }
     //enkel om te testen
-
-    i = 0;
-    while (i < options.length && color == kulBlue) {
-      if (d[options[i]] == 2) {
-        color = optionColors[options[i]];
-      }
-      i++
-    }
-
+    // i = 0;
+    // while (i < options.length && color == kulBlue) {
+    //   if (d[options[i]] == 2) {
+    //     color = optionColors[options[i]];
+    //   }
+    //   i++
+    // }
     return color;
   }
 
