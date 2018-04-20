@@ -25,7 +25,7 @@ var tooltip = hypergraphContainer.append("div")
 // var optionColors = {};
 // options.forEach((key, idx) => optionColors[key] = colors[idx]);
 
-d3.csv("cw-2.csv").then(function (data) {
+d3.csv("cw-4.csv").then(function (data) {
   var columnNames = Object.keys(d3.values(data)[0]);
   var options = columnNames.slice(8, columnNames.length - 1);
 
