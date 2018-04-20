@@ -30,8 +30,8 @@ d3.csv("cw-4.csv").then(function (data) {
   var options = columnNames.slice(8, columnNames.length - 1);
 
   // kleurenpalet aan opties koppelen
-  // colorbrew colors
-  var colors = ['#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928','#a6cee3','#1f78b4'];
+  // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=12
+  var colors = ['rgb(178,223,138)','rgb(51,160,44)','rgb(251,154,153)','rgb(227,26,28)','rgb(253,191,111)','rgb(255,127,0)','rgb(202,178,214)','rgb(106,61,154)','rgb(255,255,153)','rgb(177,89,40)', 'rgb(166,206,227)','rgb(31,120,180)'];
   var optionColors = {};
   options.forEach((key, idx) => optionColors[key] = colors[idx]);
 
