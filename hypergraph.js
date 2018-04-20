@@ -30,9 +30,8 @@ d3.csv("cw-2.csv").then(function (data) {
   var options = columnNames.slice(8, columnNames.length - 1);
 
   // kleurenpalet aan opties koppelen
-  // Ziet er niet uit, maar Category10 heeft er 1 te weinig en v5 ondersteunt Category20 niet,
-  //  later eigen kleurenschema maken
-  var colors = d3.schemePaired;
+  // colorbrew colors
+  var colors = ['#a6cee3','#1f78b4','#b2df8a','#33a02c','#fb9a99','#e31a1c','#fdbf6f','#ff7f00','#cab2d6','#6a3d9a','#ffff99','#b15928'];
   var optionColors = {};
   options.forEach((key, idx) => optionColors[key] = colors[idx]);
 
@@ -52,7 +51,7 @@ d3.csv("cw-2.csv").then(function (data) {
       i++;
     }
     //enkel om te testen
-    /*
+
     i = 0;
     while (i < options.length && color == kulBlue) {
       if (d[options[i]] == 2) {
@@ -60,7 +59,7 @@ d3.csv("cw-2.csv").then(function (data) {
       }
       i++
     }
-    */
+
     return color;
   }
 
