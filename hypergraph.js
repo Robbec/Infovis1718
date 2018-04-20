@@ -119,21 +119,6 @@ d3.csv("cw-2.csv").then(function (data) {
     .force("center", d3.forceCenter(xo, yo))
     .on("tick", refresh);
 
-  // for (var j = 0; j < options.length; j++) {
-  // var optionGroup = hypergraph.append("g")
-  // .classed("optionGroup", true);
-  // var option = optionGroup.append("circle")
-  // .classed("option", true);
-  // var coursesGroup = optionGroup.append("g");
-  // var courses = data.filter(function (d, i) {
-  // return d[options[j]] == 1;
-  // });
-  // for (var k = 0; k < courses.length; k++) {
-  // coursesGroup.append("circle")
-  // .attr("r", 10);
-  // };
-  // };
-
   var lines = hypergraph.selectAll("line")
     .data(links);
 
