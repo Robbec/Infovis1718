@@ -11,6 +11,8 @@ var yo = 250;
 hypergraph.attr("width", width)
   .attr("height", height);
 
+var kulBlue = "#1d8db0";
+
 // tooltip aanmaken (inhoud wordt ingevuld bij hover over bolletje)
 var tooltip = hypergraphContainer.append("div")
   .classed("tooltip", true);
@@ -35,12 +37,11 @@ d3.csv("cw-2.csv").then(function (data) {
   options.forEach((key, idx) => optionColors[key] = colors[idx]);
 
   function getFillColor(d) {
-
+    return kulBlue;
   }
 
   function colorOfCourse(d) {
     //default kul-blauw
-    var kulBlue = "#1d8db0"
     var color = kulBlue;
     i = 0;
     //plichtvakken krijgen kleur van optie
@@ -167,7 +168,7 @@ d3.csv("cw-2.csv").then(function (data) {
       }
     })
     .attr("fill", function (d) {
-      return colorOfCourse(d);
+      return getFillColor(d);
     })
     .attr("stroke", function (d) {
       return colorOfCourse(d);
