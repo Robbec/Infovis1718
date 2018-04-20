@@ -80,9 +80,16 @@ d3.csv("cw-4.csv").then(function (data) {
   console.log(links);
   // nodes zijn data en opties
 
-  var extraNodes = [];
-  options.forEach(o => extraNodes.push({ ID: o, OPO: o }));
-  comboNodes.forEach(n => extraNodes.push({ ID: n, OPO: n }));
+//   var extraNodes = [];
+// options.forEach(o => extraNodes.push({ ID: o, OPO: o }));
+// comboNodes.forEach(n => extraNodes.push({ ID: n, OPO: n }));
+// var nodes = [...data, ...extraNodes];
+
+  var optionNodes = [];
+  var optionCombinationNodes = [];
+  options.forEach(o => optionNodes.push({ ID: o, OPO: o }));
+  comboNodes.forEach(n => optionCombinationNodes.push({ ID: n, OPO: n }));
+  var extraNodes = [...optionNodes, ...optionCombinationNodes];
   var nodes = [...data, ...extraNodes];
 
   // force simulation bepaalt positie
@@ -121,7 +128,7 @@ d3.csv("cw-4.csv").then(function (data) {
     .attr("y2", l => l.target.y)
     .classed("link", true);
 
-  function getClusterColor(d) {
+  function getOptionClusterColor(d) {
     //default kul-blauw
     var color = getFillColor(d);
     var optionIndex = options.indexOf(d.ID);
@@ -133,21 +140,55 @@ d3.csv("cw-4.csv").then(function (data) {
   }
 
   // bind rechthoeken aan clusterdata
-  var clusters = hypergraph.selectAll("rect")
-    .data(extraNodes);
+  var optionClusters = hypergraph.selectAll("optionNode")
+    .data(optionNodes);
 
-  // variabelen omdat deze worden hergebruikt in update om verbindingen in het midden te krijgen
-  var rectWidth = 10;
-  var rectHeight = 10;
-
-  clusters.enter()
+  optionClusters.enter()
     .append("rect")
+    .classed("optionNode", true)
     .attr("x", d => d.x)
     .attr("y", d => d.y)
-    .attr("width", rectWidth)
-    .attr("height", rectHeight)
+    .attr("width", 10)
+    .attr("height", 10)
     .attr("fill", function (d) {
-      return getClusterColor(d);
+      return getOptionClusterColor(d);
+    })
+    .on("mouseover", function (d) {
+      // toon een tooltip voor het gehoverde vak
+      tooltip.classed("active", true)
+        .text(d.OPO)
+        .style("left", (d.x + 20) + "px")
+        .style("top", (d.y - 12) + "px");
+    })
+    .on("mouseout", function (d) {
+      // verberg de tooltip voor het vak waarover gehoverd werd
+      tooltip.classed("active", false);
+    });
+
+  function getOptionCombinationClusterColor(d) {
+    //default kul-blauw
+    var color = getFillColor(d);
+    var optionIndex = options.indexOf(d.ID);
+    //plichtvakken krijgen kleur van optie
+    if (optionIndex != -1) {
+      color = optionColors[d.ID];
+    }
+    return color;
+  }
+
+  // bind rechthoeken aan clusterdata
+  var optionCombinationClusters = hypergraph.selectAll("optionCombinationNode")
+    .data(optionCombinationNodes);
+
+  optionCombinationClusters.enter()
+    .append("rect")
+    .classed("optionNode", true)
+    .attr("x", d => d.x)
+    .attr("y", d => d.y)
+    .attr("width", 20)
+    .attr("height", 10)
+    .attr("fill", function (d) {
+      return getOptionCombinationClusterColor(d);
     })
     .on("mouseover", function (d) {
       // toon een tooltip voor het gehoverde vak
@@ -311,8 +352,8 @@ d3.csv("cw-4.csv").then(function (data) {
 
     hypergraph.selectAll("rect")
       .data(extraNodes)
-      .attr("x", d => d.x - rectWidth/2)
-      .attr("y", d => d.y - rectHeight/2);
+      .attr("x", d => d.x - 10/2)
+      .attr("y", d => d.y - 10/2);
 
   }
 
