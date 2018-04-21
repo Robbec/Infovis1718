@@ -33,6 +33,7 @@ var tooltip = hypergraphContainer.append("div")
 // options.forEach((key, idx) => optionColors[key] = colors[idx]);
 
 d3.csv("cw-5.csv").then(function (data) {
+  d3.csv("uniekeReserveringen.csv").then(function (scheduleData) {
   // namen van alle opties
   var columnNames = d3.keys(d3.values(data)[0]);
   options = columnNames.slice(8, columnNames.length);
@@ -214,6 +215,24 @@ d3.csv("cw-5.csv").then(function (data) {
   var optionCombinationClusters = hypergraph.selectAll("optionCombinationNode")
   .data(overlapNodes);
 
+
+
+    function getOverlappingCourses(code) {
+      var codeReservations = scheduleData.filter(function(row) {
+        return row.Code == code;
+      });
+      overlappingCourseCodes = new Set();
+      codeReservations.forEach(function(codeReservation) {
+        var overlappingReservations = scheduleData.filter(function(row) {
+          return row.Semester == codeReservation.Semester && row.Dagnaam == codeReservation.Dagnaam && row.Code != code;
+        })
+        overlappingReservations.forEach(function(overlappingReservation) {
+          overlappingCourseCodes.add(overlappingReservation.Code);
+        })
+      })
+      return(overlappingCourseCodes);
+    }
+
   optionCombinationClusters.enter()
   .append("rect")
   .classed("optionNode", true)
@@ -306,6 +325,12 @@ d3.csv("cw-5.csv").then(function (data) {
       return d["Gelijktijdig volgen"].split(" ").includes(id);
     });
 
+    d3.selectAll("circle")
+    .classed("overlap", function(dcircle) {
+      var id = dcircle.ID;
+      return getOverlappingCourses(d["ID"]).has(id);
+    });
+
     // maak nieuwe inhoud aan in de infobox:
     // 1) titel van het actieve vak
     infobox.append("h3").text(d.OPO);
@@ -369,6 +394,8 @@ d3.csv("cw-5.csv").then(function (data) {
     .attr("x", d => d.x - 5)
     .attr("y", d => d.y - 5);
   }
+});
+
 });
 
 // waarde van de switch die vakken al dan niet verbergt waarin de gebruiker niet geïnteresseerd is
