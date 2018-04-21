@@ -273,18 +273,18 @@ d3.csv("cw-5.csv").then(function (data) {
       codeReservations.forEach(function(codeReservation) {
         // filter de overlappende reservaties
         var overlappingReservations = scheduleData.filter(function(reservation) {
-          // var hourParser = d3.timeParser(%H:%M:%S);
-          // var startReservation = hourParser(reservation.Aanvang);
-          // var endReservation = hourParser(reservation.Einde);
-          // var startCodeReservation = hourParser(codeReservation.Aanvang);
-          // var endCodeReservation = hourParser(codeReservation.Einde);
+          var hourParser = d3.timeParse("%H:%M:%S");
+          var startReservation = hourParser(reservation.Aanvang);
+          var endReservation = hourParser(reservation.Einde);
+          var startCodeReservation = hourParser(codeReservation.Aanvang);
+          var endCodeReservation = hourParser(codeReservation.Einde);
 
           // zelfde semester
           return reservation.Semester == codeReservation.Semester &&
             // zelfde dag
             reservation.Dagnaam == codeReservation.Dagnaam &&
             // uren overlappen https://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
-            //(startReservation <= endCodeReservation && endReservation >= startCodeReservation) &&
+            (startReservation < endCodeReservation && endReservation > startCodeReservation) &&
             // niet vak zelf
             reservation.Code != code
         });
