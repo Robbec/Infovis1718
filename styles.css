@@ -64,7 +64,6 @@ circle {
 }
 
 .overlap {
-  opacity: 1;
   fill: #000000;
   transition: 0.3s linear;
 }
