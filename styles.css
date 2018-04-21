@@ -63,11 +63,6 @@ circle {
   transition: 0.3s linear;
 }
 
-.overlap {
-  fill: #000000;
-  transition: 0.3s linear;
-}
-
 .not-interested {
   display: none;
 }
