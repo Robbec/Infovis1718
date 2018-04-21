@@ -6,6 +6,12 @@ var hypergraphContainer = left.select(".hypergraph-container");
 var hypergraph = hypergraphContainer.select(".hypergraph");
 var infobox = right.select(".infobox");
 
+// globale variabelen voor de opbouw van de hypergraf
+var options = [];
+var optionNodes = [];
+var overlapNodes = [];
+var links = [];
+
 // afmetingen van de svg
 var svgWidth = 500;
 var svgHeight = 500;
@@ -13,8 +19,6 @@ var svgHeight = 500;
 // maak een svg voor de hypergraf
 hypergraph.attr("width", svgWidth)
 .attr("height", svgHeight);
-
-var kulBlue = "#1d8db0";
 
 // tooltip aanmaken (inhoud wordt ingevuld bij hover over bolletje)
 var tooltip = hypergraphContainer.append("div")
@@ -28,97 +32,42 @@ var tooltip = hypergraphContainer.append("div")
 d3.csv("cw-4.csv").then(function (data) {
   // namen van alle opties
   var columnNames = d3.keys(d3.values(data)[0]);
-  var options = columnNames.slice(8, columnNames.length - 1);
+  options = columnNames.slice(8, columnNames.length - 1);
 
   // kleurenpalet aan opties koppelen
   // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=12
   var colors = ['rgb(178,223,138)','rgb(51,160,44)','rgb(251,154,153)','rgb(227,26,28)','rgb(253,191,111)','rgb(255,127,0)','rgb(202,178,214)','rgb(106,61,154)','rgb(255,255,153)','rgb(177,89,40)', 'rgb(166,206,227)','rgb(31,120,180)'];
   var optionColors = [];
   options.forEach((c, i) => optionColors[c] = colors[i]);
+  var kulBlue = "#1d8db0";
 
+  // kleur voor de opvulling van vakken
   function getFillColor(d) {
     return kulBlue;
   }
 
-  var links = [];
-  var comboNodes = [];
-
-  // maak alle links
-  data.forEach(d => {
-    // vind de opties waartoe het vak behoort
-    var ops = [];
-    options.forEach(o => {
-      if (d[o] > 0) {
-        ops.push(o);
+  function colorOfCourse(d) {
+    //default kul-blauw
+    var color = getFillColor(d);
+    //plichtvakken krijgen kleur van optie
+    for (i = 0; i < options.length && color == kulBlue; i++) {
+      if (d[options[i]] == 1) {
+        color = optionColors[options[i]];
       }
-    });
-
-    // als het vak behoort tot 1 optie, maak dan een link tussen het vak en de optie
-    if (ops.length == 1) {
-      links.push({
-        "source": d,
-        "target": data.length + options.indexOf(ops[0]),
-        "dist": 15
-      });
     }
+    //enkel om te testen
+    // i = 0;
+    // while (i < options.length && color == kulBlue) {
+    //   if (d[options[i]] == 2) {
+    //     color = optionColors[options[i]];
+    //   }
+    //   i++
+    // }
+    return color;
+  }
 
-    // het vak behoort tot meerdere opties, maak dan een link tussen het vak en de node voor de overlap
-    else if (ops.length > 1) {
-      comboName = ops.toString();
-      if (!comboNodes.includes(comboName)) {
-        comboNodes.push(comboName);
-        ops.forEach((o, i) => {
-          links.push({
-            "source": data.length + options.indexOf(o),
-            "target": data.length + options.length + comboNodes.indexOf(comboName),
-            "dist": 45
-          });
-        });
-      }
-      links.push({
-        "source": d,
-        "target": data.length + options.length + comboNodes.indexOf(comboName),
-        "dist": 45
-      });
-    }
-  });
-
-  var optionNodes = [];
-  var optionCombinationNodes = [];
-  options.forEach(o => optionNodes.push({ ID: o, OPO: o }));
-  comboNodes.forEach(n => optionCombinationNodes.push({ ID: n, OPO: n }));
-  var extraNodes = optionNodes.concat(optionCombinationNodes);
-  var nodes = data.concat(extraNodes);
-
-  // force simulation bepaalt de positie van alle nodes
-  var simulation = d3.forceSimulation(nodes)
-  // trek alle nodes naar het centrum van de svg
-  .force("center", d3.forceCenter(svgWidth / 2, svgHeight / 2))
-  // laat alle nodes elkaar afstoten
-  .force("charge", d3.forceManyBody().strength(0))
-  // voorkom dat nodes overlappen
-  .force("collide", d3.forceCollide(15))
-  // duw verbonden elementen uit elkaar
-  .force("link", d3.forceLink(links).distance(function (d) {
-    return d.dist
-  }).strength(2))
-  // .force("x", d3.forceX(svgWidth / 2).strength(.08))
-  // .force("y", d3.forceY(svgHeight / 2).strength(.08))
-  // roep ticked() op in elke iteratiestap van de simulatie
-  .on("tick", ticked);
-
-  var lines = hypergraph.selectAll("line")
-  .data(links);
-
-  lines.enter()
-  .append("line")
-  .attr("x1", d => d.source.x)
-  .attr("y1", d => d.source.y)
-  .attr("x2", d => d.target.x)
-  .attr("y2", d => d.target.y)
-  .classed("link", true);
-
-  function getOptionClusterColor(d) {
+  // kleur voor opties
+  function getOptionColor(d) {
     //default kul-blauw
     var color = getFillColor(d);
     var optionIndex = options.indexOf(d.ID);
@@ -128,6 +77,96 @@ d3.csv("cw-4.csv").then(function (data) {
     }
     return color;
   }
+
+  function getOptionCombinationClusterColor(d) {
+    //default kul-blauw
+    var color = getFillColor(d);
+    var optionIndex = options.indexOf(d.ID);
+    //plichtvakken krijgen kleur van optie
+    if (optionIndex != -1) {
+      color = optionColors[d.ID];
+    }
+    return color;
+  }
+
+  // maak een optionNode aan voor elke optie
+  options.forEach(o => optionNodes.push({ ID: o, OPO: o }));
+
+  var comboNodes = [];
+
+  // maak alle links
+  data.forEach(d => {
+    // vind de opties waartoe het vak behoort
+    var courseOptions = [];
+    options.forEach(o => {
+      if (d[o] > 0) {
+        courseOptions.push(o);
+      }
+    });
+
+    // als het vak behoort tot 1 optie, maak dan een link tussen het vak en die optie
+    if (courseOptions.length == 1) {
+      links.push({
+        "source": d,
+        "target": data.length + options.indexOf(courseOptions[0]),
+        "dist": 15
+      });
+    }
+
+    // het vak behoort tot meerdere opties, maak dan een link tussen het vak en de node voor de overlap
+    else if (courseOptions.length > 1) {
+      var comboName = courseOptions.toString();
+      if (!comboNodes.includes(comboName)) {
+        comboNodes.push(comboName);
+        courseOptions.forEach(o => {
+          links.push({
+            "source": data.length + options.indexOf(o),
+            "target": data.length + options.length + comboNodes.indexOf(comboName),
+            "dist": 45
+          });
+        });
+      }
+
+      // verbind het vak met de overlapNode
+      links.push({
+        "source": d,
+        "target": data.length + options.length + comboNodes.indexOf(comboName),
+        "dist": 45
+      });
+    }
+  });
+
+  comboNodes.forEach(n => overlapNodes.push({ ID: n, OPO: n }));
+  var extraNodes = optionNodes.concat(overlapNodes);
+  var nodes = data.concat(extraNodes);
+
+  // force simulation bepaalt de positie van alle nodes
+  var simulation = d3.forceSimulation(nodes)
+  // trek alle nodes naar het centrum van de svg
+  .force("center", d3.forceCenter(svgWidth / 2, svgHeight / 2))
+  // laat alle nodes elkaar afstoten
+  .force("charge", d3.forceManyBody())
+  // voorkom dat nodes overlappen
+  .force("collide", d3.forceCollide(15))
+  // duw verbonden elementen uit elkaar
+  .force("link", d3.forceLink(links).distance(d => d.dist).strength(2))
+  .force("x", d3.forceX(svgWidth / 2).strength(.08))
+  .force("y", d3.forceY(svgHeight / 2).strength(.08))
+  // roep ticked() op in elke iteratiestap van de simulatie
+  .on("tick", ticked);
+
+  // bind de lijnen aan de links
+  var lines = hypergraph.selectAll("line")
+  .data(links);
+
+  // construeer de lijnen in de hypergraf
+  lines.enter()
+  .append("line")
+  .attr("x1", d => d.source.x)
+  .attr("y1", d => d.source.y)
+  .attr("x2", d => d.target.x)
+  .attr("y2", d => d.target.y)
+  .classed("link", true);
 
   // bind rechthoeken aan clusterdata
   var optionClusters = hypergraph.selectAll("optionNode")
@@ -141,7 +180,7 @@ d3.csv("cw-4.csv").then(function (data) {
   .attr("width", 10)
   .attr("height", 10)
   .attr("fill", function (d) {
-    return getOptionClusterColor(d);
+    return getOptionColor(d);
   })
   .on("mouseover", function (d) {
     // toon een tooltip voor het gehoverde vak
@@ -155,20 +194,9 @@ d3.csv("cw-4.csv").then(function (data) {
     tooltip.classed("active", false);
   });
 
-  function getOptionCombinationClusterColor(d) {
-    //default kul-blauw
-    var color = getFillColor(d);
-    var optionIndex = options.indexOf(d.ID);
-    //plichtvakken krijgen kleur van optie
-    if (optionIndex != -1) {
-      color = optionColors[d.ID];
-    }
-    return color;
-  }
-
   // bind rechthoeken aan clusterdata
   var optionCombinationClusters = hypergraph.selectAll("optionCombinationNode")
-  .data(optionCombinationNodes);
+  .data(overlapNodes);
 
   optionCombinationClusters.enter()
   .append("rect")
@@ -192,32 +220,11 @@ d3.csv("cw-4.csv").then(function (data) {
     tooltip.classed("active", false);
   });
 
-  function colorOfCourse(d) {
-    //default kul-blauw
-    var color = getFillColor(d);
-    i = 0;
-    //plichtvakken krijgen kleur van optie
-    while (i < options.length && color == kulBlue) {
-      if (d[options[i]] == 1) {
-        color = optionColors[options[i]];
-      }
-      i++;
-    }
-    //enkel om te testen
-    // i = 0;
-    // while (i < options.length && color == kulBlue) {
-    //   if (d[options[i]] == 2) {
-    //     color = optionColors[options[i]];
-    //   }
-    //   i++
-    // }
-    return color;
-  }
-
-  // bind de cirkels in de hypergraph aan de data
+  // bind de cirkels in de hypergraf aan de data
   var course = hypergraph.selectAll("circle")
   .data(data);
 
+  // construeer de cirkels in de hypergraf
   course.enter()
   .append("circle")
   .attr("cx", d => d.x)
@@ -324,10 +331,9 @@ d3.csv("cw-4.csv").then(function (data) {
     .attr("class", "checkmark");
   });
 
-
-  // this function is called each time the hypergraph force simulation iterates
+  // deze functie wordt opgeroepen in elke iteratiestap van de simulatie
   function ticked() {
-    //
+    // pas de positie voor de eindpunten van links aan
     hypergraph.selectAll("line")
     .data(links)
     .attr("x1", d => d.source.x)
@@ -335,19 +341,18 @@ d3.csv("cw-4.csv").then(function (data) {
     .attr("x2", d => d.target.x)
     .attr("y2", d => d.target.y);
 
-    // position the circles for the courses
+    // pas de positie aan van de cirkels voor vakken
     hypergraph.selectAll("circle")
     .data(data)
     .attr("cx", d => d.x)
     .attr("cy", d => d.y);
 
+    // pas de positie aan van de rechthoeken voor overlapnodes
     hypergraph.selectAll("rect")
     .data(extraNodes)
-    .attr("x", d => d.x - 10/2)
-    .attr("y", d => d.y - 10/2);
-
+    .attr("x", d => d.x - 5)
+    .attr("y", d => d.y - 5);
   }
-
 });
 
 // waarde van de switch die vakken al dan niet verbergt waarin de gebruiker niet geïnteresseerd is
