@@ -11,6 +11,9 @@ var options = [];
 var optionNodes = [];
 var overlapNodes = [];
 var links = [];
+var distanceOptionNodeRootNode = 30;
+var distanceOptionNodeOverlapNode = 30;
+var distanceClusterNodeCourse = 15;
 
 // afmetingen van de svg
 var svgWidth = 500;
@@ -107,7 +110,7 @@ d3.csv("cw-4.csv").then(function (data) {
       links.push({
         "source": d,
         "target": courseOptions[0],
-        "dist": 15
+        "dist": distanceClusterNodeCourse
       });
     }
 
@@ -124,7 +127,7 @@ d3.csv("cw-4.csv").then(function (data) {
         courseOptions.forEach(o => links.push({
           "source": o,
           "target": overlapNode,
-          "dist": 45
+          "dist": distanceOptionNodeOverlapNode
         }));
       }
 
@@ -132,21 +135,23 @@ d3.csv("cw-4.csv").then(function (data) {
       links.push({
         "source": d,
         "target": overlapNode,
-        "dist": 45
+        "dist": distanceClusterNodeCourse
       });
     }
   });
-  //
-  //   comboNodes.forEach(n => overlapNodes.push({ ID: n, OPO: n }));
-  //
-  //   var rootNode = {ID: "Master", OPO: "Master"};
-  //   optionNodes.forEach(o => links.push({
-  //     source: rootNode,
-  //     target: o,
-  //     dist: 30
-  //   })
-  // );
-  // optionNodes.push(rootNode);
+
+  // maak een root node voor de hypergraf
+  var rootNode = {ID: "Master", OPO: "Master"};
+  // fixeer de positie van de root node in het middelpunt van de hypergraf
+  rootNode.fx = svgWidth / 2;
+  rootNode.fy = svgHeight / 2;
+  // verbind de root node met alle option nodes
+  optionNodes.forEach(o => links.push({
+    source: rootNode,
+    target: o,
+    dist: distanceOptionNodeRootNode
+  }));
+  optionNodes.push(rootNode);
 
   var extraNodes = optionNodes.concat(overlapNodes);
   var nodes = data.concat(extraNodes);

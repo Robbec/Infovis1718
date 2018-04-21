@@ -78,8 +78,8 @@ circle {
 }
 
 .link{
-  stroke:gray;
-  stroke-width:1;
+  stroke: #cfd8dc;
+  stroke-width: 1;
 }
 
 .tooltip {
