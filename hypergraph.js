@@ -32,10 +32,10 @@ var tooltip = hypergraphContainer.append("div")
 // var optionColors = {};
 // options.forEach((key, idx) => optionColors[key] = colors[idx]);
 
-d3.csv("cw-4.csv").then(function (data) {
+d3.csv("cw-5.csv").then(function (data) {
   // namen van alle opties
   var columnNames = d3.keys(d3.values(data)[0]);
-  options = columnNames.slice(8, columnNames.length - 1);
+  options = columnNames.slice(8, columnNames.length);
 
   // kleurenpalet aan opties koppelen
   // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=12
