@@ -120,7 +120,7 @@ d3.csv("cw-4.csv").then(function (data) {
       var overlapNode = { ID: overlapName, OPO: overlapName };
 
       // ga na of de overlap node al voorkomt in de lijst van alle overlap nodes; indien niet, sla hem daarin op
-      if (!overlapNodes.includes(overlapNode)) {
+      if (overlapNodes.filter(o => o.ID == overlapName).length == 0) {
         // sla de overlap node op in de lijst van alle overlap nodes
         overlapNodes.push(overlapNode);
         // maak een link tussen de overlap node en alle gerelateerde opties
@@ -134,7 +134,7 @@ d3.csv("cw-4.csv").then(function (data) {
       // verbind het vak met de overlap node
       links.push({
         "source": d,
-        "target": overlapNode,
+        "target": overlapNodes.filter(o => o.ID == overlapName)[0],
         "dist": distanceClusterNodeCourse
       });
     }
@@ -220,7 +220,7 @@ d3.csv("cw-4.csv").then(function (data) {
   .attr("x", d => d.x)
   .attr("y", d => d.y)
   .attr("height", 10)
-  .attr("width", 20)
+  .attr("width", 10)
   .attr("fill", function (d) {
     return getOptionCombinationClusterColor(d);
   })
