@@ -224,7 +224,7 @@ d3.csv("cw-5.csv").then(function (data) {
       // voor elke reservatie horende bij de code
       codeReservations.forEach(function(codeReservation) {
         // filter de overlappende reservaties
-        var overlappingReservations = scheduleData.filter(
+        var overlappingReservations = scheduleData.filter(reservation =>
           reservation.Semester == codeReservation.Semester &&
           reservation.Dagnaam == codeReservation.Dagnaam &&
           reservation.Code != code);
