@@ -137,222 +137,232 @@ d3.csv("cw-4.csv").then(function (data) {
   });
 
   comboNodes.forEach(n => overlapNodes.push({ ID: n, OPO: n }));
-  var extraNodes = optionNodes.concat(overlapNodes);
-  var nodes = data.concat(extraNodes);
 
-  // force simulation bepaalt de positie van alle nodes
-  var simulation = d3.forceSimulation(nodes)
-  // trek alle nodes naar het centrum van de svg
-  .force("center", d3.forceCenter(svgWidth / 2, svgHeight / 2))
-  // laat alle nodes elkaar afstoten
-  .force("charge", d3.forceManyBody())
-  // voorkom dat nodes overlappen
-  .force("collide", d3.forceCollide(15))
-  // duw verbonden elementen uit elkaar
-  .force("link", d3.forceLink(links).distance(d => d.dist).strength(2))
-  .force("x", d3.forceX(svgWidth / 2).strength(.08))
-  .force("y", d3.forceY(svgHeight / 2).strength(.08))
-  // roep ticked() op in elke iteratiestap van de simulatie
-  .on("tick", ticked);
+  var rootNode = {ID: "Master", OPO: "Master"};
+  optionNodes.forEach(o => links.push({
+    source: rootNode,
+    target: o,
+    dist: 30
+  })
+);
+optionNodes.push(rootNode);
 
-  // bind de lijnen aan de links
-  var lines = hypergraph.selectAll("line")
-  .data(links);
+var extraNodes = optionNodes.concat(overlapNodes);
+var nodes = data.concat(extraNodes);
 
-  // construeer de lijnen in de hypergraf
-  lines.enter()
-  .append("line")
+// force simulation bepaalt de positie van alle nodes
+var simulation = d3.forceSimulation(nodes)
+// trek alle nodes naar het centrum van de svg
+.force("center", d3.forceCenter(svgWidth / 2, svgHeight / 2))
+// laat alle nodes elkaar afstoten
+.force("charge", d3.forceManyBody())
+// voorkom dat nodes overlappen
+.force("collide", d3.forceCollide(15))
+// duw verbonden elementen uit elkaar
+.force("link", d3.forceLink(links).distance(d => d.dist).strength(2))
+.force("x", d3.forceX(svgWidth / 2).strength(.08))
+.force("y", d3.forceY(svgHeight / 2).strength(.08))
+// roep ticked() op in elke iteratiestap van de simulatie
+.on("tick", ticked);
+
+// bind de lijnen aan de links
+var lines = hypergraph.selectAll("line")
+.data(links);
+
+// construeer de lijnen in de hypergraf
+lines.enter()
+.append("line")
+.attr("x1", d => d.source.x)
+.attr("y1", d => d.source.y)
+.attr("x2", d => d.target.x)
+.attr("y2", d => d.target.y)
+.classed("link", true);
+
+// bind rechthoeken aan clusterdata
+var optionClusters = hypergraph.selectAll("optionNode")
+.data(optionNodes);
+
+optionClusters.enter()
+.append("rect")
+.classed("optionNode", true)
+.attr("x", d => d.x)
+.attr("y", d => d.y)
+.attr("width", 10)
+.attr("height", 10)
+.attr("fill", function (d) {
+  return getOptionColor(d);
+})
+.on("mouseover", function (d) {
+  // toon een tooltip voor het gehoverde vak
+  tooltip.classed("active", true)
+  .text(d.OPO)
+  .style("left", (d.x + 20) + "px")
+  .style("top", (d.y - 12) + "px");
+})
+.on("mouseout", function (d) {
+  // verberg de tooltip voor het vak waarover gehoverd werd
+  tooltip.classed("active", false);
+});
+
+// bind rechthoeken aan clusterdata
+var optionCombinationClusters = hypergraph.selectAll("optionCombinationNode")
+.data(overlapNodes);
+
+optionCombinationClusters.enter()
+.append("rect")
+.classed("optionNode", true)
+.attr("x", d => d.x)
+.attr("y", d => d.y)
+.attr("height", 10)
+.attr("width", 20)
+.attr("fill", function (d) {
+  return getOptionCombinationClusterColor(d);
+})
+.on("mouseover", function (d) {
+  // toon een tooltip voor het gehoverde vak
+  tooltip.classed("active", true)
+  .text(d.OPO)
+  .style("left", (d.x + 20) + "px")
+  .style("top", (d.y - 12) + "px");
+})
+.on("mouseout", function (d) {
+  // verberg de tooltip voor het vak waarover gehoverd werd
+  tooltip.classed("active", false);
+});
+
+// bind de cirkels in de hypergraf aan de data
+var course = hypergraph.selectAll("circle")
+.data(data);
+
+// construeer de cirkels in de hypergraf
+course.enter()
+.append("circle")
+.attr("cx", d => d.x)
+.attr("cy", d => d.y)
+.attr("r", 10)
+.classed("verplicht", function (d) {
+  for (var i = 0; i < options.length; i++) {
+    return d[options[i]] == 1;
+  }
+})
+.classed("keuze", function (d) {
+  for (var i = 0; i < options.length; i++) {
+    return d[options[i]] == 2;
+  }
+})
+.attr("fill", function (d) {
+  return getFillColor(d);
+})
+.attr("stroke", function (d) {
+  return colorOfCourse(d);
+})
+.on("mouseover", function (d) {
+  // toon een tooltip voor het gehoverde vak
+  tooltip.classed("active", true)
+  .text(d.OPO)
+  .style("left", (d.x + 20) + "px")
+  .style("top", (d.y - 12) + "px");
+})
+.on("mouseout", function (d) {
+  // verberg de tooltip voor het vak waarover gehoverd werd
+  tooltip.classed("active", false);
+})
+.on("click", function (d) {
+  var thisCourse = d3.select(this);
+
+  // verklein de straal van het actieve vak
+  var activeCourse = d3.select("circle.active");
+  activeCourse.attr("r", function () {
+    return activeCourse.attr("r") / 1.75;
+  });
+
+  // zet het actieve vak op non-actief
+  d3.selectAll("circle").classed("active", false);
+
+  // verwijder alle inhoud in de infobox
+  infobox.select("p").remove();
+  infobox.select("h3").remove();
+  infobox.select(".points").remove();
+  infobox.select(".checkbox-interested").remove();
+  infobox.select(".checkbox-chosen-master1").remove();
+  infobox.select(".checkbox-chosen-master2").remove();
+
+  // activeer het geselecteerde vak
+  thisCourse.classed("active", true)
+  .attr("r", function () {
+    return thisCourse.attr("r") * 1.75;
+  });
+
+  // geef de klasse .prerequisite alleen aan de prerequisites van het actieve vak
+  d3.selectAll("circle")
+  .classed("prerequisite", function (dcircle) {
+    var id = dcircle.ID;
+    return d["Gelijktijdig volgen"].split(" ").includes(id);
+  });
+
+  // maak nieuwe inhoud aan in de infobox:
+  // 1) titel van het actieve vak
+  infobox.append("h3").text(d.OPO);
+
+  // 2) studiepunten van het actieve vak
+  infobox.append("div")
+  .attr("class", "points")
+  .text(d.Studiepunten + " SP");
+
+  // 3) checkbox "Niet geïnteresseerd" voor het actieve vak
+  var checkboxInterested = infobox.append("label")
+  .text("Niet geïnteresseerd in dit vak.");
+  checkboxInterested.attr("class", "checkbox checkbox-interested")
+  .append("input")
+  .attr("type", "checkbox")
+  .property("checked", thisCourse.classed("not-interested"))
+  .property("checked", thisCourse.classed("is-not-interested"));
+  checkboxInterested.append("span")
+  .attr("class", "checkmark");
+
+  // 4) checkbox "Kies in 1ste Master" voor het actieve vak
+  var checkboxChoose1 = infobox.append("label")
+  .text("Kies dit vak in 1ste Master.");
+  checkboxChoose1.attr("class", "checkbox checkbox-chosen-master1")
+  .append("input")
+  .attr("type", "checkbox")
+  .property("checked", thisCourse.classed("chosen-master1"));
+  checkboxChoose1.append("span")
+  .attr("class", "checkmark");
+
+  // 5) checkbox "Kies in 2de Master" voor het actieve vak
+  var checkboxChoose2 = infobox.append("label")
+  .text("Kies dit vak in 2de Master.");
+  checkboxChoose2.attr("class", "checkbox checkbox-chosen-master2")
+  .append("input")
+  .attr("type", "checkbox")
+  .property("checked", thisCourse.classed("chosen-master2"));
+  checkboxChoose2.append("span")
+  .attr("class", "checkmark");
+});
+
+// deze functie wordt opgeroepen in elke iteratiestap van de simulatie
+function ticked() {
+  // pas de positie voor de eindpunten van links aan
+  hypergraph.selectAll("line")
+  .data(links)
   .attr("x1", d => d.source.x)
   .attr("y1", d => d.source.y)
   .attr("x2", d => d.target.x)
-  .attr("y2", d => d.target.y)
-  .classed("link", true);
+  .attr("y2", d => d.target.y);
 
-  // bind rechthoeken aan clusterdata
-  var optionClusters = hypergraph.selectAll("optionNode")
-  .data(optionNodes);
-
-  optionClusters.enter()
-  .append("rect")
-  .classed("optionNode", true)
-  .attr("x", d => d.x)
-  .attr("y", d => d.y)
-  .attr("width", 10)
-  .attr("height", 10)
-  .attr("fill", function (d) {
-    return getOptionColor(d);
-  })
-  .on("mouseover", function (d) {
-    // toon een tooltip voor het gehoverde vak
-    tooltip.classed("active", true)
-    .text(d.OPO)
-    .style("left", (d.x + 20) + "px")
-    .style("top", (d.y - 12) + "px");
-  })
-  .on("mouseout", function (d) {
-    // verberg de tooltip voor het vak waarover gehoverd werd
-    tooltip.classed("active", false);
-  });
-
-  // bind rechthoeken aan clusterdata
-  var optionCombinationClusters = hypergraph.selectAll("optionCombinationNode")
-  .data(overlapNodes);
-
-  optionCombinationClusters.enter()
-  .append("rect")
-  .classed("optionNode", true)
-  .attr("x", d => d.x)
-  .attr("y", d => d.y)
-  .attr("height", 10)
-  .attr("width", 20)
-  .attr("fill", function (d) {
-    return getOptionCombinationClusterColor(d);
-  })
-  .on("mouseover", function (d) {
-    // toon een tooltip voor het gehoverde vak
-    tooltip.classed("active", true)
-    .text(d.OPO)
-    .style("left", (d.x + 20) + "px")
-    .style("top", (d.y - 12) + "px");
-  })
-  .on("mouseout", function (d) {
-    // verberg de tooltip voor het vak waarover gehoverd werd
-    tooltip.classed("active", false);
-  });
-
-  // bind de cirkels in de hypergraf aan de data
-  var course = hypergraph.selectAll("circle")
-  .data(data);
-
-  // construeer de cirkels in de hypergraf
-  course.enter()
-  .append("circle")
+  // pas de positie aan van de cirkels voor vakken
+  hypergraph.selectAll("circle")
+  .data(data)
   .attr("cx", d => d.x)
-  .attr("cy", d => d.y)
-  .attr("r", 10)
-  .classed("verplicht", function (d) {
-    for (var i = 0; i < options.length; i++) {
-      return d[options[i]] == 1;
-    }
-  })
-  .classed("keuze", function (d) {
-    for (var i = 0; i < options.length; i++) {
-      return d[options[i]] == 2;
-    }
-  })
-  .attr("fill", function (d) {
-    return getFillColor(d);
-  })
-  .attr("stroke", function (d) {
-    return colorOfCourse(d);
-  })
-  .on("mouseover", function (d) {
-    // toon een tooltip voor het gehoverde vak
-    tooltip.classed("active", true)
-    .text(d.OPO)
-    .style("left", (d.x + 20) + "px")
-    .style("top", (d.y - 12) + "px");
-  })
-  .on("mouseout", function (d) {
-    // verberg de tooltip voor het vak waarover gehoverd werd
-    tooltip.classed("active", false);
-  })
-  .on("click", function (d) {
-    var thisCourse = d3.select(this);
+  .attr("cy", d => d.y);
 
-    // verklein de straal van het actieve vak
-    var activeCourse = d3.select("circle.active");
-    activeCourse.attr("r", function () {
-      return activeCourse.attr("r") / 1.75;
-    });
-
-    // zet het actieve vak op non-actief
-    d3.selectAll("circle").classed("active", false);
-
-    // verwijder alle inhoud in de infobox
-    infobox.select("p").remove();
-    infobox.select("h3").remove();
-    infobox.select(".points").remove();
-    infobox.select(".checkbox-interested").remove();
-    infobox.select(".checkbox-chosen-master1").remove();
-    infobox.select(".checkbox-chosen-master2").remove();
-
-    // activeer het geselecteerde vak
-    thisCourse.classed("active", true)
-    .attr("r", function () {
-      return thisCourse.attr("r") * 1.75;
-    });
-
-    // geef de klasse .prerequisite alleen aan de prerequisites van het actieve vak
-    d3.selectAll("circle")
-    .classed("prerequisite", function (dcircle) {
-      var id = dcircle.ID;
-      return d["Gelijktijdig volgen"].split(" ").includes(id);
-    });
-
-    // maak nieuwe inhoud aan in de infobox:
-    // 1) titel van het actieve vak
-    infobox.append("h3").text(d.OPO);
-
-    // 2) studiepunten van het actieve vak
-    infobox.append("div")
-    .attr("class", "points")
-    .text(d.Studiepunten + " SP");
-
-    // 3) checkbox "Niet geïnteresseerd" voor het actieve vak
-    var checkboxInterested = infobox.append("label")
-    .text("Niet geïnteresseerd in dit vak.");
-    checkboxInterested.attr("class", "checkbox checkbox-interested")
-    .append("input")
-    .attr("type", "checkbox")
-    .property("checked", thisCourse.classed("not-interested"))
-    .property("checked", thisCourse.classed("is-not-interested"));
-    checkboxInterested.append("span")
-    .attr("class", "checkmark");
-
-    // 4) checkbox "Kies in 1ste Master" voor het actieve vak
-    var checkboxChoose1 = infobox.append("label")
-    .text("Kies dit vak in 1ste Master.");
-    checkboxChoose1.attr("class", "checkbox checkbox-chosen-master1")
-    .append("input")
-    .attr("type", "checkbox")
-    .property("checked", thisCourse.classed("chosen-master1"));
-    checkboxChoose1.append("span")
-    .attr("class", "checkmark");
-
-    // 5) checkbox "Kies in 2de Master" voor het actieve vak
-    var checkboxChoose2 = infobox.append("label")
-    .text("Kies dit vak in 2de Master.");
-    checkboxChoose2.attr("class", "checkbox checkbox-chosen-master2")
-    .append("input")
-    .attr("type", "checkbox")
-    .property("checked", thisCourse.classed("chosen-master2"));
-    checkboxChoose2.append("span")
-    .attr("class", "checkmark");
-  });
-
-  // deze functie wordt opgeroepen in elke iteratiestap van de simulatie
-  function ticked() {
-    // pas de positie voor de eindpunten van links aan
-    hypergraph.selectAll("line")
-    .data(links)
-    .attr("x1", d => d.source.x)
-    .attr("y1", d => d.source.y)
-    .attr("x2", d => d.target.x)
-    .attr("y2", d => d.target.y);
-
-    // pas de positie aan van de cirkels voor vakken
-    hypergraph.selectAll("circle")
-    .data(data)
-    .attr("cx", d => d.x)
-    .attr("cy", d => d.y);
-
-    // pas de positie aan van de rechthoeken voor overlapnodes
-    hypergraph.selectAll("rect")
-    .data(extraNodes)
-    .attr("x", d => d.x - 5)
-    .attr("y", d => d.y - 5);
-  }
+  // pas de positie aan van de rechthoeken
+  hypergraph.selectAll("rect")
+  .data(extraNodes)
+  .attr("x", d => d.x - 5)
+  .attr("y", d => d.y - 5);
+}
 });
 
 // waarde van de switch die vakken al dan niet verbergt waarin de gebruiker niet geïnteresseerd is
