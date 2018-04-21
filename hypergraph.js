@@ -11,8 +11,8 @@ var options = [];
 var optionNodes = [];
 var overlapNodes = [];
 var links = [];
-var distanceOptionNodeRootNode = 30;
-var distanceOptionNodeOverlapNode = 30;
+var distanceOptionNodeRootNode = 40;
+var distanceOptionNodeOverlapNode = 20;
 var distanceClusterNodeCourse = 15;
 
 // afmetingen van de svg
@@ -81,7 +81,7 @@ d3.csv("cw-4.csv").then(function (data) {
     return color;
   }
 
-  function getOptionCombinationClusterColor(d) {
+  function getOptionColour(d) {
     //default kul-blauw
     var color = getFillColor(d);
     var optionIndex = options.indexOf(d.ID);
@@ -153,23 +153,53 @@ d3.csv("cw-4.csv").then(function (data) {
   }));
   optionNodes.push(rootNode);
 
-  var extraNodes = optionNodes.concat(overlapNodes);
-  var nodes = data.concat(extraNodes);
+  var clusterNodes = optionNodes.concat(overlapNodes);
+  var nodes = data.concat(clusterNodes);
 
   // force simulation bepaalt de positie van alle nodes
-  var simulation = d3.forceSimulation(nodes)
+  d3.forceSimulation(nodes)
   // trek alle nodes naar het centrum van de svg
-  .force("center", d3.forceCenter(svgWidth / 2, svgHeight / 2))
+  // .force("center", d3.forceCenter(svgWidth / 2, svgHeight / 2))
   // laat alle nodes elkaar afstoten
-  .force("charge", d3.forceManyBody())
+  .force("charge", d3.forceManyBody().strength(-40).distanceMin(15).distanceMax(500))
   // voorkom dat nodes overlappen
   .force("collide", d3.forceCollide(15))
   // duw verbonden elementen uit elkaar
-  .force("link", d3.forceLink(links).distance(d => d.dist).strength(2))
-  .force("x", d3.forceX(svgWidth / 2).strength(.08))
-  .force("y", d3.forceY(svgHeight / 2).strength(.08))
+  .force("link", d3.forceLink(links).strength(1))
+  // .force("link", d3.forceLink(links).distance(d => d.dist).strength(1))
+  // .force("x", d3.forceX(svgWidth / 2).strength(.08))
+  // .force("y", d3.forceY(svgHeight / 2).strength(.08))
   // roep ticked() op in elke iteratiestap van de simulatie
   .on("tick", ticked);
+
+  d3.forceSimulation(optionNodes)
+  // laat option nodes elkaar sterk afstoten
+  .force("charge", d3.forceManyBody().strength(-1000).distanceMin(50).distanceMax(400))
+  // laat option nodes zich in een cirkel rond het middelpunt van de hypergraf verdelen
+  .force("radial", d3.forceRadial(50, svgWidth / 2, svgHeight / 2).strength(1));
+
+  // deze functie wordt opgeroepen in elke iteratiestap van de simulatie
+  function ticked() {
+    // pas de positie voor de eindpunten van links aan
+    hypergraph.selectAll("line")
+    .data(links)
+    .attr("x1", d => d.source.x)
+    .attr("y1", d => d.source.y)
+    .attr("x2", d => d.target.x)
+    .attr("y2", d => d.target.y);
+
+    // pas de positie aan van de cirkels voor vakken
+    hypergraph.selectAll("circle")
+    .data(data)
+    .attr("cx", d => d.x)
+    .attr("cy", d => d.y);
+
+    // pas de positie aan van de rechthoeken
+    hypergraph.selectAll("rect")
+    .data(clusterNodes)
+    .attr("x", d => d.x - 5)
+    .attr("y", d => d.y - 5);
+  }
 
   // bind de lijnen aan de links
   var lines = hypergraph.selectAll("line")
@@ -184,17 +214,15 @@ d3.csv("cw-4.csv").then(function (data) {
   .attr("y2", d => d.target.y)
   .classed("link", true);
 
-  // bind rechthoeken aan clusterdata
-  var optionClusters = hypergraph.selectAll("optionNode")
-  .data(optionNodes);
-
-  optionClusters.enter()
-  .append("rect")
+  // maak vierkanten voor de option nodes in de hypergraf
+  hypergraph.selectAll(".optionNode")
+  .data(optionNodes)
+  .enter().append("rect")
   .classed("optionNode", true)
   .attr("x", d => d.x)
   .attr("y", d => d.y)
-  .attr("width", 10)
-  .attr("height", 10)
+  .attr("width", 15)
+  .attr("height", 15)
   .attr("fill", function (d) {
     return getOptionColor(d);
   })
@@ -210,19 +238,17 @@ d3.csv("cw-4.csv").then(function (data) {
     tooltip.classed("active", false);
   });
 
-  // bind rechthoeken aan clusterdata
-  var optionCombinationClusters = hypergraph.selectAll("optionCombinationNode")
-  .data(overlapNodes);
-
-  optionCombinationClusters.enter()
-  .append("rect")
-  .classed("optionNode", true)
+  // maak vierkanten voor de overlap nodes in de hypergraf
+  hypergraph.selectAll(".overlapNode")
+  .data(overlapNodes)
+  .enter().append("rect")
+  .classed("overlapNode", true)
   .attr("x", d => d.x)
   .attr("y", d => d.y)
   .attr("height", 10)
   .attr("width", 10)
   .attr("fill", function (d) {
-    return getOptionCombinationClusterColor(d);
+    return getOptionColour(d);
   })
   .on("mouseover", function (d) {
     // toon een tooltip voor het gehoverde vak
@@ -346,29 +372,6 @@ d3.csv("cw-4.csv").then(function (data) {
     checkboxChoose2.append("span")
     .attr("class", "checkmark");
   });
-
-  // deze functie wordt opgeroepen in elke iteratiestap van de simulatie
-  function ticked() {
-    // pas de positie voor de eindpunten van links aan
-    hypergraph.selectAll("line")
-    .data(links)
-    .attr("x1", d => d.source.x)
-    .attr("y1", d => d.source.y)
-    .attr("x2", d => d.target.x)
-    .attr("y2", d => d.target.y);
-
-    // pas de positie aan van de cirkels voor vakken
-    hypergraph.selectAll("circle")
-    .data(data)
-    .attr("cx", d => d.x)
-    .attr("cy", d => d.y);
-
-    // pas de positie aan van de rechthoeken
-    hypergraph.selectAll("rect")
-    .data(extraNodes)
-    .attr("x", d => d.x - 5)
-    .attr("y", d => d.y - 5);
-  }
 });
 
 // waarde van de switch die vakken al dan niet verbergt waarin de gebruiker niet geïnteresseerd is
