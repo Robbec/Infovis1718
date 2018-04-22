@@ -55,7 +55,7 @@ d3.csv("cw-5.csv").then(function (data) {
       var color = getFillColor(d);
       //plichtvakken krijgen kleur van optie
       for (i = 0; i < options.length && color == kulBlue; i++) {
-        if (d[options[i]] == 1) {
+        if (d[options[i]] > 0) {
           color = optionColors[options[i]];
         }
       }
@@ -71,17 +71,6 @@ d3.csv("cw-5.csv").then(function (data) {
     }
 
     // kleur voor opties
-    function getOptionColor(d) {
-      //default kul-blauw
-      var color = getFillColor(d);
-      var optionIndex = options.indexOf(d.ID);
-      //plichtvakken krijgen kleur van optie
-      if (optionIndex != -1) {
-        color = optionColors[d.ID];
-      }
-      return color;
-    }
-
     function getOptionColour(d) {
       //default kul-blauw
       var color = getFillColor(d);
@@ -225,7 +214,7 @@ d3.csv("cw-5.csv").then(function (data) {
     .attr("width", 15)
     .attr("height", 15)
     .attr("fill", function (d) {
-      return getOptionColor(d);
+      return getOptionColour(d);
     })
     .on("mouseover", function (d) {
       // toon een tooltip voor het gehoverde vak
@@ -318,7 +307,7 @@ d3.csv("cw-5.csv").then(function (data) {
       }
     })
     .attr("fill", function (d) {
-      return getFillColor(d);
+      return colorOfCourse(d);
     })
     .attr("stroke", function (d) {
       return colorOfCourse(d);
@@ -343,8 +332,17 @@ d3.csv("cw-5.csv").then(function (data) {
         return activeCourse.attr("r") / 1.75;
       });
 
-      // zet het actieve vak op non-actief
-      d3.selectAll("circle").classed("active", false);
+      var alreadyActive = thisCourse.classed("active");
+      hypergraph.selectAll("circle").classed("active", false);
+      thisCourse.classed("active", !alreadyActive);
+      d3.selectAll("circle").classed("non-active", function (d, i) {
+        return !d3.select(this).classed("active");
+      });
+
+      // activeer het geselecteerde vak
+      thisCourse.attr("r", function () {
+        return thisCourse.attr("r") * 1.75;
+      });
 
       // verwijder alle inhoud in de infobox
       infobox.select("p").remove();
@@ -353,12 +351,6 @@ d3.csv("cw-5.csv").then(function (data) {
       infobox.select(".checkbox-interested").remove();
       infobox.select(".checkbox-chosen-master1").remove();
       infobox.select(".checkbox-chosen-master2").remove();
-
-      // activeer het geselecteerde vak
-      thisCourse.classed("active", true)
-      .attr("r", function () {
-        return thisCourse.attr("r") * 1.75;
-      });
 
       // geef de klasse .prerequisite alleen aan de prerequisites van het actieve vak
       d3.selectAll("circle")
