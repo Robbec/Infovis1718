@@ -140,7 +140,7 @@ d3.csv("cw-5.csv").then(function (data) {
     var nodes = data.concat(clusterNodes);
 
     // force simulation bepaalt de positie van alle nodes
-    d3.forceSimulation(nodes)
+    var simulationNodes = d3.forceSimulation(nodes)
     // trek alle nodes naar het centrum van de svg
     // .force("center", d3.forceCenter(svgWidth / 2, svgHeight / 2))
     // laat alle nodes elkaar afstoten
@@ -155,7 +155,7 @@ d3.csv("cw-5.csv").then(function (data) {
     // roep ticked() op in elke iteratiestap van de simulatie
     .on("tick", ticked);
 
-    d3.forceSimulation(optionNodes)
+    var simulationOptionNodes = d3.forceSimulation(optionNodes)
     // laat option nodes elkaar sterk afstoten
     .force("charge", d3.forceManyBody().strength(-1000).distanceMin(50).distanceMax(400))
     // laat option nodes zich in een cirkel rond het middelpunt van de hypergraf verdelen
@@ -359,15 +359,12 @@ d3.csv("cw-5.csv").then(function (data) {
         return false;
       });
 
-      // set van OPO codes uit ects van vakken die overlappen
-      var scheduleOverlappingCourses = getScheduleOverlappingCourses(newActiveCourse.datum()["ID"]);
-
       // geef de klasse .overlap alleen aan vakken die overlappen met het actieve vak
       d3.selectAll("circle")
       .classed("overlap", function(dcircle) {
         var id = dcircle.ID;
         if (!newActiveCourse.empty()) {
-          return scheduleOverlappingCourses.has(id);
+          return getScheduleOverlappingCourses(newActiveCourse.datum()["ID"]).has(id);
         }
         return false;
       });
@@ -428,10 +425,12 @@ d3.csv("cw-5.csv").then(function (data) {
   });
 });
 
+// bound the given x coordinate to the visible part of the hypergraph
 function boxBoundedX(x) {
   return Math.max(circleRadius, Math.min(svgWidth - circleRadius, x));
 }
 
+// bound the given y coordinate to the visible part of the hypergraph
 function boxBoundedY(y) {
   return Math.max(circleRadius, Math.min(svgHeight - circleRadius, y));
 }
