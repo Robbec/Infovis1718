@@ -359,12 +359,14 @@ d3.csv("cw-5.csv").then(function (data) {
         return false;
       });
 
+      var scheduleOverlappingCourses = getScheduleOverlappingCourses(newActiveCourse.datum()["ID"]);
+
       // geef de klasse .overlap alleen aan vakken die overlappen met het actieve vak
       d3.selectAll("circle")
       .classed("overlap", function(dcircle) {
         var id = dcircle.ID;
         if (!newActiveCourse.empty()) {
-          return getScheduleOverlappingCourses(newActiveCourse.datum()["ID"]).has(id);
+          return scheduleOverlappingCourses.has(id);
         }
         return false;
       });
