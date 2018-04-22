@@ -359,15 +359,12 @@ d3.csv("cw-5.csv").then(function (data) {
         return false;
       });
 
-      // set van OPO codes uit ects van vakken die overlappen
-      var scheduleOverlappingCourses = getScheduleOverlappingCourses(newActiveCourse.datum()["ID"]);
-
       // geef de klasse .overlap alleen aan vakken die overlappen met het actieve vak
       d3.selectAll("circle")
       .classed("overlap", function(dcircle) {
         var id = dcircle.ID;
         if (!newActiveCourse.empty()) {
-          return scheduleOverlappingCourses.has(id);
+          return getScheduleOverlappingCourses(newActiveCourse.datum()["ID"]).has(id);
         }
         return false;
       });
