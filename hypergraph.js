@@ -14,6 +14,7 @@ var links = [];
 var distanceOptionNodeRootNode = 40;
 var distanceOptionNodeOverlapNode = 20;
 var distanceClusterNodeCourse = 15;
+var circleRadius = 10;
 
 // afmetingen van de svg
 var svgWidth = 500;
@@ -59,14 +60,6 @@ d3.csv("cw-5.csv").then(function (data) {
           color = optionColors[options[i]];
         }
       }
-      //enkel om te testen
-      // i = 0;
-      // while (i < options.length && color == kulBlue) {
-      //   if (d[options[i]] == 2) {
-      //     color = optionColors[options[i]];
-      //   }
-      //   i++
-      // }
       return color;
     }
 
@@ -181,14 +174,14 @@ d3.csv("cw-5.csv").then(function (data) {
       // pas de positie aan van de cirkels voor vakken
       hypergraph.selectAll("circle")
       .data(data)
-      .attr("cx", d => d.x)
-      .attr("cy", d => d.y);
+      .attr("cx", d => boxBoundedX(d.x))
+      .attr("cy", d => boxBoundedY(d.y));
 
       // pas de positie aan van de rechthoeken
       hypergraph.selectAll("rect")
       .data(clusterNodes)
-      .attr("x", d => d.x - 5)
-      .attr("y", d => d.y - 5);
+      .attr("x", d => boxBoundedX(d.x - 5))
+      .attr("y", d => boxBoundedY(d.y - 5));
     }
 
     // bind de lijnen aan de links
@@ -295,7 +288,7 @@ d3.csv("cw-5.csv").then(function (data) {
     .append("circle")
     .attr("cx", d => d.x)
     .attr("cy", d => d.y)
-    .attr("r", 10)
+    .attr("r", circleRadius)
     .classed("verplicht", function (d) {
       for (var i = 0; i < options.length; i++) {
         return d[options[i]] == 1;
@@ -428,6 +421,14 @@ d3.csv("cw-5.csv").then(function (data) {
     });
   });
 });
+
+function boxBoundedX(x) {
+  return Math.max(circleRadius, Math.min(svgWidth - circleRadius, x));
+}
+
+function boxBoundedY(y) {
+  return Math.max(circleRadius, Math.min(svgHeight - circleRadius, y));
+}
 
 // waarde van de switch die vakken al dan niet verbergt waarin de gebruiker niet geïnteresseerd is
 var switchInterested = right.select(".switch-interested").select("input");
