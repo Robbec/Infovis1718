@@ -289,15 +289,21 @@ d3.csv("cw-5.csv").then(function (data) {
     .attr("cx", d => d.x)
     .attr("cy", d => d.y)
     .attr("r", circleRadius)
-    .classed("verplicht", function (d) {
+    .classed("compulsory", function (d) {
       for (var i = 0; i < options.length; i++) {
-        return d[options[i]] == 1;
+        if (d[options[i]] == 1) {
+          return true;
+        }
       }
+      return false;
     })
-    .classed("keuze", function (d) {
+    .classed("optional", function (d) {
       for (var i = 0; i < options.length; i++) {
-        return d[options[i]] == 2;
+        if (d[options[i]] == 2) {
+          return true;
+        }
       }
+      return false;
     })
     .attr("fill", function (d) {
       return colorOfCourse(d);
