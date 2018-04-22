@@ -122,6 +122,10 @@ circle {
   padding: 2rem;
 }
 
+.hidden {
+  display: none;
+}
+
 .points {
   color: #78909c;
   font-size: 0.875rem;
