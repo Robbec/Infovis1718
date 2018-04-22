@@ -55,7 +55,7 @@ d3.csv("cw-5.csv").then(function (data) {
       var color = getFillColor(d);
       //plichtvakken krijgen kleur van optie
       for (i = 0; i < options.length && color == kulBlue; i++) {
-        if (d[options[i]] == 1) {
+        if (d[options[i]] > 0) {
           color = optionColors[options[i]];
         }
       }
@@ -71,17 +71,6 @@ d3.csv("cw-5.csv").then(function (data) {
     }
 
     // kleur voor opties
-    function getOptionColor(d) {
-      //default kul-blauw
-      var color = getFillColor(d);
-      var optionIndex = options.indexOf(d.ID);
-      //plichtvakken krijgen kleur van optie
-      if (optionIndex != -1) {
-        color = optionColors[d.ID];
-      }
-      return color;
-    }
-
     function getOptionColour(d) {
       //default kul-blauw
       var color = getFillColor(d);
@@ -219,13 +208,13 @@ d3.csv("cw-5.csv").then(function (data) {
     hypergraph.selectAll(".optionNode")
     .data(optionNodes)
     .enter().append("rect")
-    .classed("optionNode", true)
+    .classed("option-node", true)
     .attr("x", d => d.x)
     .attr("y", d => d.y)
     .attr("width", 15)
     .attr("height", 15)
     .attr("fill", function (d) {
-      return getOptionColor(d);
+      return getOptionColour(d);
     })
     .on("mouseover", function (d) {
       // toon een tooltip voor het gehoverde vak
@@ -243,7 +232,7 @@ d3.csv("cw-5.csv").then(function (data) {
     hypergraph.selectAll(".overlapNode")
     .data(overlapNodes)
     .enter().append("rect")
-    .classed("overlapNode", true)
+    .classed("overlap-node", true)
     .attr("x", d => d.x)
     .attr("y", d => d.y)
     .attr("height", 10)
@@ -318,7 +307,7 @@ d3.csv("cw-5.csv").then(function (data) {
       }
     })
     .attr("fill", function (d) {
-      return getFillColor(d);
+      return colorOfCourse(d);
     })
     .attr("stroke", function (d) {
       return colorOfCourse(d);
@@ -335,87 +324,107 @@ d3.csv("cw-5.csv").then(function (data) {
       tooltip.classed("active", false);
     })
     .on("click", function (d) {
-      var thisCourse = d3.select(this);
-
-      // verklein de straal van het actieve vak
-      var activeCourse = d3.select("circle.active");
-      activeCourse.attr("r", function () {
-        return activeCourse.attr("r") / 1.75;
+      // verklein de straal van het vorige actieve vak
+      var oldActiveCourse = d3.select("circle.active");
+      oldActiveCourse.attr("r", function () {
+        return oldActiveCourse.attr("r") / 1.75;
       });
 
-      // zet het actieve vak op non-actief
-      d3.selectAll("circle").classed("active", false);
+      // geef de klasse .active aan het aangeklikte vak als dat vak nog niet actief was en vice versa
+      var clickedCourse = d3.select(this);
+      var alreadyActive = clickedCourse.classed("active");
+      clickedCourse.classed("active", !alreadyActive);
 
-      // verwijder alle inhoud in de infobox
-      infobox.select("p").remove();
-      infobox.select("h3").remove();
-      infobox.select(".points").remove();
-      infobox.select(".checkbox-interested").remove();
-      infobox.select(".checkbox-chosen-master1").remove();
-      infobox.select(".checkbox-chosen-master2").remove();
+      // verwijder de klasse .active voor het vorige actieve vak
+      oldActiveCourse.classed("active", false);
 
-      // activeer het geselecteerde vak
-      thisCourse.classed("active", true)
-      .attr("r", function () {
-        return thisCourse.attr("r") * 1.75;
+      // geef de klasse .non-active aan alle niet-actieve vakken als het aangeklikte vak nog niet actief was; verwijder anders de klasse .non-active
+      d3.selectAll("circle").classed("non-active", function (d, i) {
+        return !d3.select(this).classed("active") && !alreadyActive;
+      });
+
+      // vergroot de straal van het nieuwe actieve vak
+      var newActiveCourse = d3.select("circle.active");
+      newActiveCourse.attr("r", function () {
+        return d3.select(this).attr("r") * 1.75;
       });
 
       // geef de klasse .prerequisite alleen aan de prerequisites van het actieve vak
       d3.selectAll("circle")
       .classed("prerequisite", function (dcircle) {
         var id = dcircle.ID;
-        return d["Gelijktijdig volgen"].split(" ").includes(id);
+        if (!newActiveCourse.empty()) {
+          var prerequisites = (newActiveCourse.datum()["Gelijktijdig volgen"]);
+          return prerequisites.split(" ").includes(id);
+        }
+        return false;
       });
 
       // set van OPO codes uit ects van vakken die overlappen
-      var scheduleOverlappingCourseCodes = getScheduleOverlappingCourses(d["ID"]);
+      var scheduleOverlappingCourses = getScheduleOverlappingCourses(newActiveCourse.datum()["ID"]);
 
       // geef de klasse .overlap alleen aan vakken die overlappen met het actieve vak
       d3.selectAll("circle")
       .classed("overlap", function(dcircle) {
         var id = dcircle.ID;
-        return scheduleOverlappingCourseCodes.has(id);
+        if (!newActiveCourse.empty()) {
+          return scheduleOverlappingCourses.has(id);
+        }
+        return false;
       });
 
-      // maak nieuwe inhoud aan in de infobox:
-      // 1) titel van het actieve vak
-      infobox.append("h3").text(d.OPO);
+      // verberg de hulptekst in de infobox als en slechts als er geen actief vak is
+      infobox.select("p").classed("hidden", !newActiveCourse.empty());
 
-      // 2) studiepunten van het actieve vak
-      infobox.append("div")
-      .attr("class", "points")
-      .text(d.Studiepunten + " SP");
+      // verwijder alle vakgerelateerde inhoud in de infobox
+      infobox.select("h3").remove();
+      infobox.select(".points").remove();
+      infobox.select(".checkbox-interested").remove();
+      infobox.select(".checkbox-chosen-master1").remove();
+      infobox.select(".checkbox-chosen-master2").remove();
 
-      // 3) checkbox "Niet geïnteresseerd" voor het actieve vak
-      var checkboxInterested = infobox.append("label")
-      .text("Niet geïnteresseerd in dit vak.");
-      checkboxInterested.attr("class", "checkbox checkbox-interested")
-      .append("input")
-      .attr("type", "checkbox")
-      .property("checked", thisCourse.classed("not-interested"))
-      .property("checked", thisCourse.classed("is-not-interested"));
-      checkboxInterested.append("span")
-      .attr("class", "checkmark");
+      if (!newActiveCourse.empty()) {
+        // maak nieuwe inhoud aan in de infobox:
+        var activeCourseData = newActiveCourse.datum();
+        // 1) titel van het actieve vak
+        infobox.append("h3").text(activeCourseData.OPO);
 
-      // 4) checkbox "Kies in 1ste Master" voor het actieve vak
-      var checkboxChoose1 = infobox.append("label")
-      .text("Kies dit vak in 1ste Master.");
-      checkboxChoose1.attr("class", "checkbox checkbox-chosen-master1")
-      .append("input")
-      .attr("type", "checkbox")
-      .property("checked", thisCourse.classed("chosen-master1"));
-      checkboxChoose1.append("span")
-      .attr("class", "checkmark");
+        // 2) studiepunten van het actieve vak
+        infobox.append("div")
+        .attr("class", "points")
+        .text(activeCourseData.Studiepunten + " SP");
 
-      // 5) checkbox "Kies in 2de Master" voor het actieve vak
-      var checkboxChoose2 = infobox.append("label")
-      .text("Kies dit vak in 2de Master.");
-      checkboxChoose2.attr("class", "checkbox checkbox-chosen-master2")
-      .append("input")
-      .attr("type", "checkbox")
-      .property("checked", thisCourse.classed("chosen-master2"));
-      checkboxChoose2.append("span")
-      .attr("class", "checkmark");
+        // 3) checkbox "Niet geïnteresseerd" voor het actieve vak
+        var checkboxInterested = infobox.append("label")
+        .text("Niet geïnteresseerd in dit vak.");
+        checkboxInterested.attr("class", "checkbox checkbox-interested")
+        .append("input")
+        .attr("type", "checkbox")
+        .property("checked", newActiveCourse.classed("not-interested"))
+        .property("checked", newActiveCourse.classed("is-not-interested"));
+        checkboxInterested.append("span")
+        .attr("class", "checkmark");
+
+        // 4) checkbox "Kies in 1ste Master" voor het actieve vak
+        var checkboxChoose1 = infobox.append("label")
+        .text("Kies dit vak in 1ste Master.");
+        checkboxChoose1.attr("class", "checkbox checkbox-chosen-master1")
+        .append("input")
+        .attr("type", "checkbox")
+        .property("checked", newActiveCourse.classed("chosen-master1"));
+        checkboxChoose1.append("span")
+        .attr("class", "checkmark");
+
+        // 5) checkbox "Kies in 2de Master" voor het actieve vak
+        var checkboxChoose2 = infobox.append("label")
+        .text("Kies dit vak in 2de Master.");
+        checkboxChoose2.attr("class", "checkbox checkbox-chosen-master2")
+        .append("input")
+        .attr("type", "checkbox")
+        .property("checked", newActiveCourse.classed("chosen-master2"));
+        checkboxChoose2.append("span")
+        .attr("class", "checkmark");
+      }
     });
   });
 });

@@ -36,6 +36,10 @@ body {
   position: relative;
 }
 
+.overlap-node {
+  fill: #cfd8dc;
+}
+
 .course {
   position: relative;
 }
@@ -52,20 +56,24 @@ rect {
 
 circle {
   cursor: pointer;
-  /* fill-opacity: 0.6; */
-  opacity: 0.6;
+  fill-opacity: 1;
+  opacity: 0.5;
   stroke-width: 4;
 }
 
+.non-active {
+  opacity: 0.25;
+}
+
 .active,
-.prerequisite {
+.prerequisite,
+.overlap {
   opacity: 1;
   transition: 0.3s linear;
 }
 
 .overlap {
   fill: #000000;
-  transition: 0.3s linear;
 }
 
 .not-interested {
@@ -73,7 +81,7 @@ circle {
 }
 
 .verplicht {
-  fill-opacity: 1;
+  fill-opacity: 0.6;
 }
 
 .chosen-master1,
@@ -82,7 +90,7 @@ circle {
   stroke: url(#diagonalHatch);
 }
 
-.link{
+.link {
   stroke: #cfd8dc;
   stroke-width: 1;
 }
@@ -112,6 +120,10 @@ circle {
   flex: 1 0 auto;
   flex-flow: column;
   padding: 2rem;
+}
+
+.hidden {
+  display: none;
 }
 
 .points {
