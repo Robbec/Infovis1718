@@ -265,10 +265,10 @@ d3.csv("cw-5.csv").then(function (data) {
 
     // code: code uit ects-fiche
     // geeft set van overlappende vakken terug
-    function getOverlappingCourses(code) {
+    function getScheduleOverlappingCourses(code) {
       // filter alle reservaties horende bij de code
       var codeReservations = scheduleData.filter(reservation => reservation.Code == code);
-      overlappingCourseCodes = new Set();
+      scheduleOverlappingCourseCodes = new Set();
       // voor elke reservatie horende bij de code
       codeReservations.forEach(function(codeReservation) {
         // filter de overlappende reservaties
@@ -291,10 +291,10 @@ d3.csv("cw-5.csv").then(function (data) {
         // voor elke overlappende reservatie
         overlappingReservations.forEach(function(overlappingReservation) {
           // voeg zijn code toe aan de set
-          overlappingCourseCodes.add(overlappingReservation.Code);
+          scheduleOverlappingCourseCodes.add(overlappingReservation.Code);
         })
       })
-      return(overlappingCourseCodes);
+      return(scheduleOverlappingCourseCodes);
     }
 
     // bind de cirkels in de hypergraf aan de data
@@ -367,11 +367,14 @@ d3.csv("cw-5.csv").then(function (data) {
         return d["Gelijktijdig volgen"].split(" ").includes(id);
       });
 
+      // set van OPO codes uit ects van vakken die overlappen
+      var scheduleOverlappingCourseCodes = getScheduleOverlappingCourses(d["ID"]);
+
       // geef de klasse .overlap alleen aan vakken die overlappen met het actieve vak
       d3.selectAll("circle")
       .classed("overlap", function(dcircle) {
         var id = dcircle.ID;
-        return getOverlappingCourses(d["ID"]).has(id);
+        return scheduleOverlappingCourseCodes.has(id);
       });
 
       // maak nieuwe inhoud aan in de infobox:
