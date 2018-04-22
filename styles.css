@@ -36,6 +36,10 @@ body {
   position: relative;
 }
 
+.overlap-node {
+  fill: #cfd8dc;
+}
+
 .course {
   position: relative;
 }
