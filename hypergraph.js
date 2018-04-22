@@ -198,10 +198,11 @@ d3.csv("cw-5.csv").then(function (data) {
     .classed("link", true);
 
     // maak vierkanten voor de option nodes in de hypergraf
-    hypergraph.selectAll(".optionNode")
+    hypergraph.selectAll(".option-node")
     .data(optionNodes)
     .enter().append("rect")
     .classed("option-node", true)
+    .classed("cluster-node", true)
     .attr("x", d => d.x)
     .attr("y", d => d.y)
     .attr("width", 15)
@@ -222,10 +223,11 @@ d3.csv("cw-5.csv").then(function (data) {
     });
 
     // maak vierkanten voor de overlap nodes in de hypergraf
-    hypergraph.selectAll(".overlapNode")
+    hypergraph.selectAll(".overlap-node")
     .data(overlapNodes)
     .enter().append("rect")
     .classed("overlap-node", true)
+    .classed("cluster-node", true)
     .attr("x", d => d.x)
     .attr("y", d => d.y)
     .attr("height", 10)
@@ -359,11 +361,18 @@ d3.csv("cw-5.csv").then(function (data) {
         return false;
       });
 
-      var scheduleOverlappingCourses = getScheduleOverlappingCourses(newActiveCourse.datum()["ID"]);
+      // geef de klasse .non-active aan alle cluster nodes als en slechts als er een vak actief is
+      d3.selectAll(".cluster-node")
+      .classed("non-active", !newActiveCourse.empty());
 
-      // geef de klasse .overlap alleen aan vakken die overlappen met het actieve vak
+      // sla alle vakken op die overlappen met het actieve vak
+      if (!newActiveCourse.empty()) {
+        var scheduleOverlappingCourses = getScheduleOverlappingCourses(newActiveCourse.datum()["ID"]);
+      }
+
+      // geef de klasse .schedule-overlap alleen aan vakken die overlappen met het actieve vak
       d3.selectAll("circle")
-      .classed("overlap", function(dcircle) {
+      .classed("schedule-overlap", function(dcircle) {
         var id = dcircle.ID;
         if (!newActiveCourse.empty()) {
           return scheduleOverlappingCourses.has(id);
