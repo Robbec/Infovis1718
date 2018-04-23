@@ -15,6 +15,9 @@ var distanceOptionNodeRootNode = 40;
 var distanceOptionNodeOverlapNode = 20;
 var distanceClusterNodeCourse = 15;
 var circleRadius = 10;
+var transition = d3.transition()
+    .duration(750)
+    .ease(d3.easeLinear);
 
 // afmetingen van de svg
 var svgWidth = 500;
@@ -327,7 +330,7 @@ d3.csv("cw-5.csv").then(function (data) {
     .on("click", function (d) {
       // verklein de straal van het vorige actieve vak
       var oldActiveCourse = d3.select("circle.active");
-      oldActiveCourse.attr("r", function () {
+      oldActiveCourse.transition(transition).attr("r", function () {
         return oldActiveCourse.attr("r") / 1.75;
       });
 
@@ -346,7 +349,7 @@ d3.csv("cw-5.csv").then(function (data) {
 
       // vergroot de straal van het nieuwe actieve vak
       var newActiveCourse = d3.select("circle.active");
-      newActiveCourse.attr("r", function () {
+      newActiveCourse.transition(transition).attr("r", function () {
         return d3.select(this).attr("r") * 1.75;
       });
 
