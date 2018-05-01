@@ -81,6 +81,19 @@ d3.csv("cw-5.csv").then(function (data) {
     // maak voor elke optie een node
     options.forEach(o => optionNodes.push({ ID: o, OPO: o }));
 
+    // maak een root node voor de hypergraf
+    var rootNode = {ID: "Master", OPO: "Master"};
+    // fixeer de positie van de root node in het middelpunt van de hypergraf
+    rootNode.fx = svgWidth / 2;
+    rootNode.fy = svgHeight / 2;
+    // verbind de root node met alle option nodes
+    optionNodes.forEach(o => links.push({
+      source: rootNode,
+      target: o,
+      dist: distanceOptionNodeRootNode
+    }));
+    optionNodes.push(rootNode);
+
     // maak alle links voor de hypergraf
     data.forEach(d => {
       // vind de opties waartoe het vak behoort
@@ -101,43 +114,38 @@ d3.csv("cw-5.csv").then(function (data) {
       }
 
       // als het vak behoort tot meerdere opties, maak dan een link tussen het vak en de node voor de overlap
-      else if (courseOptions.length > 1) {
-        var overlapName = courseOptions.map(o => o.ID).toString();
-        var overlapNode = { ID: overlapName, OPO: overlapName };
-
-        // ga na of de overlap node al voorkomt in de lijst van alle overlap nodes; indien niet, sla hem daarin op
-        if (overlapNodes.filter(o => o.ID == overlapName).length == 0) {
-          // sla de overlap node op in de lijst van alle overlap nodes
-          overlapNodes.push(overlapNode);
-          // maak een link tussen de overlap node en alle gerelateerde opties
-          courseOptions.forEach(o => links.push({
-            "source": o,
-            "target": overlapNode,
-            "dist": distanceOptionNodeOverlapNode
-          }));
-        }
-
-        // verbind het vak met de overlap node
+      else if (courseOptions.length == 6) {
         links.push({
           "source": d,
-          "target": overlapNodes.filter(o => o.ID == overlapName)[0],
+          "target": rootNode,
           "dist": distanceClusterNodeCourse
         });
       }
-    });
+      else if (courseOptions.length > 1) {
+        // var overlapName = courseOptions.map(o => o.ID).toString();
+        // var overlapNode = { ID: overlapName, OPO: overlapName };
+        //
+        // // ga na of de overlap node al voorkomt in de lijst van alle overlap nodes; indien niet, sla hem daarin op
+        // if (overlapNodes.filter(o => o.ID == overlapName).length == 0) {
+        //   // sla de overlap node op in de lijst van alle overlap nodes
+        //   overlapNodes.push(overlapNode);
+        //   // maak een link tussen de overlap node en alle gerelateerde opties
+        //   courseOptions.forEach(o => links.push({
+        //     "source": o,
+        //     "target": overlapNode,
+        //     "dist": distanceOptionNodeOverlapNode
+        //   }));
+        // }
 
-    // maak een root node voor de hypergraf
-    var rootNode = {ID: "Master", OPO: "Master"};
-    // fixeer de positie van de root node in het middelpunt van de hypergraf
-    rootNode.fx = svgWidth / 2;
-    rootNode.fy = svgHeight / 2;
-    // verbind de root node met alle option nodes
-    optionNodes.forEach(o => links.push({
-      source: rootNode,
-      target: o,
-      dist: distanceOptionNodeRootNode
-    }));
-    optionNodes.push(rootNode);
+        // verbind het vak met de overlap node
+        courseOptions.forEach(o =>
+          links.push({
+            "source": d,
+            "target": o,
+            "dist": distanceClusterNodeCourse
+        }));
+      }
+    });
 
     var clusterNodes = optionNodes.concat(overlapNodes);
     var nodes = data.concat(clusterNodes);
@@ -151,7 +159,7 @@ d3.csv("cw-5.csv").then(function (data) {
     // voorkom dat nodes overlappen
     .force("collide", d3.forceCollide(15))
     // duw verbonden elementen uit elkaar
-    .force("link", d3.forceLink(links).strength(1))
+    .force("link", d3.forceLink(links))
     // .force("link", d3.forceLink(links).distance(d => d.dist).strength(1))
     // .force("x", d3.forceX(svgWidth / 2).strength(.08))
     // .force("y", d3.forceY(svgHeight / 2).strength(.08))
@@ -162,7 +170,7 @@ d3.csv("cw-5.csv").then(function (data) {
     // laat option nodes elkaar sterk afstoten
     .force("charge", d3.forceManyBody().strength(-1000).distanceMin(50).distanceMax(400))
     // laat option nodes zich in een cirkel rond het middelpunt van de hypergraf verdelen
-    .force("radial", d3.forceRadial(50, svgWidth / 2, svgHeight / 2).strength(1));
+    .force("radial", d3.forceRadial(75, svgWidth / 2, svgHeight / 2).strength(1));
 
     // deze functie wordt opgeroepen in elke iteratiestap van de simulatie
     function ticked() {

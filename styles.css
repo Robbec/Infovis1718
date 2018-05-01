@@ -50,13 +50,11 @@ body {
 
 rect {
   cursor: pointer;
-  opacity: 0.5;
 }
 
 circle {
   cursor: pointer;
   fill-opacity: 1;
-  opacity: 0.5;
   stroke-width: 5;
 }
 
