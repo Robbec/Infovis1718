@@ -40,7 +40,7 @@ d3.csv("cw-5.csv").then(function (data) {
     d3.csv("uniekeReserveringen.csv").then(function (scheduleData) {
       // namen van alle opties
       var columnNames = d3.keys(d3.values(data)[0]);
-      options = columnNames.slice(8, columnNames.length);
+      options = columnNames.slice(12, columnNames.length);
 
     // kleurenpalet aan opties koppelen
     // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=12
@@ -114,14 +114,15 @@ d3.csv("cw-5.csv").then(function (data) {
       }
 
       // als het vak behoort tot meerdere opties, maak dan een link tussen het vak en de node voor de overlap
-      else if (courseOptions.length == 6) {
-        links.push({
-          "source": d,
-          "target": rootNode,
-          "dist": distanceClusterNodeCourse
-        });
-      }
-      else if (courseOptions.length > 1) {
+      // else if (courseOptions.length == 6) {
+      //   links.push({
+      //     "source": d,
+      //     "target": rootNode,
+      //     "dist": distanceClusterNodeCourse
+      //   });
+      // }
+      else if (courseOptions.length > 1 && courseOptions.length < 6) {
+      // else if (courseOptions.length > 1) {
         // var overlapName = courseOptions.map(o => o.ID).toString();
         // var overlapNode = { ID: overlapName, OPO: overlapName };
         //
@@ -234,29 +235,29 @@ d3.csv("cw-5.csv").then(function (data) {
     });
 
     // maak vierkanten voor de overlap nodes in de hypergraf
-    hypergraph.selectAll(".overlap-node")
-    .data(overlapNodes)
-    .enter().append("rect")
-    .classed("overlap-node", true)
-    .classed("cluster-node", true)
-    .attr("x", d => d.x)
-    .attr("y", d => d.y)
-    .attr("height", 10)
-    .attr("width", 10)
-    .attr("fill", function (d) {
-      return getOptionColour(d);
-    })
-    .on("mouseover", function (d) {
-      // toon een tooltip voor het gehoverde vak
-      tooltip.classed("active", true)
-      .text(d.OPO)
-      .style("left", (d.x + 20) + "px")
-      .style("top", (d.y - 12) + "px");
-    })
-    .on("mouseout", function (d) {
-      // verberg de tooltip voor het vak waarover gehoverd werd
-      tooltip.classed("active", false);
-    });
+    // hypergraph.selectAll(".overlap-node")
+    // .data(overlapNodes)
+    // .enter().append("rect")
+    // .classed("overlap-node", true)
+    // .classed("cluster-node", true)
+    // .attr("x", d => d.x)
+    // .attr("y", d => d.y)
+    // .attr("height", 10)
+    // .attr("width", 10)
+    // .attr("fill", function (d) {
+    //   return getOptionColour(d);
+    // })
+    // .on("mouseover", function (d) {
+    //   // toon een tooltip voor het gehoverde vak
+    //   tooltip.classed("active", true)
+    //   .text(d.OPO)
+    //   .style("left", (d.x + 20) + "px")
+    //   .style("top", (d.y - 12) + "px");
+    // })
+    // .on("mouseout", function (d) {
+    //   // verberg de tooltip voor het vak waarover gehoverd werd
+    //   tooltip.classed("active", false);
+    // });
 
     // code: code uit ects-fiche
     // geeft set van overlappende vakken terug
