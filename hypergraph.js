@@ -228,29 +228,47 @@ d3.csv("cw-5.csv").then(function(data) {
         return getOptionColour(d);
       })
       .on("mouseover", function(d) {
-        // toon een tooltip voor het gehoverde vak
+        // toon een tooltip voor de gehoverde option node
         tooltip.classed("active", true)
           .text(d.OPO)
           .style("left", (d.x + 20) + "px")
           .style("top", (d.y - 12) + "px");
 
-        // zet alle vakken die niet verbonden zijn met de optie op nonactief
-        var disconnectedCourses = d3.selectAll("circle")
-          .filter(c => c[d.ID] == 0);
-        disconnectedCourses.classed("non-active", true);
-
-        // zet alle andere option nodes op nonactief als de gehoverde option node niet de root node is
-        d3.selectAll(".option-node")
-          .classed("non-active", o => d.ID != "Master" && o.ID != d.ID);
+        d3.selectAll(".option-node").classed("active", false);
+        deactiveDisconnectedCourses(d);
+        deactivateOtherOptionNodes(d);
       })
       .on("mouseout", function(d) {
-        // verberg de tooltip voor het vak waarover gehoverd werd
+        // verberg de tooltip voor de option node waarover gehoverd werd
         tooltip.classed("active", false);
 
-        // zet alle vakken en option nodes terug op actief
-        d3.selectAll("circle").classed("non-active", false);
-        d3.selectAll(".option-node").classed("non-active", false);
+        // verwijder de nonactiviteit voor alle vakken en option nodes als de option node niet actief is
+        if (!d3.select(this).classed("active")) {
+          d3.selectAll("circle").classed("non-active", false);
+          d3.selectAll(".option-node").classed("non-active", false);
+        }
+      })
+      .on("click", function(d) {
+        // verander de activiteit van de option node
+        var activated = d3.select(this).classed("active");
+        d3.select(this).classed("active", !activated);
+
+        deactiveDisconnectedCourses(d);
+        deactivateOtherOptionNodes(d);
       });
+
+      // zet alle vakken die niet verbonden zijn met de gegeven optie op nonactief
+      function deactiveDisconnectedCourses(option) {
+        var disconnectedCourses = d3.selectAll("circle")
+          .filter(c => c[option.ID] == 0);
+        disconnectedCourses.classed("non-active", true);
+      }
+
+      // zet alle andere option nodes op nonactief als de gegeven optie niet de root node is
+      function deactivateOtherOptionNodes(option) {
+        d3.selectAll(".option-node")
+          .classed("non-active", o => option.ID != "Master" && o.ID != option.ID);
+      }
 
     // maak vierkanten voor de overlap nodes in de hypergraf
     // hypergraph.selectAll(".overlap-node")
