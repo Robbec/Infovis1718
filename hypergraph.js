@@ -51,13 +51,13 @@ d3.csv("cw-5.csv").then(function(data) {
 
     // kleur voor de opvulling van vakken
     function getFillColor(d) {
-      return kulBlue;
+      return "#cfd8dc";
     }
 
     function colorOfCourse(d) {
-      //default kul-blauw
-      var color = getFillColor(d);
-      //plichtvakken krijgen kleur van optie
+      // default kleur
+      var color = kulBlue;
+      // kleur van de optie
       for (i = 0; i < options.length && color == kulBlue; i++) {
         if (d[options[i]] > 0) {
           color = optionColors[options[i]];
@@ -68,10 +68,9 @@ d3.csv("cw-5.csv").then(function(data) {
 
     // kleur voor opties
     function getOptionColour(d) {
-      //default kul-blauw
+      // default kul-blauw
       var color = getFillColor(d);
       var optionIndex = options.indexOf(d.ID);
-      //plichtvakken krijgen kleur van optie
       if (optionIndex != -1) {
         color = optionColors[d.ID];
       }
@@ -113,8 +112,8 @@ d3.csv("cw-5.csv").then(function(data) {
       // als het vak behoort tot 1 optie, maak dan een link tussen het vak en de node van die optie
       if (courseOptions.length == 1) {
         links.push({
-          "source": d,
-          "target": courseOptions[0],
+          "source": courseOptions[0],
+          "target": d,
           "dist": distanceClusterNodeCourse
         });
       }
@@ -147,8 +146,8 @@ d3.csv("cw-5.csv").then(function(data) {
         // verbind het vak met de overlap node
         courseOptions.forEach(o =>
           links.push({
-            "source": d,
-            "target": o,
+            "source": o,
+            "target": d,
             "dist": distanceClusterNodeCourse
           }));
       }
@@ -234,10 +233,23 @@ d3.csv("cw-5.csv").then(function(data) {
           .text(d.OPO)
           .style("left", (d.x + 20) + "px")
           .style("top", (d.y - 12) + "px");
+
+        // zet alle vakken die niet verbonden zijn met de optie op nonactief
+        var disconnectedCourses = d3.selectAll("circle")
+          .filter(c => c[d.ID] == 0);
+        disconnectedCourses.classed("non-active", true);
+
+        // zet alle andere option nodes op nonactief als de gehoverde option node niet de root node is
+        d3.selectAll(".option-node")
+          .classed("non-active", o => d.ID != "Master" && o.ID != d.ID);
       })
       .on("mouseout", function(d) {
         // verberg de tooltip voor het vak waarover gehoverd werd
         tooltip.classed("active", false);
+
+        // zet alle vakken en option nodes terug op actief
+        d3.selectAll("circle").classed("non-active", false);
+        d3.selectAll(".option-node").classed("non-active", false);
       });
 
     // maak vierkanten voor de overlap nodes in de hypergraf
@@ -264,40 +276,6 @@ d3.csv("cw-5.csv").then(function(data) {
     //   // verberg de tooltip voor het vak waarover gehoverd werd
     //   tooltip.classed("active", false);
     // });
-
-    // code: code uit ects-fiche
-    // geeft set van overlappende vakken terug
-    function getScheduleOverlappingCourses(code) {
-      // filter alle reservaties horende bij de code
-      var codeReservations = scheduleData.filter(reservation => reservation.Code == code);
-      scheduleOverlappingCourseCodes = new Set();
-      // voor elke reservatie horende bij de code
-      codeReservations.forEach(function(codeReservation) {
-        // filter de overlappende reservaties
-        var overlappingReservations = scheduleData.filter(function(reservation) {
-          var hourParser = d3.timeParse("%H:%M:%S");
-          var startReservation = hourParser(reservation.Aanvang);
-          var endReservation = hourParser(reservation.Einde);
-          var startCodeReservation = hourParser(codeReservation.Aanvang);
-          var endCodeReservation = hourParser(codeReservation.Einde);
-
-          // zelfde semester
-          return reservation.Semester == codeReservation.Semester &&
-            // zelfde dag
-            reservation.Dagnaam == codeReservation.Dagnaam &&
-            // uren overlappen https://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
-            (startReservation < endCodeReservation && endReservation > startCodeReservation) &&
-            // niet vak zelf
-            reservation.Code != code
-        });
-        // voor elke overlappende reservatie
-        overlappingReservations.forEach(function(overlappingReservation) {
-          // voeg zijn code toe aan de set
-          scheduleOverlappingCourseCodes.add(overlappingReservation.Code);
-        })
-      })
-      return (scheduleOverlappingCourseCodes);
-    }
 
     // bind de cirkels in de hypergraf aan de data
     var course = hypergraph.selectAll("circle")
@@ -451,6 +429,40 @@ d3.csv("cw-5.csv").then(function(data) {
             .attr("class", "checkmark");
         }
       });
+
+      // code: code uit ects-fiche
+      // geeft set van overlappende vakken terug
+      function getScheduleOverlappingCourses(code) {
+        // filter alle reservaties horende bij de code
+        var codeReservations = scheduleData.filter(reservation => reservation.Code == code);
+        scheduleOverlappingCourseCodes = new Set();
+        // voor elke reservatie horende bij de code
+        codeReservations.forEach(function(codeReservation) {
+          // filter de overlappende reservaties
+          var overlappingReservations = scheduleData.filter(function(reservation) {
+            var hourParser = d3.timeParse("%H:%M:%S");
+            var startReservation = hourParser(reservation.Aanvang);
+            var endReservation = hourParser(reservation.Einde);
+            var startCodeReservation = hourParser(codeReservation.Aanvang);
+            var endCodeReservation = hourParser(codeReservation.Einde);
+
+            // zelfde semester
+            return reservation.Semester == codeReservation.Semester &&
+              // zelfde dag
+              reservation.Dagnaam == codeReservation.Dagnaam &&
+              // uren overlappen https://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
+              (startReservation < endCodeReservation && endReservation > startCodeReservation) &&
+              // niet vak zelf
+              reservation.Code != code
+          });
+          // voor elke overlappende reservatie
+          overlappingReservations.forEach(function(overlappingReservation) {
+            // voeg zijn code toe aan de set
+            scheduleOverlappingCourseCodes.add(overlappingReservation.Code);
+          })
+        })
+        return (scheduleOverlappingCourseCodes);
+      }
   });
 });
 
