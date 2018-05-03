@@ -253,7 +253,7 @@ d3.csv("cw-5.csv").then(function (data) {
         var activated = d3.select(this).classed("active");
         d3.select(this).classed("active", !activated);
 
-        fillInfoboxForOption(d);
+        fillInfoboxForOption(d, data);
 
         deactiveDisconnectedCourses(d);
         deactivateOtherOptionNodes(d);
@@ -595,8 +595,21 @@ function emptyInfobox() {
   myNode._groups[0][0].innerHTML = '';
 }
 
-function fillInfoboxForOption(d) {
-  console.log(d);
+function fillInfoboxForOption(o, data) {
   emptyInfobox();
-  infobox.append("h3").text(d.OPO);
+  infobox.append("h3").text(o.OPO);
+  var table = infobox.append("table");
+  var fr = table.append("tr");
+  fr.append("th").text("Course Name");
+  var vakken = data.filter(function (d) {
+    // moet nog een juistere filtering gebeuren
+    if (d[o.OPO] == 2)
+      return true;
+    else
+      return false;
+  });
+  console.log(vakken);
+  vakken.forEach(function(c){
+    table.append("tr").append("td").text(c.OPO);
+  })
 }
