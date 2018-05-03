@@ -36,8 +36,8 @@ var tooltip = hypergraphContainer.append("div")
 // var optionColors = {};
 // options.forEach((key, idx) => optionColors[key] = colors[idx]);
 
-d3.csv("cw-5.csv").then(function(data) {
-  d3.csv("uniekeReserveringen.csv").then(function(scheduleData) {
+d3.csv("cw-5.csv").then(function (data) {
+  d3.csv("uniekeReserveringen.csv").then(function (scheduleData) {
     // namen van alle opties
     var columnNames = d3.keys(d3.values(data)[0]);
     options = columnNames.slice(12, columnNames.length);
@@ -224,10 +224,10 @@ d3.csv("cw-5.csv").then(function(data) {
       .attr("y", d => d.y)
       .attr("width", 15)
       .attr("height", 15)
-      .attr("fill", function(d) {
+      .attr("fill", function (d) {
         return getOptionColour(d);
       })
-      .on("mouseover", function(d) {
+      .on("mouseover", function (d) {
         // toon een tooltip voor de gehoverde option node
         tooltip.classed("active", true)
           .text(d.OPO)
@@ -238,7 +238,7 @@ d3.csv("cw-5.csv").then(function(data) {
         deactiveDisconnectedCourses(d);
         deactivateOtherOptionNodes(d);
       })
-      .on("mouseout", function(d) {
+      .on("mouseout", function (d) {
         // verberg de tooltip voor de option node waarover gehoverd werd
         tooltip.classed("active", false);
 
@@ -248,27 +248,29 @@ d3.csv("cw-5.csv").then(function(data) {
           d3.selectAll(".option-node").classed("non-active", false);
         }
       })
-      .on("click", function(d) {
+      .on("click", function (d) {
         // verander de activiteit van de option node
         var activated = d3.select(this).classed("active");
         d3.select(this).classed("active", !activated);
+
+        fillInfoboxForOption(d);
 
         deactiveDisconnectedCourses(d);
         deactivateOtherOptionNodes(d);
       });
 
-      // zet alle vakken die niet verbonden zijn met de gegeven optie op nonactief
-      function deactiveDisconnectedCourses(option) {
-        var disconnectedCourses = d3.selectAll("circle")
-          .filter(c => c[option.ID] == 0);
-        disconnectedCourses.classed("non-active", true);
-      }
+    // zet alle vakken die niet verbonden zijn met de gegeven optie op nonactief
+    function deactiveDisconnectedCourses(option) {
+      var disconnectedCourses = d3.selectAll("circle")
+        .filter(c => c[option.ID] == 0);
+      disconnectedCourses.classed("non-active", true);
+    }
 
-      // zet alle andere option nodes op nonactief als de gegeven optie niet de root node is
-      function deactivateOtherOptionNodes(option) {
-        d3.selectAll(".option-node")
-          .classed("non-active", o => option.ID != "Master" && o.ID != option.ID);
-      }
+    // zet alle andere option nodes op nonactief als de gegeven optie niet de root node is
+    function deactivateOtherOptionNodes(option) {
+      d3.selectAll(".option-node")
+        .classed("non-active", o => option.ID != "Master" && o.ID != option.ID);
+    }
 
     // maak vierkanten voor de overlap nodes in de hypergraf
     // hypergraph.selectAll(".overlap-node")
@@ -305,7 +307,7 @@ d3.csv("cw-5.csv").then(function(data) {
       .attr("cx", d => d.x)
       .attr("cy", d => d.y)
       .attr("r", circleRadius)
-      .classed("compulsory", function(d) {
+      .classed("compulsory", function (d) {
         for (var i = 0; i < options.length; i++) {
           if (d[options[i]] == 1) {
             return true;
@@ -313,7 +315,7 @@ d3.csv("cw-5.csv").then(function(data) {
         }
         return false;
       })
-      .classed("optional", function(d) {
+      .classed("optional", function (d) {
         for (var i = 0; i < options.length; i++) {
           if (d[options[i]] == 2) {
             return true;
@@ -321,27 +323,27 @@ d3.csv("cw-5.csv").then(function(data) {
         }
         return false;
       })
-      .attr("fill", function(d) {
+      .attr("fill", function (d) {
         return colorOfCourse(d);
       })
-      .attr("stroke", function(d) {
+      .attr("stroke", function (d) {
         return colorOfCourse(d);
       })
-      .on("mouseover", function(d) {
+      .on("mouseover", function (d) {
         // toon een tooltip voor het gehoverde vak
         tooltip.classed("active", true)
           .text(d.OPO)
           .style("left", (d.x + 20) + "px")
           .style("top", (d.y - 12) + "px");
       })
-      .on("mouseout", function(d) {
+      .on("mouseout", function (d) {
         // verberg de tooltip voor het vak waarover gehoverd werd
         tooltip.classed("active", false);
       })
-      .on("click", function(d) {
+      .on("click", function (d) {
         // verklein de straal van het vorige actieve vak
         var oldActiveCourse = d3.select("circle.active");
-        oldActiveCourse.transition(transition).attr("r", function() {
+        oldActiveCourse.transition(transition).attr("r", function () {
           return oldActiveCourse.attr("r") / 1.75;
         });
 
@@ -354,19 +356,19 @@ d3.csv("cw-5.csv").then(function(data) {
         oldActiveCourse.classed("active", false);
 
         // geef de klasse .non-active aan alle niet-actieve vakken als het aangeklikte vak nog niet actief was; verwijder anders de klasse .non-active
-        d3.selectAll("circle").classed("non-active", function(d, i) {
+        d3.selectAll("circle").classed("non-active", function (d, i) {
           return !d3.select(this).classed("active") && !alreadyActive;
         });
 
         // vergroot de straal van het nieuwe actieve vak
         var newActiveCourse = d3.select("circle.active");
-        newActiveCourse.transition(transition).attr("r", function() {
+        newActiveCourse.transition(transition).attr("r", function () {
           return d3.select(this).attr("r") * 1.75;
         });
 
         // geef de klasse .prerequisite alleen aan de prerequisites van het actieve vak
         d3.selectAll("circle")
-          .classed("prerequisite", function(dcircle) {
+          .classed("prerequisite", function (dcircle) {
             var id = dcircle.ID;
             if (!newActiveCourse.empty()) {
               var prerequisites = (newActiveCourse.datum()["Gelijktijdig volgen"]);
@@ -386,7 +388,7 @@ d3.csv("cw-5.csv").then(function(data) {
 
         // geef de klasse .schedule-overlap alleen aan vakken die overlappen met het actieve vak
         d3.selectAll("circle")
-          .classed("schedule-overlap", function(dcircle) {
+          .classed("schedule-overlap", function (dcircle) {
             var id = dcircle.ID;
             if (!newActiveCourse.empty()) {
               return scheduleOverlappingCourses.has(id);
@@ -448,39 +450,39 @@ d3.csv("cw-5.csv").then(function(data) {
         }
       });
 
-      // code: code uit ects-fiche
-      // geeft set van overlappende vakken terug
-      function getScheduleOverlappingCourses(code) {
-        // filter alle reservaties horende bij de code
-        var codeReservations = scheduleData.filter(reservation => reservation.Code == code);
-        scheduleOverlappingCourseCodes = new Set();
-        // voor elke reservatie horende bij de code
-        codeReservations.forEach(function(codeReservation) {
-          // filter de overlappende reservaties
-          var overlappingReservations = scheduleData.filter(function(reservation) {
-            var hourParser = d3.timeParse("%H:%M:%S");
-            var startReservation = hourParser(reservation.Aanvang);
-            var endReservation = hourParser(reservation.Einde);
-            var startCodeReservation = hourParser(codeReservation.Aanvang);
-            var endCodeReservation = hourParser(codeReservation.Einde);
+    // code: code uit ects-fiche
+    // geeft set van overlappende vakken terug
+    function getScheduleOverlappingCourses(code) {
+      // filter alle reservaties horende bij de code
+      var codeReservations = scheduleData.filter(reservation => reservation.Code == code);
+      scheduleOverlappingCourseCodes = new Set();
+      // voor elke reservatie horende bij de code
+      codeReservations.forEach(function (codeReservation) {
+        // filter de overlappende reservaties
+        var overlappingReservations = scheduleData.filter(function (reservation) {
+          var hourParser = d3.timeParse("%H:%M:%S");
+          var startReservation = hourParser(reservation.Aanvang);
+          var endReservation = hourParser(reservation.Einde);
+          var startCodeReservation = hourParser(codeReservation.Aanvang);
+          var endCodeReservation = hourParser(codeReservation.Einde);
 
-            // zelfde semester
-            return reservation.Semester == codeReservation.Semester &&
-              // zelfde dag
-              reservation.Dagnaam == codeReservation.Dagnaam &&
-              // uren overlappen https://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
-              (startReservation < endCodeReservation && endReservation > startCodeReservation) &&
-              // niet vak zelf
-              reservation.Code != code
-          });
-          // voor elke overlappende reservatie
-          overlappingReservations.forEach(function(overlappingReservation) {
-            // voeg zijn code toe aan de set
-            scheduleOverlappingCourseCodes.add(overlappingReservation.Code);
-          })
+          // zelfde semester
+          return reservation.Semester == codeReservation.Semester &&
+            // zelfde dag
+            reservation.Dagnaam == codeReservation.Dagnaam &&
+            // uren overlappen https://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
+            (startReservation < endCodeReservation && endReservation > startCodeReservation) &&
+            // niet vak zelf
+            reservation.Code != code
+        });
+        // voor elke overlappende reservatie
+        overlappingReservations.forEach(function (overlappingReservation) {
+          // voeg zijn code toe aan de set
+          scheduleOverlappingCourseCodes.add(overlappingReservation.Code);
         })
-        return (scheduleOverlappingCourseCodes);
-      }
+      })
+      return (scheduleOverlappingCourseCodes);
+    }
   });
 });
 
@@ -502,7 +504,7 @@ var checkboxInterested = body;
 var checkboxChosenMaster1 = body;
 var checkboxChosenMaster2 = body;
 
-infobox.on("change", function() {
+infobox.on("change", function () {
   // controleer of de checkbox "Niet geïnteresseerd" van status verandert
   var checkboxInterestedNew = infobox.select(".checkbox-interested").select("input");
   if (checkboxInterested !== checkboxInterestedNew) {
@@ -547,11 +549,11 @@ function checkboxInterestedChanged() {
 };
 
 // verander de klasse van de vakken waarin de gebruiker niet geïnteresseerd is als de status van de switch verandert
-switchInterested.on("change", function() {
+switchInterested.on("change", function () {
   // wijzig de klassen .not-interested naar .is-not-interested als de switch wordt ingeschakeld
   if (switchInterested.property("checked")) {
     d3.selectAll("circle")
-      .classed("is-not-interested", function() {
+      .classed("is-not-interested", function () {
         return d3.select(this).classed("not-interested");
       })
       .classed("not-interested", false);
@@ -559,7 +561,7 @@ switchInterested.on("change", function() {
   // wijzig de klassen .is-not-interested naar .not-interested als de switch wordt uitgeschakeld
   else {
     d3.selectAll("circle")
-      .classed("not-interested", function() {
+      .classed("not-interested", function () {
         return d3.select(this).classed("is-not-interested");
       })
       .classed("is-not-interested", false);
@@ -572,7 +574,7 @@ function checkboxChosenMaster1Changed() {
   var checked = checkboxChosenMaster1.property("checked");
 
   // voeg de klasse .chosen-master1 toe aan het actieve vak als het gemarkeerd is als "Gekozen in 1ste Master"
-  activeCourse.classed("chosen-master1", function() {
+  activeCourse.classed("chosen-master1", function () {
     return checked;
   });
 };
@@ -583,7 +585,18 @@ function checkboxChosenMaster2Changed() {
   var checked = checkboxChosenMaster2.property("checked");
 
   // voeg de klasse .chosen-master2 toe aan het actieve vak als het gemarkeerd is als "Gekozen in 2de Master"
-  activeCourse.classed("chosen-master2", function() {
+  activeCourse.classed("chosen-master2", function () {
     return checked;
   });
 };
+
+function emptyInfobox() {
+  var myNode = d3.select(".infobox");
+  myNode._groups[0][0].innerHTML = '';
+}
+
+function fillInfoboxForOption(d) {
+  console.log(d);
+  emptyInfobox();
+  infobox.append("h3").text(d.OPO);
+}
