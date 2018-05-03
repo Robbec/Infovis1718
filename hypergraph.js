@@ -242,11 +242,7 @@ d3.csv("cw-5.csv").then(function(data) {
         // verberg de tooltip voor de option node waarover gehoverd werd
         tooltip.classed("active", false);
 
-        // verwijder de nonactiviteit voor alle vakken en option nodes als de option node niet actief is
-        if (!d3.select(this).classed("active")) {
-          d3.selectAll("circle").classed("non-active", false);
-          d3.selectAll(".option-node").classed("non-active", false);
-        }
+        activateAllNodes(d3.select(this));
       })
       .on("click", function(d) {
         // verander de activiteit van de option node
@@ -269,6 +265,14 @@ d3.csv("cw-5.csv").then(function(data) {
         d3.selectAll(".option-node")
           .classed("non-active", o => option.ID != "Master" && o.ID != option.ID);
       }
+
+      // verwijder de nonactiviteit voor alle vakken en option nodes als de gegeven node niet actief is
+      function activateAllNodes(node) {
+        if (!node.classed("active")) {
+          d3.selectAll("circle").classed("non-active", false);
+          d3.selectAll(".option-node").classed("non-active", false);
+        }
+    }
 
     // maak vierkanten voor de overlap nodes in de hypergraf
     // hypergraph.selectAll(".overlap-node")
@@ -333,10 +337,17 @@ d3.csv("cw-5.csv").then(function(data) {
           .text(d.OPO)
           .style("left", (d.x + 20) + "px")
           .style("top", (d.y - 12) + "px");
+
+        // highlight de bijhorende opties
+        var disconnectedOptionNodes = d3.selectAll(".option-node")
+          .filter(o => d[o.ID] == 0);
+        disconnectedOptionNodes.classed("non-active", true);
       })
       .on("mouseout", function(d) {
         // verberg de tooltip voor het vak waarover gehoverd werd
         tooltip.classed("active", false);
+
+        activateAllNodes(d3.select(this));
       })
       .on("click", function(d) {
         // verklein de straal van het vorige actieve vak
