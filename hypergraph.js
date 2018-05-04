@@ -218,6 +218,7 @@ d3.csv("cw-5.csv").then(function (data) {
     hypergraph.selectAll(".option-node")
       .data(optionNodes)
       .enter().append("rect")
+      .classed("node", true)
       .classed("option-node", true)
       .classed("cluster-node", true)
       .attr("x", d => d.x)
@@ -234,43 +235,30 @@ d3.csv("cw-5.csv").then(function (data) {
           .style("left", (d.x + 20) + "px")
           .style("top", (d.y - 12) + "px");
 
-        d3.selectAll(".option-node").classed("active", false);
-        deactiveDisconnectedCourses(d);
-        deactivateOtherOptionNodes(d);
+        if (!nodeActivated()) {
+          deactiveDisconnectedCourses(d);
+          deactivateOtherOptionNodes(d);
+        }
       })
       .on("mouseout", function (d) {
         // verberg de tooltip voor de option node waarover gehoverd werd
         tooltip.classed("active", false);
 
-        // verwijder de nonactiviteit voor alle vakken en option nodes als de option node niet actief is
-        if (!d3.select(this).classed("active")) {
-          d3.selectAll("circle").classed("non-active", false);
-          d3.selectAll(".option-node").classed("non-active", false);
+        if (!nodeActivated()) {
+          restoreDefaultGraph();
         }
       })
-      .on("click", function (d) {
-        // verander de activiteit van de option node
-        var activated = d3.select(this).classed("active");
-        d3.select(this).classed("active", !activated);
-
-        fillInfoboxForOption(d, data);
-
-        deactiveDisconnectedCourses(d);
-        deactivateOtherOptionNodes(d);
+      .on("click", function(d) {
+        if (d3.select(this).classed("active")) {
+          restoreDefaultGraph();
+        } else if (!nodeActivated()) {
+          restoreDefaultGraph();
+          // activeer de aangeklikte option node
+          d3.select(this).classed("active", true);
+          deactiveDisconnectedCourses(d);
+          deactivateOtherOptionNodes(d);
+        }
       });
-
-    // zet alle vakken die niet verbonden zijn met de gegeven optie op nonactief
-    function deactiveDisconnectedCourses(option) {
-      var disconnectedCourses = d3.selectAll("circle")
-        .filter(c => c[option.ID] == 0);
-      disconnectedCourses.classed("non-active", true);
-    }
-
-    // zet alle andere option nodes op nonactief als de gegeven optie niet de root node is
-    function deactivateOtherOptionNodes(option) {
-      d3.selectAll(".option-node")
-        .classed("non-active", o => option.ID != "Master" && o.ID != option.ID);
-    }
 
     // maak vierkanten voor de overlap nodes in de hypergraf
     // hypergraph.selectAll(".overlap-node")
@@ -307,7 +295,8 @@ d3.csv("cw-5.csv").then(function (data) {
       .attr("cx", d => d.x)
       .attr("cy", d => d.y)
       .attr("r", circleRadius)
-      .classed("compulsory", function (d) {
+      .classed("node", true)
+      .classed("compulsory", function(d) {
         for (var i = 0; i < options.length; i++) {
           if (d[options[i]] == 1) {
             return true;
@@ -335,10 +324,19 @@ d3.csv("cw-5.csv").then(function (data) {
           .text(d.OPO)
           .style("left", (d.x + 20) + "px")
           .style("top", (d.y - 12) + "px");
+
+        if (!nodeActivated()) {
+          highlightConnectedOptions(d);
+          deactivateAllOtherCourses(d);
+          highlightPrerequisites(d);
+        }
       })
       .on("mouseout", function (d) {
         // verberg de tooltip voor het vak waarover gehoverd werd
         tooltip.classed("active", false);
+        if (!nodeActivated()) {
+          restoreDefaultGraph();
+        }
       })
       .on("click", function (d) {
         // verklein de straal van het vorige actieve vak
@@ -366,20 +364,13 @@ d3.csv("cw-5.csv").then(function (data) {
           return d3.select(this).attr("r") * 1.75;
         });
 
-        // geef de klasse .prerequisite alleen aan de prerequisites van het actieve vak
-        d3.selectAll("circle")
-          .classed("prerequisite", function (dcircle) {
-            var id = dcircle.ID;
-            if (!newActiveCourse.empty()) {
-              var prerequisites = (newActiveCourse.datum()["Gelijktijdig volgen"]);
-              return prerequisites.split(" ").includes(id);
-            }
-            return false;
-          });
+        highlightPrerequisites(d);
 
         // geef de klasse .non-active aan alle cluster nodes als en slechts als er een vak actief is
         d3.selectAll(".cluster-node")
           .classed("non-active", !newActiveCourse.empty());
+
+        highlightConnectedOptions(d);
 
         // sla alle vakken op die overlappen met het actieve vak
         if (!newActiveCourse.empty()) {
@@ -400,11 +391,7 @@ d3.csv("cw-5.csv").then(function (data) {
         infobox.select("p").classed("hidden", !newActiveCourse.empty());
 
         // verwijder alle vakgerelateerde inhoud in de infobox
-        infobox.select("h3").remove();
-        infobox.select(".points").remove();
-        infobox.select(".checkbox-interested").remove();
-        infobox.select(".checkbox-chosen-master1").remove();
-        infobox.select(".checkbox-chosen-master2").remove();
+        infobox.selectAll("*:not(p)").remove();
 
         if (!newActiveCourse.empty()) {
           // maak nieuwe inhoud aan in de infobox:
@@ -480,9 +467,65 @@ d3.csv("cw-5.csv").then(function (data) {
           // voeg zijn code toe aan de set
           scheduleOverlappingCourseCodes.add(overlappingReservation.Code);
         })
-      })
-      return (scheduleOverlappingCourseCodes);
-    }
+        return (scheduleOverlappingCourseCodes);
+      }
+
+      /**
+      * Functies met betrekking tot de toestand van nodes in de hypergraf
+      */
+
+      // zet alle vakken die niet verbonden zijn met de gegeven optie op nonactief
+      function deactiveDisconnectedCourses(option) {
+        var disconnectedCourses = d3.selectAll("circle")
+          .filter(c => c[option.ID] == 0);
+        disconnectedCourses.classed("non-active", true);
+      }
+
+      // zet alle andere option nodes op nonactief als de gegeven optie niet de root node is
+      function deactivateOtherOptionNodes(option) {
+        d3.selectAll(".option-node")
+          .classed("non-active", o => option.ID != "Master" && o.ID != option.ID);
+      }
+
+      // herstel de oorspronkelijke toestand van alle nodes in de hypergraf
+      function restoreDefaultGraph() {
+        var nodes = d3.selectAll(".node");
+        nodes.classed("active", false);
+        nodes.classed("prerequisite", false);
+        nodes.classed("non-active", false);
+      }
+
+      function deactivateAllOtherCourses(course) {
+        d3.selectAll("circle")
+          .filter(c => c.ID != course.ID)
+          .classed("non-active", true);
+      }
+
+      // geef de klasse .prerequisite aan de prerequisites van het gegeven vak
+      function highlightPrerequisites(course) {
+        var prerequisites = course["Gelijktijdig volgen"];
+        d3.selectAll("circle")
+          .classed("prerequisite", c => prerequisites.split(" ").includes(c.ID));
+      }
+
+      // highlight de bijhorende opties van het gegeven vak
+      function highlightConnectedOptions(course) {
+        var disconnectedOptionNodes = d3.selectAll(".option-node")
+        .filter(o => course[o.ID] == 0);
+        disconnectedOptionNodes.classed("non-active", true);
+      }
+
+      // geef boolean terug die aangeeft of er actieve nodes zijn in de graf
+      function nodeActivated() {
+        var activeCourseNodes = d3.select("circle.active");
+        var activeOptionNodes = d3.select(".option-node.active");
+        return !activeCourseNodes.empty() || !activeOptionNodes.empty();
+      }
+
+      // deactiveer alle option nodes
+      function deactivateAllOptionNodes() {
+        d3.selectAll(".option-node").classed("active", false);
+      }
   });
 });
 
@@ -495,6 +538,10 @@ function boxBoundedX(x) {
 function boxBoundedY(y) {
   return Math.max(circleRadius, Math.min(svgHeight - circleRadius, y));
 }
+
+/**
+* Controleer het gedrag van de checkboxes
+*/
 
 // waarde van de switch die vakken al dan niet verbergt waarin de gebruiker niet geïnteresseerd is
 var switchInterested = right.select(".switch-interested").select("input");
