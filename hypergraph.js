@@ -42,6 +42,9 @@ d3.csv("cw-5.csv").then(function (data) {
     var columnNames = d3.keys(d3.values(data)[0]);
     options = columnNames.slice(12, columnNames.length);
 
+    /**
+    * Kleuren
+    */
     // kleurenpalet aan opties koppelen
     // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=12
     var colors = ['rgb(178,223,138)', 'rgb(51,160,44)', 'rgb(251,154,153)', 'rgb(227,26,28)', 'rgb(253,191,111)', 'rgb(255,127,0)', 'rgb(202,178,214)', 'rgb(106,61,154)', 'rgb(255,255,153)', 'rgb(177,89,40)', 'rgb(166,206,227)', 'rgb(31,120,180)'];
@@ -77,6 +80,9 @@ d3.csv("cw-5.csv").then(function (data) {
       return color;
     }
 
+    /**
+    * Hypergraf
+    */
     // maak voor elke optie een node
     options.forEach(o => optionNodes.push({
       ID: o,
@@ -257,9 +263,7 @@ d3.csv("cw-5.csv").then(function (data) {
           d3.select(this).classed("active", true);
           deactiveDisconnectedCourses(d);
           deactivateOtherOptionNodes(d);
-
-          fillInfoboxForOption(d,data);          
-
+          fillInfoboxForOption(d);
         }
       });
 
@@ -530,6 +534,40 @@ d3.csv("cw-5.csv").then(function (data) {
     function deactivateAllOptionNodes() {
       d3.selectAll(".option-node").classed("active", false);
     }
+
+    /**
+    * Functies met betrekking tot de inhoud in de infobox
+    */
+
+    // verwijder alle vakgerelateerde inhoud in de infobox
+    function emptyInfobox() {
+      infobox.select("p").classed("hidden", true);
+      infobox.selectAll("*:not(p)").remove();
+    }
+
+    // voeg inhoud over de gegeven optie toe aan de infobox
+    function fillInfoboxForOption(o) {
+      emptyInfobox();
+      infobox.append("h3").text(o.OPO);
+      var ul = infobox.append("ul")
+        .classed("coursesList", true);
+      var courses = data.filter(function (d) {
+        var courseOptionsAmount = getCourseOptions(d).length;
+        return (0 < d[o.OPO] && courseOptionsAmount < options.length);
+      });
+      courses.forEach(c => ul.append("li").text(c.OPO));
+    }
+
+    function getCourseOptions(course) {
+      var courseOptions = [];
+      optionNodes.forEach(o => {
+        if (course[o.ID] > 0) {
+          courseOptions.push(o);
+        }
+      });
+      return courseOptions;
+    }
+
   });
 });
 
@@ -640,28 +678,3 @@ function checkboxChosenMaster2Changed() {
     return checked;
   });
 };
-
-function emptyInfobox() {
-  infobox.select("p").classed("hidden", true);
-
-  // verwijder alle vakgerelateerde inhoud in de infobox
-  infobox.selectAll("*:not(p)").remove();
-}
-
-function fillInfoboxForOption(o, data) {
-  emptyInfobox();
-  infobox.append("h3").text(o.OPO);
-  var table = infobox.append("table");
-  var fr = table.append("tr");
-  fr.append("th").text("Course Name");
-  var vakken = data.filter(function (d) {
-    // moet nog een juistere filtering gebeuren
-    if (d[o.OPO] == 2)
-      return true;
-    else
-      return false;
-  });
-  vakken.forEach(function (c) {
-    table.append("tr").append("td").text(c.OPO);
-  })
-}
