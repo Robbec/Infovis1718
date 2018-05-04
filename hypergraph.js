@@ -257,6 +257,9 @@ d3.csv("cw-5.csv").then(function (data) {
           d3.select(this).classed("active", true);
           deactiveDisconnectedCourses(d);
           deactivateOtherOptionNodes(d);
+
+          fillInfoboxForOption(d,data);          
+
         }
       });
 
@@ -637,6 +640,13 @@ function checkboxChosenMaster2Changed() {
     return checked;
   });
 };
+
+function emptyInfobox() {
+  infobox.select("p").classed("hidden", true);
+
+  // verwijder alle vakgerelateerde inhoud in de infobox
+  infobox.selectAll("*:not(p)").remove();
+}
 
 function fillInfoboxForOption(o, data) {
   emptyInfobox();
