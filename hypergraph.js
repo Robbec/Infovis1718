@@ -638,11 +638,6 @@ function checkboxChosenMaster2Changed() {
   });
 };
 
-function emptyInfobox() {
-  var myNode = d3.select(".infobox");
-  myNode._groups[0][0].innerHTML = '';
-}
-
 function fillInfoboxForOption(o, data) {
   emptyInfobox();
   infobox.append("h3").text(o.OPO);
@@ -656,7 +651,6 @@ function fillInfoboxForOption(o, data) {
     else
       return false;
   });
-  console.log(vakken);
   vakken.forEach(function (c) {
     table.append("tr").append("td").text(c.OPO);
   })
