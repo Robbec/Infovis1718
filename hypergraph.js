@@ -248,7 +248,7 @@ d3.csv("cw-5.csv").then(function (data) {
           restoreDefaultGraph();
         }
       })
-      .on("click", function(d) {
+      .on("click", function (d) {
         if (d3.select(this).classed("active")) {
           restoreDefaultGraph();
         } else if (!nodeActivated()) {
@@ -296,7 +296,7 @@ d3.csv("cw-5.csv").then(function (data) {
       .attr("cy", d => d.y)
       .attr("r", circleRadius)
       .classed("node", true)
-      .classed("compulsory", function(d) {
+      .classed("compulsory", function (d) {
         for (var i = 0; i < options.length; i++) {
           if (d[options[i]] == 1) {
             return true;
@@ -467,65 +467,66 @@ d3.csv("cw-5.csv").then(function (data) {
           // voeg zijn code toe aan de set
           scheduleOverlappingCourseCodes.add(overlappingReservation.Code);
         })
-        return (scheduleOverlappingCourseCodes);
-      }
+      })
+      return (scheduleOverlappingCourseCodes);
+    }
 
-      /**
-      * Functies met betrekking tot de toestand van nodes in de hypergraf
-      */
+    /**
+    * Functies met betrekking tot de toestand van nodes in de hypergraf
+    */
 
-      // zet alle vakken die niet verbonden zijn met de gegeven optie op nonactief
-      function deactiveDisconnectedCourses(option) {
-        var disconnectedCourses = d3.selectAll("circle")
-          .filter(c => c[option.ID] == 0);
-        disconnectedCourses.classed("non-active", true);
-      }
+    // zet alle vakken die niet verbonden zijn met de gegeven optie op nonactief
+    function deactiveDisconnectedCourses(option) {
+      var disconnectedCourses = d3.selectAll("circle")
+        .filter(c => c[option.ID] == 0);
+      disconnectedCourses.classed("non-active", true);
+    }
 
-      // zet alle andere option nodes op nonactief als de gegeven optie niet de root node is
-      function deactivateOtherOptionNodes(option) {
-        d3.selectAll(".option-node")
-          .classed("non-active", o => option.ID != "Master" && o.ID != option.ID);
-      }
+    // zet alle andere option nodes op nonactief als de gegeven optie niet de root node is
+    function deactivateOtherOptionNodes(option) {
+      d3.selectAll(".option-node")
+        .classed("non-active", o => option.ID != "Master" && o.ID != option.ID);
+    }
 
-      // herstel de oorspronkelijke toestand van alle nodes in de hypergraf
-      function restoreDefaultGraph() {
-        var nodes = d3.selectAll(".node");
-        nodes.classed("active", false);
-        nodes.classed("prerequisite", false);
-        nodes.classed("non-active", false);
-      }
+    // herstel de oorspronkelijke toestand van alle nodes in de hypergraf
+    function restoreDefaultGraph() {
+      var nodes = d3.selectAll(".node");
+      nodes.classed("active", false);
+      nodes.classed("prerequisite", false);
+      nodes.classed("non-active", false);
+    }
 
-      function deactivateAllOtherCourses(course) {
-        d3.selectAll("circle")
-          .filter(c => c.ID != course.ID)
-          .classed("non-active", true);
-      }
+    function deactivateAllOtherCourses(course) {
+      d3.selectAll("circle")
+        .filter(c => c.ID != course.ID)
+        .classed("non-active", true);
+    }
 
-      // geef de klasse .prerequisite aan de prerequisites van het gegeven vak
-      function highlightPrerequisites(course) {
-        var prerequisites = course["Gelijktijdig volgen"];
-        d3.selectAll("circle")
-          .classed("prerequisite", c => prerequisites.split(" ").includes(c.ID));
-      }
+    // geef de klasse .prerequisite aan de prerequisites van het gegeven vak
+    function highlightPrerequisites(course) {
+      var prerequisites = course["Gelijktijdig volgen"];
+      d3.selectAll("circle")
+        .classed("prerequisite", c => prerequisites.split(" ").includes(c.ID));
+    }
 
-      // highlight de bijhorende opties van het gegeven vak
-      function highlightConnectedOptions(course) {
-        var disconnectedOptionNodes = d3.selectAll(".option-node")
+    // highlight de bijhorende opties van het gegeven vak
+    function highlightConnectedOptions(course) {
+      var disconnectedOptionNodes = d3.selectAll(".option-node")
         .filter(o => course[o.ID] == 0);
-        disconnectedOptionNodes.classed("non-active", true);
-      }
+      disconnectedOptionNodes.classed("non-active", true);
+    }
 
-      // geef boolean terug die aangeeft of er actieve nodes zijn in de graf
-      function nodeActivated() {
-        var activeCourseNodes = d3.select("circle.active");
-        var activeOptionNodes = d3.select(".option-node.active");
-        return !activeCourseNodes.empty() || !activeOptionNodes.empty();
-      }
+    // geef boolean terug die aangeeft of er actieve nodes zijn in de graf
+    function nodeActivated() {
+      var activeCourseNodes = d3.select("circle.active");
+      var activeOptionNodes = d3.select(".option-node.active");
+      return !activeCourseNodes.empty() || !activeOptionNodes.empty();
+    }
 
-      // deactiveer alle option nodes
-      function deactivateAllOptionNodes() {
-        d3.selectAll(".option-node").classed("active", false);
-      }
+    // deactiveer alle option nodes
+    function deactivateAllOptionNodes() {
+      d3.selectAll(".option-node").classed("active", false);
+    }
   });
 });
 
@@ -656,7 +657,7 @@ function fillInfoboxForOption(o, data) {
       return false;
   });
   console.log(vakken);
-  vakken.forEach(function(c){
+  vakken.forEach(function (c) {
     table.append("tr").append("td").text(c.OPO);
   })
 }
