@@ -67,7 +67,7 @@ circle {
   fill-opacity: 1;
 }
 
-.non-active {
+.node.non-active {
   opacity: 0.25;
 }
 
@@ -89,8 +89,11 @@ circle {
 }
 
 .link {
-  stroke: #cfd8dc;
   stroke-width: 1;
+}
+
+.link.non-active {
+  stroke: #cfd8dc;
 }
 
 .tooltip {
@@ -139,7 +142,7 @@ circle {
 }
 
 .coursesList li {
-  padding-bottom: 0.5rem; 
+  padding-bottom: 0.5rem;
 }
 
 /* Customize the label (the container) */
