@@ -182,12 +182,26 @@ d3.csv("cw-5.csv").then(function (data) {
     // deze functie wordt opgeroepen in elke iteratiestap van de simulatie
     function ticked() {
       // pas de positie voor de eindpunten van links aan
-      hypergraph.selectAll("line")
-        .data(links)
-        .attr("x1", d => d.source.x)
-        .attr("y1", d => d.source.y)
-        .attr("x2", d => d.target.x)
-        .attr("y2", d => d.target.y);
+      var lines = hypergraph.selectAll("line")
+        .data(links);
+
+      lines.each(function () {
+        line = d3.select(this);
+        var dx = line.attr("x1") - line.attr("x2");
+        var dy = line.attr("y1") - line.attr("y2");
+        var l = Math.sqrt(dx * dx + dy * dy);
+        var a = (circleRadius + 2.5) / l;
+        var xOffset = a * dx;
+        var yOffset = a * dy;
+        line.attr("x1", d => d.source.x)// - xOffset)
+        line.attr("y1", d => d.source.y)// - yOffset)
+        line.attr("x2", d =>
+          (d.source.ID != "Master") ? d.target.x + xOffset : d.target.x
+        )
+        line.attr("y2", d =>
+          (d.source.ID != "Master") ? d.target.y + yOffset : d.target.y
+        );
+      })
 
       // pas de positie aan van de cirkels voor vakken
       hypergraph.selectAll("circle")
@@ -198,8 +212,8 @@ d3.csv("cw-5.csv").then(function (data) {
       // pas de positie aan van de rechthoeken
       hypergraph.selectAll("rect")
         .data(clusterNodes)
-        .attr("x", d => boxBoundedX(d.x - 5))
-        .attr("y", d => boxBoundedY(d.y - 5));
+        .attr("x", d => boxBoundedX(d.x - 7.5))
+        .attr("y", d => boxBoundedY(d.y - 7.5));
     }
 
     // bind de lijnen aan de links
@@ -238,7 +252,7 @@ d3.csv("cw-5.csv").then(function (data) {
           .style("left", (d.x + 20) + "px")
           .style("top", (d.y - 12) + "px");
 
-        if (!nodeActivated()) {
+        if (!activatedNodeExists()) {
           deactiveDisconnectedCourses(d);
           deactivateOtherOptionNodes(d);
           toggleOptionLinksHighlight(d);
@@ -248,7 +262,7 @@ d3.csv("cw-5.csv").then(function (data) {
         // verberg de tooltip voor de option node waarover gehoverd werd
         tooltip.classed("active", false);
 
-        if (!nodeActivated()) {
+        if (!activatedNodeExists()) {
           restoreDefaultGraph();
           toggleOptionLinksHighlight(d);
         }
@@ -257,7 +271,7 @@ d3.csv("cw-5.csv").then(function (data) {
         if (d3.select(this).classed("active")) {
           restoreDefaultGraph();
           emptyInfobox();
-        } else if (!nodeActivated()) {
+        } else if (!activatedNodeExists()) {
           restoreDefaultGraph();
           // activeer de aangeklikte option node
           d3.select(this).classed("active", true);
@@ -332,7 +346,7 @@ d3.csv("cw-5.csv").then(function (data) {
           .style("left", (d.x + 20) + "px")
           .style("top", (d.y - 12) + "px");
 
-        if (!nodeActivated()) {
+        if (!activatedNodeExists()) {
           highlightConnectedOptions(d);
           deactivateAllOtherCourses(d);
           highlightPrerequisites(d);
@@ -342,7 +356,7 @@ d3.csv("cw-5.csv").then(function (data) {
       .on("mouseout", function (d) {
         // verberg de tooltip voor het vak waarover gehoverd werd
         tooltip.classed("active", false);
-        if (!nodeActivated()) {
+        if (!activatedNodeExists()) {
           restoreDefaultGraph();
           toggleCourseLinksHighlight(d);
         }
@@ -526,7 +540,7 @@ d3.csv("cw-5.csv").then(function (data) {
     }
 
     // geef boolean terug die aangeeft of er actieve nodes zijn in de graf
-    function nodeActivated() {
+    function activatedNodeExists() {
       var activeCourseNodes = d3.select("circle.active");
       var activeOptionNodes = d3.select(".option-node.active");
       return !activeCourseNodes.empty() || !activeOptionNodes.empty();

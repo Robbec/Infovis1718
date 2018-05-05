@@ -67,7 +67,7 @@ circle {
   fill-opacity: 1;
 }
 
-.node.non-active {
+.non-active {
   opacity: 0.25;
 }
 
@@ -93,6 +93,7 @@ circle {
 }
 
 .link.non-active {
+  opacity: 1;
   stroke: #cfd8dc;
 }
 
