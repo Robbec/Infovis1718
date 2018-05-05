@@ -241,6 +241,7 @@ d3.csv("cw-5.csv").then(function (data) {
         if (!nodeActivated()) {
           deactiveDisconnectedCourses(d);
           deactivateOtherOptionNodes(d);
+          toggleOptionLinksHighlight(d);
         }
       })
       .on("mouseout", function (d) {
@@ -249,6 +250,7 @@ d3.csv("cw-5.csv").then(function (data) {
 
         if (!nodeActivated()) {
           restoreDefaultGraph();
+          toggleOptionLinksHighlight(d);
         }
       })
       .on("click", function (d) {
@@ -334,7 +336,7 @@ d3.csv("cw-5.csv").then(function (data) {
           highlightConnectedOptions(d);
           deactivateAllOtherCourses(d);
           highlightPrerequisites(d);
-          activateLinks(d);
+          toggleCourseLinksHighlight(d);
         }
       })
       .on("mouseout", function (d) {
@@ -342,7 +344,7 @@ d3.csv("cw-5.csv").then(function (data) {
         tooltip.classed("active", false);
         if (!nodeActivated()) {
           restoreDefaultGraph();
-          deactivateLinks(d);
+          toggleCourseLinksHighlight(d);
         }
       })
       .on("click", function (d) {
@@ -535,18 +537,22 @@ d3.csv("cw-5.csv").then(function (data) {
       d3.selectAll(".option-node").classed("active", false);
     }
 
-    // activeer de links die aankomen in de gegeven course
-    function activateLinks(course) {
+    // verander de highlightstatus van de links die aankomen in de gegeven course
+    function toggleCourseLinksHighlight(course) {
       d3.selectAll(".link")
         .filter(l => l.target == course)
-        .classed("non-active", false);
+        .classed("non-active", function() {
+          return !d3.select(this).classed("non-active");
+        });
     }
 
-    // deactiveer de links die aankomen in de gegeven course
-    function deactivateLinks(course) {
+    // verander de highlightstatus van de links die vertrekken uit de gegeven optie
+    function toggleOptionLinksHighlight(option) {
       d3.selectAll(".link")
-        .filter(l => l.target == course)
-        .classed("non-active", true);
+        .filter(l => l.source == option)
+        .classed("non-active", function() {
+          return !d3.select(this).classed("non-active");
+        });
     }
 
     /**
