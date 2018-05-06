@@ -626,6 +626,7 @@ d3.csv("cw-5.csv").then(function (data) {
         })
       })
       return (scheduleOverlappingCourseCodes);
+    }
 
     /**
     * Horizontal bar
