@@ -460,40 +460,6 @@ d3.csv("cw-5.csv").then(function (data) {
         }
       });
 
-    // code: code uit ects-fiche
-    // geeft set van overlappende vakken terug
-    function getScheduleOverlappingCourses(code) {
-      // filter alle reservaties horende bij de code
-      var codeReservations = scheduleData.filter(reservation => reservation.Code == code);
-      scheduleOverlappingCourseCodes = new Set();
-      // voor elke reservatie horende bij de code
-      codeReservations.forEach(function (codeReservation) {
-        // filter de overlappende reservaties
-        var overlappingReservations = scheduleData.filter(function (reservation) {
-          var hourParser = d3.timeParse("%H:%M:%S");
-          var startReservation = hourParser(reservation.Aanvang);
-          var endReservation = hourParser(reservation.Einde);
-          var startCodeReservation = hourParser(codeReservation.Aanvang);
-          var endCodeReservation = hourParser(codeReservation.Einde);
-
-          // zelfde semester
-          return reservation.Semester == codeReservation.Semester &&
-            // zelfde dag
-            reservation.Dagnaam == codeReservation.Dagnaam &&
-            // uren overlappen https://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
-            (startReservation < endCodeReservation && endReservation > startCodeReservation) &&
-            // niet vak zelf
-            reservation.Code != code
-        });
-        // voor elke overlappende reservatie
-        overlappingReservations.forEach(function (overlappingReservation) {
-          // voeg zijn code toe aan de set
-          scheduleOverlappingCourseCodes.add(overlappingReservation.Code);
-        })
-      })
-      return (scheduleOverlappingCourseCodes);
-    }
-
     /**
     * Functies met betrekking tot de toestand van nodes in de hypergraf
     */
@@ -585,13 +551,33 @@ d3.csv("cw-5.csv").then(function (data) {
       infobox.select("p").classed("hidden", true);
       infobox.append("h3").text(o.OPO);
       var ul = infobox.append("ul").classed("coursesList", true);
-      var courses = data.filter(d => {
-        return (0 < d[o.OPO] && getCourseOptions(d).length < options.length);
-      });
-      // orden de vakken alfabetisch en print ze in een lijst
-      courses.sort(function (a, b) {
-        return a.OPO.toLowerCase().localeCompare(b.OPO.toLowerCase());
-      }).forEach(c => ul.append("li").text(c.OPO));
+
+      // vind alle vakken van de optie en orden ze alfabetisch
+      var courses = data.filter(function (d) {
+          return (0 < d[o.OPO]) && (getCourseOptions(d).length < options.length);
+        })
+       .sort(function (a, b) {
+          return a.OPO.toLowerCase().localeCompare(b.OPO.toLowerCase());
+        });
+
+      // bind li's aan de vakken
+      var li = infobox.select(".coursesList")
+        .selectAll(li)
+        .data(courses);
+
+      li.enter()
+        .append("li")
+        .text(d => d.OPO)
+        .on("mouseover", function (d) {
+          deactivateAllOtherCourses(d);
+          highlightPrerequisites(d);
+        })
+        .on("mouseout", function (d) {
+
+        })
+        .on("click", function (d) {
+
+        });
     }
 
     // vind alle option nodes die verbonden zijn met de gegeven course
@@ -604,6 +590,42 @@ d3.csv("cw-5.csv").then(function (data) {
       });
       return courseOptions;
     }
+
+    /**
+    * Functies met betrekking tot het uurrooster
+    */
+
+    // geeft set van overlappende vakken terug
+    function getScheduleOverlappingCourses(code) {
+      // filter alle reservaties horende bij de code
+      var codeReservations = scheduleData.filter(reservation => reservation.Code == code);
+      scheduleOverlappingCourseCodes = new Set();
+      // voor elke reservatie horende bij de code
+      codeReservations.forEach(function (codeReservation) {
+        // filter de overlappende reservaties
+        var overlappingReservations = scheduleData.filter(function (reservation) {
+          var hourParser = d3.timeParse("%H:%M:%S");
+          var startReservation = hourParser(reservation.Aanvang);
+          var endReservation = hourParser(reservation.Einde);
+          var startCodeReservation = hourParser(codeReservation.Aanvang);
+          var endCodeReservation = hourParser(codeReservation.Einde);
+
+          // zelfde semester
+          return reservation.Semester == codeReservation.Semester &&
+            // zelfde dag
+            reservation.Dagnaam == codeReservation.Dagnaam &&
+            // uren overlappen https://stackoverflow.com/questions/325933/determine-whether-two-date-ranges-overlap
+            (startReservation < endCodeReservation && endReservation > startCodeReservation) &&
+            // niet vak zelf
+            reservation.Code != code
+        });
+        // voor elke overlappende reservatie
+        overlappingReservations.forEach(function (overlappingReservation) {
+          // voeg zijn code toe aan de set
+          scheduleOverlappingCourseCodes.add(overlappingReservation.Code);
+        })
+      })
+      return (scheduleOverlappingCourseCodes);
 
     /**
     * Horizontal bar
@@ -629,7 +651,6 @@ d3.csv("cw-5.csv").then(function (data) {
             pointer += course.Studiepunten * creditLength;
         }
       });
-
     }
   });
 });
