@@ -18,6 +18,7 @@ var circleRadius = 10;
 var transition = d3.transition()
   .duration(750)
   .ease(d3.easeLinear);
+var timeout;
 
 // afmetingen van de svg
 var svgWidth = 500;
@@ -246,12 +247,7 @@ d3.csv("cw-5.csv").then(function (data) {
         return getOptionColour(d);
       })
       .on("mouseover", function (d) {
-        // toon een tooltip voor de gehoverde option node
-        tooltip.classed("active", true)
-          .text(d.OPO)
-          .style("left", (d.x + 20) + "px")
-          .style("top", (d.y - 12) + "px");
-
+        showTooltip(d);
         if (!activatedNodeExists()) {
           deactiveDisconnectedCourses(d);
           deactivateOtherOptionNodes(d);
@@ -340,12 +336,7 @@ d3.csv("cw-5.csv").then(function (data) {
         return colorOfCourse(d);
       })
       .on("mouseover", function (d) {
-        // toon een tooltip voor het gehoverde vak
-        tooltip.classed("active", true)
-          .text(d.OPO)
-          .style("left", (d.x + 20) + "px")
-          .style("top", (d.y - 12) + "px");
-
+        showTooltip(d);
         if (!activatedNodeExists()) {
           highlightConnectedOptions(d);
           deactivateAllOtherCourses(d);
@@ -533,6 +524,18 @@ d3.csv("cw-5.csv").then(function (data) {
         .classed("non-active", function() {
           return !d3.select(this).classed("non-active");
         });
+    }
+
+    // toon een tooltip die na 1s weer verdwijnt voor de gegeven node
+    function showTooltip(d) {
+      tooltip.classed("active", true)
+        .text(d.OPO)
+        .style("left", (d.x + 20) + "px")
+        .style("top", (d.y - 12) + "px");
+      clearTimeout(timeout);
+      timeout = setTimeout(function() {
+        d3.select(".tooltip").classed("active", false);
+      }, 1000);
     }
 
     /**
