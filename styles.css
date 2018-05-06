@@ -100,7 +100,7 @@ circle {
 }
 
 .tooltip {
-  background-color: #000;
+  background-color: #455a64;
   border-radius: 4px;
   color: #fff;
   font-size: 0.75rem;
@@ -113,7 +113,7 @@ circle {
 }
 
 .tooltip.active {
-  opacity: 0.6;
+  opacity: 0.75;
   z-index: 1;
 }
 
@@ -145,8 +145,11 @@ circle {
 }
 
 .coursesList li {
+  cursor: pointer;
   padding-bottom: 0.5rem;
 }
+
+
 
 /* Customize the label (the container) */
 .checkbox {
