@@ -8,6 +8,10 @@ html {
   font-size: 16px;
 }
 
+h2 {
+  margin: 0 0 1.25rem 0;
+}
+
 h3 {
   margin: 0 0 1rem 0;
 }
@@ -15,7 +19,7 @@ h3 {
 body {
   background-color: #eceff1;
   display: flex;
-  margin: 3rem auto;
+  margin: 0 auto;
   max-width: 1000px;
   padding: 3rem;
 }
@@ -90,13 +94,14 @@ circle {
 }
 
 .link {
-  stroke-width: 1;
+  stroke-width: 1.5;
   transition: 0.3s linear;
 }
 
 .link.non-active {
   opacity: 1;
   stroke: #cfd8dc;
+  stroke-width: 1;
 }
 
 .tooltip {
