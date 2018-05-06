@@ -615,11 +615,10 @@ d3.csv("cw-5.csv").then(function (data) {
     drawHorizontalBar();
 
     function drawHorizontalBar() {
-      var barGroup = d3.select("#horizontalBar");
-      var creditLength = svgWidth / 120;
-      barGroup.attr("transform", "translate(0," + (svgHeight - 20) + ")");
+      var barGroup = d3.select(".bargroup");
+      var creditLength = svgWidth / 40;
       var pointer = 0;
-      
+
       // eventueel alle courses in de dom afgaan ipv de data
       data.forEach(course => {
         if (course.selectedInSem > 0) {
