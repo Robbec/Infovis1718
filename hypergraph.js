@@ -210,7 +210,7 @@ d3.csv("cw-5.csv").then(function (data) {
         .attr("cy", d => boxBoundedY(d.y));
 
       // pas de positie aan van de rechthoeken
-      hypergraph.selectAll("rect")
+      hypergraph.selectAll(".option-node")
         .data(clusterNodes)
         .attr("x", d => boxBoundedX(d.x - 7.5))
         .attr("y", d => boxBoundedY(d.y - 7.5));
@@ -626,6 +626,32 @@ d3.csv("cw-5.csv").then(function (data) {
         })
       })
       return (scheduleOverlappingCourseCodes);
+
+    /**
+    * Horizontal bar
+    */
+    // om te testen
+    data[0].selectedInSem = 1;
+    data[5].selectedInSem = 1;
+    data[8].selectedInSem = 1;
+    drawHorizontalBar();
+
+    function drawHorizontalBar() {
+      var barGroup = d3.select("#horizontalBar");
+      var creditLength = svgWidth / 120;
+      barGroup.attr("transform", "translate(0," + (svgHeight - 20) + ")");
+      var pointer = 0;
+
+      // eventueel alle courses in de dom afgaan ipv de data
+      data.forEach(course => {
+        if (course.selectedInSem > 0) {
+          // kleur kan nog
+          barGroup.append("svg:rect")
+            .attr("width", course.Studiepunten * creditLength)
+            .attr("height", "20");
+            pointer += course.Studiepunten * creditLength;
+        }
+      });
     }
   });
 });
