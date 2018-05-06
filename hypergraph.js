@@ -13,7 +13,8 @@ var overlapNodes = [];
 var links = [];
 var distanceOptionRoot = 60;
 var distanceOptionCourse = 30;
-var circleRadius = 10;
+var courseRadius = 10;
+var optionRadius = courseRadius / 1.5;
 var transition = d3.transition()
   .duration(750)
   .ease(d3.easeLinear);
@@ -192,8 +193,8 @@ d3.csv("cw-5.csv").then(function (data) {
         var dx = line.attr("x1") - line.attr("x2");
         var dy = line.attr("y1") - line.attr("y2");
         var l = Math.sqrt(dx * dx + dy * dy);
-        var a = circleRadius / (1.5 * l);
-        var b = (circleRadius + 2.5) / l;
+        var a = optionRadius / l;
+        var b = (courseRadius + 2.5) / l;
         var x1Offset = a * dx;
         var y1Offset = a * dy;
         var x2Offset = b * dx;
@@ -244,7 +245,7 @@ d3.csv("cw-5.csv").then(function (data) {
       .classed("option-node", true)
       .attr("cx", d => d.x)
       .attr("cy", d => d.y)
-      .attr("r", circleRadius / 1.5)
+      .attr("r", optionRadius)
       .attr("fill", function (d) {
         return getOptionColour(d);
       })
@@ -286,7 +287,7 @@ d3.csv("cw-5.csv").then(function (data) {
       .append("circle")
       .attr("cx", d => d.x)
       .attr("cy", d => d.y)
-      .attr("r", circleRadius)
+      .attr("r", courseRadius)
       .classed("node course-node", true)
       .classed("compulsory", function (d) {
         for (var i = 0; i < options.length; i++) {
@@ -328,7 +329,7 @@ d3.csv("cw-5.csv").then(function (data) {
       })
       .on("click", function (d) {
         // verklein de straal van het vorige actieve vak
-        var oldActiveCourse = d3.select(".course-node.active");
+        var oldActiveCourse = hypergraph.select(".course-node.active");
         oldActiveCourse.transition(transition).attr("r", function () {
           return oldActiveCourse.attr("r") / 1.75;
         });
@@ -342,9 +343,11 @@ d3.csv("cw-5.csv").then(function (data) {
         oldActiveCourse.classed("active", false);
 
         // geef de klasse .non-active aan alle niet-actieve vakken als het aangeklikte vak nog niet actief was; verwijder anders de klasse .non-active
-        d3.selectAll(".course-node").classed("non-active", function (d, i) {
-          return !d3.select(this).classed("active") && !alreadyActive;
-        });
+        hypergraph.selectAll(".course-node")
+          .classed("non-active", function (d, i) {
+            return !d3.select(this).classed("active") && !alreadyActive;
+          }
+        );
 
         // vergroot de straal van het nieuwe actieve vak
         var newActiveCourse = d3.select(".course-node.active");
@@ -355,7 +358,7 @@ d3.csv("cw-5.csv").then(function (data) {
         highlightPrerequisites(d);
 
         // geef de klasse .non-active aan alle option nodes als en slechts als er een vak actief is
-        d3.selectAll(".option-node")
+        hypergraph.selectAll(".option-node")
           .classed("non-active", !newActiveCourse.empty());
 
         highlightConnectedOptions(d);
@@ -366,7 +369,7 @@ d3.csv("cw-5.csv").then(function (data) {
         }
 
         // geef de klasse .schedule-overlap alleen aan vakken die overlappen met het actieve vak
-        d3.selectAll(".course-node")
+        hypergraph.selectAll(".course-node")
           .classed("schedule-overlap", function (dcircle) {
             var id = dcircle.ID;
             if (!newActiveCourse.empty()) {
@@ -376,10 +379,10 @@ d3.csv("cw-5.csv").then(function (data) {
           });
 
         // verberg de hulptekst in de infobox als en slechts als er geen actief vak is
-        infobox.select("p").classed("hidden", !newActiveCourse.empty());
+        infobox.select(".help").classed("hidden", !newActiveCourse.empty());
 
         // verwijder alle vakgerelateerde inhoud in de infobox
-        infobox.selectAll("*:not(p)").remove();
+        infobox.selectAll(".infobox > *:not(.help)").remove();
 
         if (!newActiveCourse.empty()) {
           // maak nieuwe inhoud aan in de infobox:
@@ -431,27 +434,27 @@ d3.csv("cw-5.csv").then(function (data) {
 
     // zet alle vakken die niet verbonden zijn met de gegeven optie op nonactief
     function deactiveDisconnectedCourses(option) {
-      var disconnectedCourses = d3.selectAll(".course-node")
+      var disconnectedCourses = hypergraph.selectAll(".course-node")
         .filter(c => c[option.ID] == 0);
       disconnectedCourses.classed("non-active", true);
     }
 
     // zet alle andere option nodes op nonactief als de gegeven optie niet de root node is
     function deactivateOtherOptionNodes(option) {
-      d3.selectAll(".option-node")
+      hypergraph.selectAll(".option-node")
         .classed("non-active", o => option.ID != "Master" && o.ID != option.ID);
     }
 
     // herstel de oorspronkelijke toestand van alle nodes in de hypergraf
     function restoreDefaultGraph() {
-      var nodes = d3.selectAll(".node");
+      var nodes = hypergraph.selectAll(".node");
       nodes.classed("active", false);
       nodes.classed("prerequisite", false);
       nodes.classed("non-active", false);
     }
 
     function deactivateAllOtherCourses(course) {
-      d3.selectAll(".course-node")
+      hypergraph.selectAll(".course-node")
         .filter(c => c.ID != course.ID)
         .classed("non-active", true);
     }
@@ -459,32 +462,32 @@ d3.csv("cw-5.csv").then(function (data) {
     // geef de klasse .prerequisite aan de prerequisites van het gegeven vak
     function highlightPrerequisites(course) {
       var prerequisites = course["Gelijktijdig volgen"];
-      d3.selectAll(".course-node")
+      hypergraph.selectAll(".course-node")
         .classed("prerequisite", c => prerequisites.split(" ").includes(c.ID));
     }
 
     // highlight de bijhorende opties van het gegeven vak
     function highlightConnectedOptions(course) {
-      var disconnectedOptionNodes = d3.selectAll(".option-node")
+      var disconnectedOptionNodes = hypergraph.selectAll(".option-node")
         .filter(o => course[o.ID] == 0);
       disconnectedOptionNodes.classed("non-active", true);
     }
 
     // geef boolean terug die aangeeft of er actieve nodes zijn in de graf
     function activatedNodeExists() {
-      var activeCourseNodes = d3.select(".course-node.active");
-      var activeOptionNodes = d3.select(".option-node.active");
+      var activeCourseNodes = hypergraph.select(".course-node.active");
+      var activeOptionNodes = hypergraph.select(".option-node.active");
       return !activeCourseNodes.empty() || !activeOptionNodes.empty();
     }
 
     // deactiveer alle option nodes
     function deactivateAllOptionNodes() {
-      d3.selectAll(".option-node").classed("active", false);
+      hypergraph.selectAll(".option-node").classed("active", false);
     }
 
     // verander de highlightstatus van de links die aankomen in de gegeven course
     function toggleCourseLinksHighlight(course) {
-      d3.selectAll(".link")
+      hypergraph.selectAll(".link")
         .each(function(l) {
           if (l.target == course) {
             this.classList.toggle("non-active");
@@ -494,7 +497,7 @@ d3.csv("cw-5.csv").then(function (data) {
 
     // verander de highlightstatus van de links die vertrekken uit de gegeven optie
     function toggleOptionLinksHighlight(option) {
-      d3.selectAll(".link")
+      hypergraph.selectAll(".link")
         .each(function(l) {
           if (l.source == option) {
             this.classList.toggle("non-active");
@@ -510,7 +513,7 @@ d3.csv("cw-5.csv").then(function (data) {
         .style("top", (d.y - 12) + "px");
       clearTimeout(timeout);
       timeout = setTimeout(function() {
-        d3.select(".tooltip").classed("active", false);
+        tooltip.classed("active", false);
       }, 1000);
     }
 
@@ -525,14 +528,14 @@ d3.csv("cw-5.csv").then(function (data) {
 
     // verwijder alle vakgerelateerde inhoud in de infobox
     function emptyInfobox() {
-      infobox.select("p").classed("hidden", false);
-      infobox.selectAll("*:not(p)").remove();
+      infobox.select(".help").classed("hidden", false);
+      infobox.selectAll(".infobox > *:not(.help)").remove();
     }
 
     // voeg inhoud over de gegeven optie toe aan de infobox
     function fillInfoboxForOption(o) {
       emptyInfobox();
-      infobox.select("p").classed("hidden", true);
+      infobox.select(".help").classed("hidden", true);
       infobox.append("h3").text(o.OPO);
       var ul = infobox.append("ul").classed("coursesList", true);
 
@@ -642,12 +645,12 @@ d3.csv("cw-5.csv").then(function (data) {
 
 // bound the given x coordinate to the visible part of the hypergraph
 function boxBoundedX(x) {
-  return Math.max(circleRadius, Math.min(svgWidth - circleRadius, x));
+  return Math.max(courseRadius + 2.5, Math.min(svgWidth - courseRadius - 2.5, x));
 }
 
 // bound the given y coordinate to the visible part of the hypergraph
 function boxBoundedY(y) {
-  return Math.max(circleRadius, Math.min(svgHeight - circleRadius, y));
+  return Math.max(courseRadius + 2.5, Math.min(svgHeight - courseRadius - 2.5, y));
 }
 
 /**
@@ -688,7 +691,7 @@ infobox.on("change", function () {
 // verander de klassen m.b.t. interesse voor het actieve vak
 function checkboxInterestedChanged() {
   var switchInterestedChecked = switchInterested.property("checked");
-  var activeCourse = d3.select(".course-node.active");
+  var activeCourse = hypergraph.select(".course-node.active");
   var checked = checkboxInterested.property("checked");
 
   // voeg de klasse .is-not-interested toe als een vak gemarkeerd is als "Niet geïnteresseerd" en getoond moet worden in de hypergraph
@@ -710,7 +713,7 @@ function checkboxInterestedChanged() {
 switchInterested.on("change", function () {
   // wijzig de klassen .not-interested naar .is-not-interested als de switch wordt ingeschakeld
   if (switchInterested.property("checked")) {
-    d3.selectAll(".course-node")
+    hypergraph.selectAll(".course-node")
       .classed("is-not-interested", function () {
         return d3.select(this).classed("not-interested");
       })
@@ -718,7 +721,7 @@ switchInterested.on("change", function () {
   }
   // wijzig de klassen .is-not-interested naar .not-interested als de switch wordt uitgeschakeld
   else {
-    d3.selectAll(".course-node")
+    hypergraph.selectAll(".course-node")
       .classed("not-interested", function () {
         return d3.select(this).classed("is-not-interested");
       })
@@ -728,7 +731,7 @@ switchInterested.on("change", function () {
 
 // verander de klassen m.b.t. 1ste Master voor het actieve vak
 function checkboxChosenMaster1Changed() {
-  var activeCourse = d3.select(".course-node.active");
+  var activeCourse = hypergraph.select(".course-node.active");
   var checked = checkboxChosenMaster1.property("checked");
 
   // voeg de klasse .chosen-master1 toe aan het actieve vak als het gemarkeerd is als "Gekozen in 1ste Master"
@@ -739,7 +742,7 @@ function checkboxChosenMaster1Changed() {
 
 // verander de klassen m.b.t. 2de Master voor het actieve vak
 function checkboxChosenMaster2Changed() {
-  var activeCourse = d3.select(".course-node.active");
+  var activeCourse = hypergraph.select(".course-node.active");
   var checked = checkboxChosenMaster2.property("checked");
 
   // voeg de klasse .chosen-master2 toe aan het actieve vak als het gemarkeerd is als "Gekozen in 2de Master"

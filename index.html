@@ -1,43 +1,60 @@
 <!DOCTYPE html>
 <html lang="nl">
 
-  <head>
-    <meta charset="UTF-8">
-    <title>Informatie Visualisatie</title>
-    <link rel="stylesheet" href="styles.css">
-    <!-- Laad d3.v5, zodat de visualisatie offline werkt. -->
-    <script src="d3.min.js"></script>
-    <script async src="hypergraph.js"></script>
-  </head>
+<head>
+  <meta charset="UTF-8">
+  <title>Informatie Visualisatie</title>
+  <link rel="stylesheet" href="styles.css">
+  <!-- Laad d3.v5, zodat de visualisatie offline werkt. -->
+  <script src="d3.min.js"></script>
+  <script async src="hypergraph.js"></script>
+</head>
 
-  <body>
-    <div class="left">
-      <h2>Alle vakken</h2>
-      <div class="hypergraph-container">
-       <svg class="hypergraph">
-        <pattern id="diagonalHatch" patternUnits="userSpaceOnUse" width="4" height="4">
-          <path d="M-1,1 l2,-2
-          M0,4 l4,-4
-          M3,5 l2,-2"
-          style="stroke:black; stroke-width:1" />
-        </pattern>
-        </svg>
-        </div>
+<body>
+  <div class="left">
+    <h2>Alle vakken</h2>
+    <div class="hypergraph-container">
+      <svg class="hypergraph">
+      </svg>
+    </div>
     <div class="bargroup-container">
       <svg class="bargroup">
       </svg>
+    </div>
+  </div>
+  <div class="right">
+    <label class="switch switch-interested">
+      Toon de vakken waarin je niet geïnteresseerd bent.
+      <input type="checkbox">
+      <span class="slider"></span>
+    </label>
+    <div class="infobox">
+      <div class="help">
+        Klik op een van de vakken voor meer informatie over dat vak.
+        <div class="legenda">
+          <h3>Legenda</h3>
+          <div class="legenda-item">
+            <svg width="30" height="30">
+              <circle r="6.66" cx="15" cy="15" class="node option-node" />
+            </svg>
+            optie
+          </div>
+          <div class="legenda-item">
+            <svg width="30" height="30">
+              <circle r="10" cx="15" cy="15" class="node course-node" />
+            </svg>
+            keuzevak
+          </div>
+          <div class="legenda-item">
+            <svg width="30" height="30">
+              <circle r="10" cx="15" cy="15" class="node course-node compulsory" />
+            </svg>
+            verplicht vak
+          </div>
+        </div>
       </div>
     </div>
-    <div class="right">
-      <label class="switch switch-interested">
-        Toon de vakken waarin je niet geïnteresseerd bent.
-        <input type="checkbox">
-        <span class="slider"></span>
-      </label>
-      <div class="infobox">
-        <p>Klik op een van de vakken voor meer informatie over dat vak.</p>
-      </div>
-    </div>
-  </body>
+  </div>
+</body>
 
 </html>

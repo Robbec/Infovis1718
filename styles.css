@@ -40,10 +40,6 @@ body {
   position: relative;
 }
 
-.overlap-node {
-  fill: #cfd8dc;
-}
-
 .course {
   position: relative;
 }
@@ -52,16 +48,18 @@ body {
   visibility: visible;
 }
 
-rect {
+.node {
+  fill-opacity: 1;
+  stroke-width: 5;
+}
+
+.hypergraph .node {
   cursor: pointer;
   transition: 0.3s linear;
 }
 
-circle {
-  cursor: pointer;
-  fill-opacity: 1;
-  stroke-width: 5;
-  transition: 0.3s linear;
+.option-node {
+  stroke-width: 0;
 }
 
 .compulsory {
@@ -85,12 +83,6 @@ circle {
 
 .not-interested {
   display: none;
-}
-
-.chosen-master1,
-.chosen-master2 {
-  fill: url(#diagonalHatch);
-  stroke: url(#diagonalHatch);
 }
 
 .link {
@@ -138,6 +130,30 @@ circle {
   display: none;
 }
 
+.legenda {
+  margin-top: 2rem;
+}
+
+.legenda-item {
+  align-items: center;
+  color: #90a4ae;
+  display: flex;
+  margin-bottom: 0.5rem;
+}
+
+.legenda-item:last-child {
+  margin-bottom: 0;
+}
+
+.legenda-item svg {
+  margin-right: 0.5rem;
+}
+
+.legenda-item .node {
+  fill: #cfd8dc;
+  stroke: #cfd8dc;
+}
+
 .points {
   color: #78909c;
   font-size: 0.875rem;
@@ -153,8 +169,6 @@ circle {
   cursor: pointer;
   padding-bottom: 0.5rem;
 }
-
-
 
 /* Customize the label (the container) */
 .checkbox {
