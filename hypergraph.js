@@ -107,22 +107,16 @@ d3.csv("cw-5.csv").then(function (data) {
 
     // maak alle links voor de hypergraf
     data.forEach(d => {
-      // vind de opties waartoe het vak behoort
-      var courseOptions = [];
-      optionNodes.forEach(o => {
-        if (d[o.ID] > 0) {
-          courseOptions.push(o);
-        }
-      });
+      var courseOptions = getCourseOptions(d);
 
       // als het vak behoort tot 1 optie, maak dan een link tussen het vak en de node van die optie
-      if (courseOptions.length == 1) {
-        links.push({
-          "source": courseOptions[0],
-          "target": d,
-          "dist": distanceClusterNodeCourse
-        });
-      }
+      // if (courseOptions.length == 1) {
+      //   links.push({
+      //     "source": courseOptions[0],
+      //     "target": d,
+      //     "dist": distanceClusterNodeCourse
+      //   });
+      // }
 
       // als het vak behoort tot meerdere opties, maak dan een link tussen het vak en de node voor de overlap
       // else if (courseOptions.length == 6) {
@@ -132,7 +126,7 @@ d3.csv("cw-5.csv").then(function (data) {
       //     "dist": distanceClusterNodeCourse
       //   });
       // }
-      else if (courseOptions.length > 1 && courseOptions.length < 6) {
+      // else if (courseOptions.length > 1 && courseOptions.length < 6) {
         // else if (courseOptions.length > 1) {
         // var overlapName = courseOptions.map(o => o.ID).toString();
         // var overlapNode = { ID: overlapName, OPO: overlapName };
@@ -149,6 +143,7 @@ d3.csv("cw-5.csv").then(function (data) {
         //   }));
         // }
 
+      if (courseOptions.length < options.length) {
         // verbind het vak met de overlap node
         courseOptions.forEach(o =>
           links.push({
@@ -187,12 +182,26 @@ d3.csv("cw-5.csv").then(function (data) {
     // deze functie wordt opgeroepen in elke iteratiestap van de simulatie
     function ticked() {
       // pas de positie voor de eindpunten van links aan
-      hypergraph.selectAll("line")
-        .data(links)
-        .attr("x1", d => d.source.x)
-        .attr("y1", d => d.source.y)
-        .attr("x2", d => d.target.x)
-        .attr("y2", d => d.target.y);
+      var lines = hypergraph.selectAll("line")
+        .data(links);
+
+      lines.each(function () {
+        line = d3.select(this);
+        var dx = line.attr("x1") - line.attr("x2");
+        var dy = line.attr("y1") - line.attr("y2");
+        var l = Math.sqrt(dx * dx + dy * dy);
+        var a = (circleRadius + 2.5) / l;
+        var xOffset = a * dx;
+        var yOffset = a * dy;
+        line.attr("x1", d => d.source.x)// - xOffset)
+        line.attr("y1", d => d.source.y)// - yOffset)
+        line.attr("x2", d =>
+          (d.source.ID != "Master") ? d.target.x + xOffset : d.target.x
+        )
+        line.attr("y2", d =>
+          (d.source.ID != "Master") ? d.target.y + yOffset : d.target.y
+        );
+      })
 
       // pas de positie aan van de cirkels voor vakken
       hypergraph.selectAll("circle")
@@ -203,8 +212,8 @@ d3.csv("cw-5.csv").then(function (data) {
       // pas de positie aan van de rechthoeken
       hypergraph.selectAll(".option-node")
         .data(clusterNodes)
-        .attr("x", d => boxBoundedX(d.x - 5))
-        .attr("y", d => boxBoundedY(d.y - 5));
+        .attr("x", d => boxBoundedX(d.x - 7.5))
+        .attr("y", d => boxBoundedY(d.y - 7.5));
     }
 
     // bind de lijnen aan de links
@@ -218,6 +227,8 @@ d3.csv("cw-5.csv").then(function (data) {
       .attr("y1", d => d.source.y)
       .attr("x2", d => d.target.x)
       .attr("y2", d => d.target.y)
+      .attr("stroke", l => getOptionColour(l.source))
+      .classed("non-active", true)
       .classed("link", true);
 
     // maak vierkanten voor de option nodes in de hypergraf
@@ -241,23 +252,26 @@ d3.csv("cw-5.csv").then(function (data) {
           .style("left", (d.x + 20) + "px")
           .style("top", (d.y - 12) + "px");
 
-        if (!nodeActivated()) {
+        if (!activatedNodeExists()) {
           deactiveDisconnectedCourses(d);
           deactivateOtherOptionNodes(d);
+          toggleOptionLinksHighlight(d);
         }
       })
       .on("mouseout", function (d) {
         // verberg de tooltip voor de option node waarover gehoverd werd
         tooltip.classed("active", false);
 
-        if (!nodeActivated()) {
+        if (!activatedNodeExists()) {
           restoreDefaultGraph();
+          toggleOptionLinksHighlight(d);
         }
       })
       .on("click", function (d) {
         if (d3.select(this).classed("active")) {
           restoreDefaultGraph();
-        } else if (!nodeActivated()) {
+          emptyInfobox();
+        } else if (!activatedNodeExists()) {
           restoreDefaultGraph();
           // activeer de aangeklikte option node
           d3.select(this).classed("active", true);
@@ -332,17 +346,19 @@ d3.csv("cw-5.csv").then(function (data) {
           .style("left", (d.x + 20) + "px")
           .style("top", (d.y - 12) + "px");
 
-        if (!nodeActivated()) {
+        if (!activatedNodeExists()) {
           highlightConnectedOptions(d);
           deactivateAllOtherCourses(d);
           highlightPrerequisites(d);
+          toggleCourseLinksHighlight(d);
         }
       })
       .on("mouseout", function (d) {
         // verberg de tooltip voor het vak waarover gehoverd werd
         tooltip.classed("active", false);
-        if (!nodeActivated()) {
+        if (!activatedNodeExists()) {
           restoreDefaultGraph();
+          toggleCourseLinksHighlight(d);
         }
       })
       .on("click", function (d) {
@@ -524,7 +540,7 @@ d3.csv("cw-5.csv").then(function (data) {
     }
 
     // geef boolean terug die aangeeft of er actieve nodes zijn in de graf
-    function nodeActivated() {
+    function activatedNodeExists() {
       var activeCourseNodes = d3.select("circle.active");
       var activeOptionNodes = d3.select(".option-node.active");
       return !activeCourseNodes.empty() || !activeOptionNodes.empty();
@@ -535,29 +551,50 @@ d3.csv("cw-5.csv").then(function (data) {
       d3.selectAll(".option-node").classed("active", false);
     }
 
+    // verander de highlightstatus van de links die aankomen in de gegeven course
+    function toggleCourseLinksHighlight(course) {
+      d3.selectAll(".link")
+        .filter(l => l.target == course)
+        .classed("non-active", function() {
+          return !d3.select(this).classed("non-active");
+        });
+    }
+
+    // verander de highlightstatus van de links die vertrekken uit de gegeven optie
+    function toggleOptionLinksHighlight(option) {
+      d3.selectAll(".link")
+        .filter(l => l.source == option)
+        .classed("non-active", function() {
+          return !d3.select(this).classed("non-active");
+        });
+    }
+
     /**
     * Functies met betrekking tot de inhoud in de infobox
     */
 
     // verwijder alle vakgerelateerde inhoud in de infobox
     function emptyInfobox() {
-      infobox.select("p").classed("hidden", true);
+      infobox.select("p").classed("hidden", false);
       infobox.selectAll("*:not(p)").remove();
     }
 
     // voeg inhoud over de gegeven optie toe aan de infobox
     function fillInfoboxForOption(o) {
       emptyInfobox();
+      infobox.select("p").classed("hidden", true);
       infobox.append("h3").text(o.OPO);
-      var ul = infobox.append("ul")
-        .classed("coursesList", true);
-      var courses = data.filter(function (d) {
-        var courseOptionsAmount = getCourseOptions(d).length;
-        return (0 < d[o.OPO] && courseOptionsAmount < options.length);
+      var ul = infobox.append("ul").classed("coursesList", true);
+      var courses = data.filter(d => {
+        return (0 < d[o.OPO] && getCourseOptions(d).length < options.length);
       });
-      courses.forEach(c => ul.append("li").text(c.OPO));
+      // orden de vakken alfabetisch en print ze in een lijst
+      courses.sort(function (a, b) {
+        return a.OPO.toLowerCase().localeCompare(b.OPO.toLowerCase());
+      }).forEach(c => ul.append("li").text(c.OPO));
     }
 
+    // vind alle option nodes die verbonden zijn met de gegeven course
     function getCourseOptions(course) {
       var courseOptions = [];
       optionNodes.forEach(o => {

@@ -50,12 +50,14 @@ body {
 
 rect {
   cursor: pointer;
+  transition: 0.3s linear;
 }
 
 circle {
   cursor: pointer;
   fill-opacity: 1;
   stroke-width: 5;
+  transition: 0.3s linear;
 }
 
 .compulsory {
@@ -75,7 +77,6 @@ circle {
 .prerequisite,
 .schedule-overlap {
   opacity: 1;
-  transition: 0.3s linear;
 }
 
 .not-interested {
@@ -89,8 +90,13 @@ circle {
 }
 
 .link {
-  stroke: #cfd8dc;
   stroke-width: 1;
+  transition: 0.3s linear;
+}
+
+.link.non-active {
+  opacity: 1;
+  stroke: #cfd8dc;
 }
 
 .tooltip {
@@ -139,7 +145,7 @@ circle {
 }
 
 .coursesList li {
-  padding-bottom: 0.5rem; 
+  padding-bottom: 0.5rem;
 }
 
 /* Customize the label (the container) */
