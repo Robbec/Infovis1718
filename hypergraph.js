@@ -11,9 +11,8 @@ var options = [];
 var optionNodes = [];
 var overlapNodes = [];
 var links = [];
-var distanceOptionNodeRootNode = 40;
-var distanceOptionNodeOverlapNode = 20;
-var distanceClusterNodeCourse = 15;
+var distanceOptionRoot = 60;
+var distanceOptionCourse = 30;
 var circleRadius = 10;
 var transition = d3.transition()
   .duration(750)
@@ -97,7 +96,7 @@ d3.csv("cw-5.csv").then(function (data) {
     optionNodes.forEach(o => links.push({
       source: rootNode,
       target: o,
-      dist: distanceOptionNodeRootNode
+      dist: distanceOptionRoot
     }));
     optionNodes.push(rootNode);
 
@@ -145,35 +144,42 @@ d3.csv("cw-5.csv").then(function (data) {
           links.push({
             "source": o,
             "target": d,
-            "dist": distanceClusterNodeCourse
+            "dist": distanceOptionCourse
           }));
       }
     });
 
-    var clusterNodes = optionNodes.concat(overlapNodes);
-    var nodes = data.concat(clusterNodes);
+    var nodes = data.concat(optionNodes);
 
     // force simulation bepaalt de positie van alle nodes
     var simulationNodes = d3.forceSimulation(nodes)
-      // trek alle nodes naar het centrum van de svg
-      // .force("center", d3.forceCenter(svgWidth / 2, svgHeight / 2))
       // laat alle nodes elkaar afstoten
-      .force("charge", d3.forceManyBody().strength(-40).distanceMin(15).distanceMax(500))
+      .force("charge", d3.forceManyBody()
+        .distanceMin(15)
+        .distanceMax(700)
+        .strength(-40)
+      )
       // voorkom dat nodes overlappen
-      .force("collide", d3.forceCollide(15))
+      .force("collide", d3.forceCollide(15).strength(1))
       // duw verbonden elementen uit elkaar
-      .force("link", d3.forceLink(links))
-      // .force("link", d3.forceLink(links).distance(d => d.dist).strength(1))
-      // .force("x", d3.forceX(svgWidth / 2).strength(.08))
-      // .force("y", d3.forceY(svgHeight / 2).strength(.08))
+      .force("link", d3.forceLink(links)
+        // .distance(d => d.dist)
+        // .strength(1)
+      )
       // roep ticked() op in elke iteratiestap van de simulatie
       .on("tick", ticked);
 
     var simulationOptionNodes = d3.forceSimulation(optionNodes)
       // laat option nodes elkaar sterk afstoten
-      .force("charge", d3.forceManyBody().strength(-1000).distanceMin(50).distanceMax(400))
+      .force("charge", d3.forceManyBody()
+        .strength(-1000)
+        .distanceMin(50)
+        .distanceMax(400)
+      )
       // laat option nodes zich in een cirkel rond het middelpunt van de hypergraf verdelen
-      .force("radial", d3.forceRadial(75, svgWidth / 2, svgHeight / 2).strength(1));
+      .force("radial", d3.forceRadial(75, svgWidth / 2, svgHeight / 2)
+        .strength(1)
+      );
 
     // deze functie wordt opgeroepen in elke iteratiestap van de simulatie
     function ticked() {
@@ -186,16 +192,19 @@ d3.csv("cw-5.csv").then(function (data) {
         var dx = line.attr("x1") - line.attr("x2");
         var dy = line.attr("y1") - line.attr("y2");
         var l = Math.sqrt(dx * dx + dy * dy);
-        var a = (circleRadius + 2.5) / l;
-        var xOffset = a * dx;
-        var yOffset = a * dy;
-        line.attr("x1", d => d.source.x)// - xOffset)
-        line.attr("y1", d => d.source.y)// - yOffset)
+        var a = circleRadius / (1.5 * l);
+        var b = (circleRadius + 2.5) / l;
+        var x1Offset = a * dx;
+        var y1Offset = a * dy;
+        var x2Offset = b * dx;
+        var y2Offset = b * dy;
+        line.attr("x1", d => d.source.x)// - x2Offset)
+        line.attr("y1", d => d.source.y)// - y2Offset)
         line.attr("x2", d =>
-          (d.source.ID != "Master") ? d.target.x + xOffset : d.target.x
+          (d.source.ID != "Master") ? d.target.x + x2Offset : d.target.x
         )
         line.attr("y2", d =>
-          (d.source.ID != "Master") ? d.target.y + yOffset : d.target.y
+          (d.source.ID != "Master") ? d.target.y + y2Offset : d.target.y
         );
       })
 
@@ -207,7 +216,7 @@ d3.csv("cw-5.csv").then(function (data) {
 
       // pas de positie aan van de option nodes
       hypergraph.selectAll(".option-node")
-        .data(clusterNodes)
+        .data(optionNodes)
         .attr("cx", d => boxBoundedX(d.x))
         .attr("cy", d => boxBoundedY(d.y));
     }
