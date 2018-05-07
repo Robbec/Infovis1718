@@ -241,8 +241,7 @@ d3.csv("cw-5.csv").then(function (data) {
     hypergraph.selectAll(".option-node")
       .data(optionNodes)
       .enter().append("circle")
-      .classed("node", true)
-      .classed("option-node", true)
+      .classed("node option-node", true)
       .attr("cx", d => d.x)
       .attr("cy", d => d.y)
       .attr("r", optionRadius)
@@ -252,29 +251,24 @@ d3.csv("cw-5.csv").then(function (data) {
       .on("mouseover", function (d) {
         showTooltip(d);
         if (!activatedNodeExists()) {
-          deactiveDisconnectedCourses(d);
-          deactivateOtherOptionNodes(d);
-          toggleOptionLinksHighlight(d);
+          toggleHighlightOption(d);
         }
       })
       .on("mouseout", function (d) {
         hideTooltip();
         if (!activatedNodeExists()) {
-          restoreDefaultGraph();
-          toggleOptionLinksHighlight(d);
+          toggleHighlightOption(d);
         }
       })
       .on("click", function (d) {
-        if (d3.select(this).classed("active")) {
-          restoreDefaultGraph();
+        if (isActive(d3.select(this))) {
           emptyInfobox();
+          toggleActive(d3.select(this));
+          // opmerking: de optie blijft gehighlightet tot de mouseout
         } else if (!activatedNodeExists()) {
-          restoreDefaultGraph();
-          // activeer de aangeklikte option node
-          d3.select(this).classed("active", true);
-          deactiveDisconnectedCourses(d);
-          deactivateOtherOptionNodes(d);
           fillInfoboxForOption(d);
+          toggleActive(d3.select(this));
+          // opmerking: de optie is al gehighlightet vanwege de hover
         }
       });
 
@@ -432,17 +426,52 @@ d3.csv("cw-5.csv").then(function (data) {
     * Functies met betrekking tot de toestand van nodes in de hypergraf
     */
 
-    // zet alle vakken die niet verbonden zijn met de gegeven optie op nonactief
-    function deactiveDisconnectedCourses(option) {
-      var disconnectedCourses = hypergraph.selectAll(".course-node")
-        .filter(c => c[option.ID] == 0);
-      disconnectedCourses.classed("non-active", true);
+    // toggle het highlighten van de gegeven optie
+    function toggleHighlightOption(option) {
+      toggleHighlightConnectedCourses(option);
+      toggleHighlightOtherOptions(option);
+      toggleHighlightOptionLinks(option);
     }
 
-    // zet alle andere option nodes op nonactief als de gegeven optie niet de root node is
-    function deactivateOtherOptionNodes(option) {
+    // toggle het highlighten van de vakken die verbonden zijn met de gegeven optie
+    function toggleHighlightConnectedCourses(option) {
+      hypergraph.selectAll(".course-node")
+        .each(function (c) {
+          if (c[option.ID] == 0) {
+            this.classList.toggle("non-active");
+          }
+        })
+    }
+
+    // toggle de highlight van de links die vertrekken uit de gegeven optie
+    function toggleHighlightOptionLinks(option) {
+      hypergraph.selectAll(".link")
+        .each(function(l) {
+          if (l.source == option) {
+            this.classList.toggle("non-active");
+          }
+        });
+    }
+
+    // toggle de highlight van alle opties verschillend van de gegeven optie
+    function toggleHighlightOtherOptions(option) {
       hypergraph.selectAll(".option-node")
-        .classed("non-active", o => option.ID != "Master" && o.ID != option.ID);
+        .each(function (o) {
+          if (o.ID != "Master" && o.ID != option.ID) {
+            this.classList.toggle("non-active");
+          }
+        })
+    }
+
+    // check of de gegeven node actief is
+    function isActive(node) {
+      return node.classed("active");
+    }
+
+    // verander het actief-zijn van de gegeven node
+    function toggleActive(node) {
+      var active = node.classed("active");
+      node.classed("active", !active);
     }
 
     // herstel de oorspronkelijke toestand van alle nodes in de hypergraf
@@ -490,16 +519,6 @@ d3.csv("cw-5.csv").then(function (data) {
       hypergraph.selectAll(".link")
         .each(function(l) {
           if (l.target == course) {
-            this.classList.toggle("non-active");
-          }
-        });
-    }
-
-    // verander de highlightstatus van de links die vertrekken uit de gegeven optie
-    function toggleOptionLinksHighlight(option) {
-      hypergraph.selectAll(".link")
-        .each(function(l) {
-          if (l.source == option) {
             this.classList.toggle("non-active");
           }
         });
