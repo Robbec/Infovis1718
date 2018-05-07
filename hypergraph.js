@@ -26,7 +26,8 @@ var svgHeight = 500;
 
 // variabelen voor horizontal bar chart
 var x = d3.scaleLinear()
-  .rangeRound([svgWidth, 0]);
+  .domain([0, 40])
+  .range([0, svgWidth]);
 var refreshBars;
 
 // maak een svg voor de hypergraf
@@ -638,11 +639,7 @@ d3.csv("cw-5.csv").then(function (data) {
     refreshBars = drawHorizontalBar;
 
     function drawHorizontalBar() {
-      var barGroup = d3.select(".bargroup");
       var creditLength = svgWidth / 40;
-      var p1 = 0;
-      var p2 = 0;
-      var space = 3;
 
       var m1 = d3.selectAll(".chosen-master1").data();
       var m2 = d3.selectAll(".chosen-master2").data();
@@ -652,28 +649,59 @@ d3.csv("cw-5.csv").then(function (data) {
       var s2 = m1.filter(c => c.Semester == 2);
       var b1 = m1.filter(c => c.Semester == 3);
       b1.forEach(c => {
-        c.Studiepunten = c.Studiepunten / 2;
-        s1.push(c);
-        s2.push(c);
+        s1.push({ OPO: c.OPO, Studiepunten: c.Studiepunten / 2 });
+        s2.push({ OPO: c.OPO, Studiepunten: c.Studiepunten / 2 });
       });
       var s3 = m2.filter(c => c.Semester == 1);
       var s4 = m2.filter(c => c.Semester == 2);
       var b2 = m2.filter(c => c.Semester == 3);
       b2.forEach(c => {
-        c.Studiepunten = c.Studiepunten / 2;
-        s3.push(c);
-        s4.push(c);
+        s3.push({ OPO: c.OPO, Studiepunten: c.Studiepunten / 2 });
+        s4.push({ OPO: c.OPO, Studiepunten: c.Studiepunten / 2 });
       });
 
       s1 = s1.sort(function (a, b) { return a.Studiepunten > b.Studiepunten });
       S2 = s2.sort(function (a, b) { return a.Studiepunten > b.Studiepunten });
       s3 = s3.sort(function (a, b) { return a.Studiepunten > b.Studiepunten });
       S4 = s4.sort(function (a, b) { return a.Studiepunten > b.Studiepunten });
-      
+
+      var sems = [s1, s2, s3, s4];
+
+      console.log(sems);
+      d3.select(".bargroup").selectAll("rect").remove();
+      drawBar(s1, 0);
+      drawBar(s2, 1);
+      drawBar(s3, 2);
+      drawBar(s4, 3);
+
+      function drawBar(data, index) {
+
+        var stack = d3.stack([data])
+          .keys(function (d) {
+            var keys = [];
+            for (var i = 0; i < d[0].length; i++)
+              keys.push(i);
+            return keys;
+          })
+          .value(function (d, key) { return d[key].Studiepunten });
+
+        var barGroup = d3.select(".bargroup")
+          .selectAll(".rect-sem")
+          .data(stack([data]));
+
+        barGroup.enter()
+          .append("rect")
+          .attr("x", function (d) { return creditLength * d[0][0]; })
+          .attr("y", 25 * index)
+          .attr("width", function (d) { return creditLength * (d[0][1] - d[0][0]) })
+          .attr("height", 20);
+      }
 
     }
   });
 });
+
+
 
 // bound the given x coordinate to the visible part of the hypergraph
 function boxBoundedX(x) {
@@ -739,6 +767,11 @@ function checkboxInterestedChanged() {
     activeCourse.classed("not-interested", false)
       .classed("is-not-interested", false);
   }
+
+  // update de horizontal bars bij eender welke change vd infobox
+  // lijkt te vlug te gebeuren
+  setTimeout(refreshBars, 100);
+
 };
 
 // verander de klasse van de vakken waarin de gebruiker niet geïnteresseerd is als de status van de switch verandert
