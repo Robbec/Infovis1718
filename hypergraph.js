@@ -24,6 +24,12 @@ var timeout;
 var svgWidth = 500;
 var svgHeight = 500;
 
+// variabelen voor horizontal bar chart
+var x = d3.scaleLinear()
+  .domain([0, 40])
+  .range([0, svgWidth]);
+var refreshBars;
+
 // maak een svg voor de hypergraf
 hypergraph.attr("width", svgWidth)
   .attr("height", svgHeight);
@@ -123,21 +129,21 @@ d3.csv("cw-5.csv").then(function (data) {
       //   });
       // }
       // else if (courseOptions.length > 1 && courseOptions.length < 6) {
-        // else if (courseOptions.length > 1) {
-        // var overlapName = courseOptions.map(o => o.ID).toString();
-        // var overlapNode = { ID: overlapName, OPO: overlapName };
-        //
-        // // ga na of de overlap node al voorkomt in de lijst van alle overlap nodes; indien niet, sla hem daarin op
-        // if (overlapNodes.filter(o => o.ID == overlapName).length == 0) {
-        //   // sla de overlap node op in de lijst van alle overlap nodes
-        //   overlapNodes.push(overlapNode);
-        //   // maak een link tussen de overlap node en alle gerelateerde opties
-        //   courseOptions.forEach(o => links.push({
-        //     "source": o,
-        //     "target": overlapNode,
-        //     "dist": distanceOptionNodeOverlapNode
-        //   }));
-        // }
+      // else if (courseOptions.length > 1) {
+      // var overlapName = courseOptions.map(o => o.ID).toString();
+      // var overlapNode = { ID: overlapName, OPO: overlapName };
+      //
+      // // ga na of de overlap node al voorkomt in de lijst van alle overlap nodes; indien niet, sla hem daarin op
+      // if (overlapNodes.filter(o => o.ID == overlapName).length == 0) {
+      //   // sla de overlap node op in de lijst van alle overlap nodes
+      //   overlapNodes.push(overlapNode);
+      //   // maak een link tussen de overlap node en alle gerelateerde opties
+      //   courseOptions.forEach(o => links.push({
+      //     "source": o,
+      //     "target": overlapNode,
+      //     "dist": distanceOptionNodeOverlapNode
+      //   }));
+      // }
 
       if (courseOptions.length < options.length) {
         // verbind het vak met de overlap node
@@ -382,7 +388,7 @@ d3.csv("cw-5.csv").then(function (data) {
     // toggle de highlight van de links die vertrekken uit de gegeven optie
     function toggleHighlightOptionLinks(option) {
       hypergraph.selectAll(".link")
-        .each(function(l) {
+        .each(function (l) {
           if (l.source == option) {
             this.classList.toggle("non-active");
           }
@@ -462,7 +468,7 @@ d3.csv("cw-5.csv").then(function (data) {
         .style("left", (d.x + 20) + "px")
         .style("top", (d.y - 12) + "px");
       clearTimeout(timeout);
-      timeout = setTimeout(function() {
+      timeout = setTimeout(function () {
         tooltip.classed("active", false);
       }, 1000);
     }
@@ -506,9 +512,9 @@ d3.csv("cw-5.csv").then(function (data) {
 
       // vind alle vakken van de optie en orden ze alfabetisch
       var courses = data.filter(function (d) {
-          return (0 < d[o.OPO]) && (getCourseOptions(d).length < options.length);
-        })
-       .sort(function (a, b) {
+        return (0 < d[o.OPO]) && (getCourseOptions(d).length < options.length);
+      })
+        .sort(function (a, b) {
           return a.OPO.toLowerCase().localeCompare(b.OPO.toLowerCase());
         });
 
@@ -634,29 +640,72 @@ d3.csv("cw-5.csv").then(function (data) {
     * Horizontal bar
     */
     // om te testen
-    data[0].selectedInSem = 1;
-    data[5].selectedInSem = 1;
-    data[8].selectedInSem = 1;
-    drawHorizontalBar();
+    refreshBars = drawHorizontalBar;
 
     function drawHorizontalBar() {
-      var barGroup = d3.select(".bargroup");
       var creditLength = svgWidth / 40;
-      var pointer = 0;
 
-      // eventueel alle courses in de dom afgaan ipv de data
-      data.forEach(course => {
-        if (course.selectedInSem > 0) {
-          // kleur kan nog
-          barGroup.append("svg:rect")
-            .attr("width", course.Studiepunten * creditLength)
-            .attr("height", "20");
-            pointer += course.Studiepunten * creditLength;
-        }
+      var m1 = d3.selectAll(".chosen-master1").data();
+      var m2 = d3.selectAll(".chosen-master2").data();
+      x.domain([0, 40]).nice();
+
+      var s1 = m1.filter(c => c.Semester == 1);
+      var s2 = m1.filter(c => c.Semester == 2);
+      var b1 = m1.filter(c => c.Semester == 3);
+      b1.forEach(c => {
+        s1.push({ OPO: c.OPO, Studiepunten: c.Studiepunten / 2 });
+        s2.push({ OPO: c.OPO, Studiepunten: c.Studiepunten / 2 });
       });
+      var s3 = m2.filter(c => c.Semester == 1);
+      var s4 = m2.filter(c => c.Semester == 2);
+      var b2 = m2.filter(c => c.Semester == 3);
+      b2.forEach(c => {
+        s3.push({ OPO: c.OPO, Studiepunten: c.Studiepunten / 2 });
+        s4.push({ OPO: c.OPO, Studiepunten: c.Studiepunten / 2 });
+      });
+
+      s1 = s1.sort(function (a, b) { return a.Studiepunten > b.Studiepunten });
+      S2 = s2.sort(function (a, b) { return a.Studiepunten > b.Studiepunten });
+      s3 = s3.sort(function (a, b) { return a.Studiepunten > b.Studiepunten });
+      S4 = s4.sort(function (a, b) { return a.Studiepunten > b.Studiepunten });
+
+      var sems = [s1, s2, s3, s4];
+
+      console.log(sems);
+      d3.select(".bargroup").selectAll("rect").remove();
+      drawBar(s1, 0);
+      drawBar(s2, 1);
+      drawBar(s3, 2);
+      drawBar(s4, 3);
+
+      function drawBar(data, index) {
+
+        var stack = d3.stack([data])
+          .keys(function (d) {
+            var keys = [];
+            for (var i = 0; i < d[0].length; i++)
+              keys.push(i);
+            return keys;
+          })
+          .value(function (d, key) { return d[key].Studiepunten });
+
+        var barGroup = d3.select(".bargroup")
+          .selectAll(".rect-sem")
+          .data(stack([data]));
+
+        barGroup.enter()
+          .append("rect")
+          .attr("x", function (d) { return creditLength * d[0][0]; })
+          .attr("y", 25 * index)
+          .attr("width", function (d) { return creditLength * (d[0][1] - d[0][0]) })
+          .attr("height", 20);
+      }
+
     }
   });
 });
+
+
 
 // bound the given x coordinate to the visible part of the hypergraph
 function boxBoundedX(x) {
@@ -722,6 +771,11 @@ function checkboxInterestedChanged() {
     activeCourse.classed("not-interested", false)
       .classed("is-not-interested", false);
   }
+
+  // update de horizontal bars bij eender welke change vd infobox
+  // lijkt te vlug te gebeuren
+  setTimeout(refreshBars, 100);
+
 };
 
 // verander de klasse van de vakken waarin de gebruiker niet geïnteresseerd is als de status van de switch verandert
