@@ -53,7 +53,7 @@ body {
   stroke-width: 5;
 }
 
-.hypergraph .node {
+.node {
   cursor: pointer;
   transition: 0.3s linear;
 }
@@ -72,6 +72,7 @@ body {
 }
 
 .non-active {
+  cursor: default;
   opacity: 0.25;
 }
 
@@ -151,6 +152,7 @@ body {
 
 .legenda-item .node {
   fill: #cfd8dc;
+  cursor: default;
   stroke: #cfd8dc;
 }
 

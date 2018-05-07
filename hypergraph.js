@@ -250,13 +250,13 @@ d3.csv("cw-5.csv").then(function (data) {
       })
       .on("mouseover", function (d) {
         showTooltip(d);
-        if (!activatedNodeExists()) {
+        if (!activeNodeExists()) {
           toggleHighlightOption(d);
         }
       })
       .on("mouseout", function (d) {
         hideTooltip();
-        if (!activatedNodeExists()) {
+        if (!activeNodeExists()) {
           toggleHighlightOption(d);
         }
       })
@@ -265,7 +265,7 @@ d3.csv("cw-5.csv").then(function (data) {
           emptyInfobox();
           toggleActive(d3.select(this));
           // opmerking: de optie blijft gehighlightet tot de mouseout
-        } else if (!activatedNodeExists()) {
+        } else if (!activeNodeExists()) {
           fillInfoboxForOption(d);
           toggleActive(d3.select(this));
           // opmerking: de optie is al gehighlightet vanwege de hover
@@ -307,133 +307,69 @@ d3.csv("cw-5.csv").then(function (data) {
       })
       .on("mouseover", function (d) {
         showTooltip(d);
-        if (!activatedNodeExists()) {
-          toggleHighlightConnectedOptions(d);
-          toggleCourseLinksHighlight(d);
-          toggleHighlightPrerequisites(d);
+        if (!activeNodeExists()) {
+          toggleHighlightCourse(d);
         }
       })
       .on("mouseout", function (d) {
         hideTooltip();
-        if (!activatedNodeExists()) {
-          toggleHighlightConnectedOptions(d);
-          toggleCourseLinksHighlight(d);
-          toggleHighlightPrerequisites(d);
+        if (!activeNodeExists()) {
+          toggleHighlightCourse(d);
         }
       })
       .on("click", function (d) {
-        // verklein de straal van het vorige actieve vak
-        var oldActiveCourse = hypergraph.select(".course-node.active");
-        oldActiveCourse.transition(transition).attr("r", function () {
-          return oldActiveCourse.attr("r") / 1.75;
-        });
-
-        // geef de klasse .active aan het aangeklikte vak als dat vak nog niet actief was en vice versa
-        var clickedCourse = d3.select(this);
-        var alreadyActive = clickedCourse.classed("active");
-        clickedCourse.classed("active", !alreadyActive);
-
-        // verwijder de klasse .active voor het vorige actieve vak
-        oldActiveCourse.classed("active", false);
-
-        // geef de klasse .non-active aan alle niet-actieve vakken als het aangeklikte vak nog niet actief was; verwijder anders de klasse .non-active
-        hypergraph.selectAll(".course-node")
-          .classed("non-active", function (d, i) {
-            return !d3.select(this).classed("active") && !alreadyActive;
-          }
-        );
-
-        // vergroot de straal van het nieuwe actieve vak
-        var newActiveCourse = d3.select(".course-node.active");
-        newActiveCourse.transition(transition).attr("r", function () {
-          return d3.select(this).attr("r") * 1.75;
-        });
-
-        highlightPrerequisites(d);
-
-        // geef de klasse .non-active aan alle option nodes als en slechts als er een vak actief is
-        hypergraph.selectAll(".option-node")
-          .classed("non-active", !newActiveCourse.empty());
-
-        toggleHighlightConnectedOptions(d);
-
-        // sla alle vakken op die overlappen met het actieve vak
-        if (!newActiveCourse.empty()) {
-          var scheduleOverlappingCourses = getScheduleOverlappingCourses(newActiveCourse.datum()["ID"]);
+        var course = d3.select(this);
+        var activeCourse = hypergraph.select(".course-node.active");
+        var activeCourseExists = !activeCourse.empty();
+        if (isActive(course)) {
+          // opmerking: het vak blijft gehighlightet tot de mouseout
+          emptyInfobox();
+          shrinkCourseNode(course);
+          toggleActive(course);
+        } else if (activeCourseExists) {
+          // opmerking: de highlights voor de betrokken vakken moeten nu aangepast worden
+          shrinkCourseNode(activeCourse);
+          toggleHighlightCourse(activeCourse.datum());
+          toggleActive(activeCourse);
+          fillInfoboxForCourse(course);
+          growCourseNode(course);
+          toggleHighlightCourse(course.datum());
+          toggleActive(course);
+        } else {
+          // opmerking: de prerequisites zijn al gehighlightet vanwege de hover
+          fillInfoboxForCourse(course);
+          growCourseNode(course);
+          toggleActive(course);
         }
 
-        // geef de klasse .schedule-overlap alleen aan vakken die overlappen met het actieve vak
-        hypergraph.selectAll(".course-node")
-          .classed("schedule-overlap", function (dcircle) {
-            var id = dcircle.ID;
-            if (!newActiveCourse.empty()) {
-              return scheduleOverlappingCourses.has(id);
-            }
-            return false;
-          });
-
-        // verberg de hulptekst in de infobox als en slechts als er geen actief vak is
-        infobox.select(".help").classed("hidden", !newActiveCourse.empty());
-
-        // verwijder alle vakgerelateerde inhoud in de infobox
-        infobox.selectAll(".infobox > *:not(.help)").remove();
-
-        if (!newActiveCourse.empty()) {
-          // maak nieuwe inhoud aan in de infobox:
-          var activeCourseData = newActiveCourse.datum();
-          // 1) titel van het actieve vak
-          infobox.append("h3").text(activeCourseData.OPO);
-
-          // 2) studiepunten van het actieve vak
-          infobox.append("div")
-            .attr("class", "points")
-            .text(activeCourseData.Studiepunten + " SP");
-
-          // 3) checkbox "Niet geïnteresseerd" voor het actieve vak
-          var checkboxInterested = infobox.append("label")
-            .text("Niet geïnteresseerd in dit vak.");
-          checkboxInterested.attr("class", "checkbox checkbox-interested")
-            .append("input")
-            .attr("type", "checkbox")
-            .property("checked", newActiveCourse.classed("not-interested"))
-            .property("checked", newActiveCourse.classed("is-not-interested"));
-          checkboxInterested.append("span")
-            .attr("class", "checkmark");
-
-          // 4) checkbox "Kies in 1ste Master" voor het actieve vak
-          var checkboxChoose1 = infobox.append("label")
-            .text("Kies dit vak in 1ste Master.");
-          checkboxChoose1.attr("class", "checkbox checkbox-chosen-master1")
-            .append("input")
-            .attr("type", "checkbox")
-            .property("checked", newActiveCourse.classed("chosen-master1"));
-          checkboxChoose1.append("span")
-            .attr("class", "checkmark");
-
-          // 5) checkbox "Kies in 2de Master" voor het actieve vak
-          var checkboxChoose2 = infobox.append("label")
-            .text("Kies dit vak in 2de Master.");
-          checkboxChoose2.attr("class", "checkbox checkbox-chosen-master2")
-            .append("input")
-            .attr("type", "checkbox")
-            .property("checked", newActiveCourse.classed("chosen-master2"));
-          checkboxChoose2.append("span")
-            .attr("class", "checkmark");
-        }
+        // // sla alle vakken op die overlappen met het actieve vak
+        // if (!newActiveCourse.empty()) {
+        //   var scheduleOverlappingCourses = getScheduleOverlappingCourses(newActiveCourse.datum()["ID"]);
+        // }
+        //
+        // // geef de klasse .schedule-overlap alleen aan vakken die overlappen met het actieve vak
+        // hypergraph.selectAll(".course-node")
+        //   .classed("schedule-overlap", function (dcircle) {
+        //     var id = dcircle.ID;
+        //     if (!newActiveCourse.empty()) {
+        //       return scheduleOverlappingCourses.has(id);
+        //     }
+        //     return false;
+        //   });
       });
 
     /**
     * Functies met betrekking tot de toestand van nodes in de hypergraf
     */
 
-    // toggle het highlighten van de gegeven optie
+    // toggle de highlight van de gegeven optie
     function toggleHighlightOption(option) {
       toggleHighlightConnectedCourses(option);
-      toggleHighlightOtherOptions(option);
       toggleHighlightOptionLinks(option);
+      toggleHighlightOtherOptions(option);
     }
 
-    // toggle het highlighten van de vakken die verbonden zijn met de gegeven optie
+    // toggle de highlight van de vakken die verbonden zijn met de gegeven optie
     function toggleHighlightConnectedCourses(option) {
       hypergraph.selectAll(".course-node")
         .each(function (c) {
@@ -463,18 +399,34 @@ d3.csv("cw-5.csv").then(function (data) {
         })
     }
 
-    // check of de gegeven node actief is
-    function isActive(node) {
-      return node.classed("active");
+    // toggle de highlight van het gegeven vak
+    function toggleHighlightCourse(course) {
+      toggleHighlightConnectedOptions(course);
+      toggleHighlightCourseLinks(course);
+      toggleHighlightPrerequisites(course);
     }
 
-    // verander het actief-zijn van de gegeven node
-    function toggleActive(node) {
-      var active = node.classed("active");
-      node.classed("active", !active);
+    // toggle de highlight van de opties die niet verbonden zijn met het gegeven vak
+    function toggleHighlightConnectedOptions(course) {
+      hypergraph.selectAll(".option-node")
+        .each(function (o) {
+          if (course[o.ID] == 0) {
+            this.classList.toggle("non-active");
+          }
+        })
     }
 
-    // toggle de highlight van alle vakken die geen prerequisite zijn van het gegeven vak
+    // toggle de highlight van de links die aankomen in het gegeven vak
+    function toggleHighlightCourseLinks(course) {
+      hypergraph.selectAll(".link")
+        .each(function(l) {
+          if (l.target == course) {
+            this.classList.toggle("non-active");
+          }
+        });
+    }
+
+    // toggle de highlight van de vakken die geen prerequisite zijn van het gegeven vak
     function toggleHighlightPrerequisites(course) {
       var prerequisites = course["Gelijktijdig volgen"];
       hypergraph.selectAll(".course-node")
@@ -485,36 +437,22 @@ d3.csv("cw-5.csv").then(function (data) {
         })
     }
 
-    // toggle de highlight van opties die niet verbonden zijn met het gegeven vak
-    function toggleHighlightConnectedOptions(course) {
-      hypergraph.selectAll(".option-node")
-        .each(function (o) {
-          if (course[o.ID] == 0) {
-            this.classList.toggle("non-active");
-          }
-        })
-    }
-
-    // geef boolean terug die aangeeft of er actieve nodes zijn in de graf
-    function activatedNodeExists() {
+    // check of er actieve nodes zijn in de graf
+    function activeNodeExists() {
       var activeCourseNodes = hypergraph.select(".course-node.active");
       var activeOptionNodes = hypergraph.select(".option-node.active");
       return !activeCourseNodes.empty() || !activeOptionNodes.empty();
     }
 
-    // deactiveer alle option nodes
-    function deactivateAllOptionNodes() {
-      hypergraph.selectAll(".option-node").classed("active", false);
+    // check of de gegeven node actief is
+    function isActive(node) {
+      return node.classed("active");
     }
 
-    // verander de highlightstatus van de links die aankomen in de gegeven course
-    function toggleCourseLinksHighlight(course) {
-      hypergraph.selectAll(".link")
-        .each(function(l) {
-          if (l.target == course) {
-            this.classList.toggle("non-active");
-          }
-        });
+    // toggle het actief-zijn van de gegeven node
+    function toggleActive(node) {
+      var active = node.classed("active");
+      node.classed("active", !active);
     }
 
     // toon een tooltip die na 1s weer verdwijnt voor de gegeven node
@@ -534,20 +472,35 @@ d3.csv("cw-5.csv").then(function (data) {
       tooltip.classed("active", false);
     }
 
+    // verklein de straal van de gegeven course node
+    function shrinkCourseNode(course) {
+      course.transition(transition)
+        .attr("r", function () {
+          return course.attr("r") / 1.5;
+        });
+    }
+
+    // vergroot de straal van de gegeven course node
+    function growCourseNode(course) {
+      course.transition(transition)
+        .attr("r", function () {
+          return course.attr("r") * 1.5;
+        });
+    }
+
     /**
     * Functies met betrekking tot de inhoud in de infobox
     */
 
     // verwijder alle vakgerelateerde inhoud in de infobox
     function emptyInfobox() {
-      infobox.select(".help").classed("hidden", false);
+      infobox.select(".help").classed("hidden", true);
       infobox.selectAll(".infobox > *:not(.help)").remove();
     }
 
     // voeg inhoud over de gegeven optie toe aan de infobox
     function fillInfoboxForOption(o) {
       emptyInfobox();
-      infobox.select(".help").classed("hidden", true);
       infobox.append("h3").text(o.OPO);
       var ul = infobox.append("ul").classed("coursesList", true);
 
@@ -568,14 +521,65 @@ d3.csv("cw-5.csv").then(function (data) {
         .append("li")
         .text(d => d.OPO)
         .on("mouseover", function (d) {
-          highlightPrerequisites(d);
+            var option = hypergraph.select(".option-node.active").datum();
+            toggleHighlightOption(o);
+            toggleHighlightConnectedOptions(d);
+            toggleHighlightCourseLinks(d);
+            toggleHighlightPrerequisites(d);
         })
         .on("mouseout", function (d) {
-
+          hideTooltip(d);
+          toggleHighlightConnectedOptions(d);
+          toggleHighlightCourseLinks(d);
+          toggleHighlightPrerequisites(d);
         })
         .on("click", function (d) {
 
         });
+    }
+
+    // voeg inhoud voor het gegeven vak toe aan de infobox
+    function fillInfoboxForCourse(c) {
+      emptyInfobox();
+      var course = c.datum();
+      // 1) titel van het actieve vak
+      infobox.append("h3").text(course.OPO);
+
+      // 2) studiepunten van het actieve vak
+      infobox.append("div")
+        .attr("class", "points")
+        .text(course.Studiepunten + " SP");
+
+      // 3) checkbox "Niet geïnteresseerd" voor het actieve vak
+      var checkboxInterested = infobox.append("label")
+        .text("Niet geïnteresseerd in dit vak.");
+      checkboxInterested.attr("class", "checkbox checkbox-interested")
+        .append("input")
+        .attr("type", "checkbox")
+        .property("checked", c.classed("not-interested"))
+        .property("checked", c.classed("is-not-interested"));
+      checkboxInterested.append("span")
+        .attr("class", "checkmark");
+
+      // 4) checkbox "Kies in 1ste Master" voor het actieve vak
+      var checkboxChoose1 = infobox.append("label")
+        .text("Kies dit vak in 1ste Master.");
+      checkboxChoose1.attr("class", "checkbox checkbox-chosen-master1")
+        .append("input")
+        .attr("type", "checkbox")
+        .property("checked", c.classed("chosen-master1"));
+      checkboxChoose1.append("span")
+        .attr("class", "checkmark");
+
+      // 5) checkbox "Kies in 2de Master" voor het actieve vak
+      var checkboxChoose2 = infobox.append("label")
+        .text("Kies dit vak in 2de Master.");
+      checkboxChoose2.attr("class", "checkbox checkbox-chosen-master2")
+        .append("input")
+        .attr("type", "checkbox")
+        .property("checked", c.classed("chosen-master2"));
+      checkboxChoose2.append("span")
+        .attr("class", "checkmark");
     }
 
     // vind alle option nodes die verbonden zijn met de gegeven course
