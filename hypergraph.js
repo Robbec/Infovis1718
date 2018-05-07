@@ -24,6 +24,11 @@ var timeout;
 var svgWidth = 500;
 var svgHeight = 500;
 
+// variabelen voor horizontal bar chart
+var x = d3.scaleLinear()
+  .rangeRound([svgWidth, 0]);
+var refreshBars;
+
 // maak een svg voor de hypergraf
 hypergraph.attr("width", svgWidth)
   .attr("height", svgHeight);
@@ -123,21 +128,21 @@ d3.csv("cw-5.csv").then(function (data) {
       //   });
       // }
       // else if (courseOptions.length > 1 && courseOptions.length < 6) {
-        // else if (courseOptions.length > 1) {
-        // var overlapName = courseOptions.map(o => o.ID).toString();
-        // var overlapNode = { ID: overlapName, OPO: overlapName };
-        //
-        // // ga na of de overlap node al voorkomt in de lijst van alle overlap nodes; indien niet, sla hem daarin op
-        // if (overlapNodes.filter(o => o.ID == overlapName).length == 0) {
-        //   // sla de overlap node op in de lijst van alle overlap nodes
-        //   overlapNodes.push(overlapNode);
-        //   // maak een link tussen de overlap node en alle gerelateerde opties
-        //   courseOptions.forEach(o => links.push({
-        //     "source": o,
-        //     "target": overlapNode,
-        //     "dist": distanceOptionNodeOverlapNode
-        //   }));
-        // }
+      // else if (courseOptions.length > 1) {
+      // var overlapName = courseOptions.map(o => o.ID).toString();
+      // var overlapNode = { ID: overlapName, OPO: overlapName };
+      //
+      // // ga na of de overlap node al voorkomt in de lijst van alle overlap nodes; indien niet, sla hem daarin op
+      // if (overlapNodes.filter(o => o.ID == overlapName).length == 0) {
+      //   // sla de overlap node op in de lijst van alle overlap nodes
+      //   overlapNodes.push(overlapNode);
+      //   // maak een link tussen de overlap node en alle gerelateerde opties
+      //   courseOptions.forEach(o => links.push({
+      //     "source": o,
+      //     "target": overlapNode,
+      //     "dist": distanceOptionNodeOverlapNode
+      //   }));
+      // }
 
       if (courseOptions.length < options.length) {
         // verbind het vak met de overlap node
@@ -341,7 +346,7 @@ d3.csv("cw-5.csv").then(function (data) {
           .classed("non-active", function (d, i) {
             return !d3.select(this).classed("active") && !alreadyActive;
           }
-        );
+          );
 
         // vergroot de straal van het nieuwe actieve vak
         var newActiveCourse = d3.select(".course-node.active");
@@ -349,7 +354,7 @@ d3.csv("cw-5.csv").then(function (data) {
           return d3.select(this).attr("r") * 1.75;
         });
 
-        highlightPrerequisites(d);
+        toggleHighlightPrerequisites(d);
 
         // geef de klasse .non-active aan alle option nodes als en slechts als er een vak actief is
         hypergraph.selectAll(".option-node")
@@ -446,7 +451,7 @@ d3.csv("cw-5.csv").then(function (data) {
     // toggle de highlight van de links die vertrekken uit de gegeven optie
     function toggleHighlightOptionLinks(option) {
       hypergraph.selectAll(".link")
-        .each(function(l) {
+        .each(function (l) {
           if (l.source == option) {
             this.classList.toggle("non-active");
           }
@@ -510,7 +515,7 @@ d3.csv("cw-5.csv").then(function (data) {
     // verander de highlightstatus van de links die aankomen in de gegeven course
     function toggleCourseLinksHighlight(course) {
       hypergraph.selectAll(".link")
-        .each(function(l) {
+        .each(function (l) {
           if (l.target == course) {
             this.classList.toggle("non-active");
           }
@@ -524,7 +529,7 @@ d3.csv("cw-5.csv").then(function (data) {
         .style("left", (d.x + 20) + "px")
         .style("top", (d.y - 12) + "px");
       clearTimeout(timeout);
-      timeout = setTimeout(function() {
+      timeout = setTimeout(function () {
         tooltip.classed("active", false);
       }, 1000);
     }
@@ -553,9 +558,9 @@ d3.csv("cw-5.csv").then(function (data) {
 
       // vind alle vakken van de optie en orden ze alfabetisch
       var courses = data.filter(function (d) {
-          return (0 < d[o.OPO]) && (getCourseOptions(d).length < options.length);
-        })
-       .sort(function (a, b) {
+        return (0 < d[o.OPO]) && (getCourseOptions(d).length < options.length);
+      })
+        .sort(function (a, b) {
           return a.OPO.toLowerCase().localeCompare(b.OPO.toLowerCase());
         });
 
@@ -630,26 +635,42 @@ d3.csv("cw-5.csv").then(function (data) {
     * Horizontal bar
     */
     // om te testen
-    data[0].selectedInSem = 1;
-    data[5].selectedInSem = 1;
-    data[8].selectedInSem = 1;
-    drawHorizontalBar();
+    refreshBars = drawHorizontalBar;
 
     function drawHorizontalBar() {
       var barGroup = d3.select(".bargroup");
       var creditLength = svgWidth / 40;
-      var pointer = 0;
+      var p1 = 0;
+      var p2 = 0;
+      var space = 3;
 
-      // eventueel alle courses in de dom afgaan ipv de data
-      data.forEach(course => {
-        if (course.selectedInSem > 0) {
-          // kleur kan nog
-          barGroup.append("svg:rect")
-            .attr("width", course.Studiepunten * creditLength)
-            .attr("height", "20");
-            pointer += course.Studiepunten * creditLength;
-        }
+      var m1 = d3.selectAll(".chosen-master1").data();
+      var m2 = d3.selectAll(".chosen-master2").data();
+      x.domain([0, 40]).nice();
+
+      var s1 = m1.filter(c => c.Semester == 1);
+      var s2 = m1.filter(c => c.Semester == 2);
+      var b1 = m1.filter(c => c.Semester == 3);
+      b1.forEach(c => {
+        c.Studiepunten = c.Studiepunten / 2;
+        s1.push(c);
+        s2.push(c);
       });
+      var s3 = m2.filter(c => c.Semester == 1);
+      var s4 = m2.filter(c => c.Semester == 2);
+      var b2 = m2.filter(c => c.Semester == 3);
+      b2.forEach(c => {
+        c.Studiepunten = c.Studiepunten / 2;
+        s3.push(c);
+        s4.push(c);
+      });
+
+      s1 = s1.sort(function (a, b) { return a.Studiepunten > b.Studiepunten });
+      S2 = s2.sort(function (a, b) { return a.Studiepunten > b.Studiepunten });
+      s3 = s3.sort(function (a, b) { return a.Studiepunten > b.Studiepunten });
+      S4 = s4.sort(function (a, b) { return a.Studiepunten > b.Studiepunten });
+      
+
     }
   });
 });
