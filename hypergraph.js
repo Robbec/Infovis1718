@@ -308,17 +308,17 @@ d3.csv("cw-5.csv").then(function (data) {
       .on("mouseover", function (d) {
         showTooltip(d);
         if (!activatedNodeExists()) {
-          highlightConnectedOptions(d);
-          deactivateAllOtherCourses(d);
-          highlightPrerequisites(d);
+          toggleHighlightConnectedOptions(d);
           toggleCourseLinksHighlight(d);
+          toggleHighlightPrerequisites(d);
         }
       })
       .on("mouseout", function (d) {
         hideTooltip();
         if (!activatedNodeExists()) {
-          restoreDefaultGraph();
+          toggleHighlightConnectedOptions(d);
           toggleCourseLinksHighlight(d);
+          toggleHighlightPrerequisites(d);
         }
       })
       .on("click", function (d) {
@@ -355,7 +355,7 @@ d3.csv("cw-5.csv").then(function (data) {
         hypergraph.selectAll(".option-node")
           .classed("non-active", !newActiveCourse.empty());
 
-        highlightConnectedOptions(d);
+        toggleHighlightConnectedOptions(d);
 
         // sla alle vakken op die overlappen met het actieve vak
         if (!newActiveCourse.empty()) {
@@ -474,32 +474,25 @@ d3.csv("cw-5.csv").then(function (data) {
       node.classed("active", !active);
     }
 
-    // herstel de oorspronkelijke toestand van alle nodes in de hypergraf
-    function restoreDefaultGraph() {
-      var nodes = hypergraph.selectAll(".node");
-      nodes.classed("active", false);
-      nodes.classed("prerequisite", false);
-      nodes.classed("non-active", false);
-    }
-
-    function deactivateAllOtherCourses(course) {
-      hypergraph.selectAll(".course-node")
-        .filter(c => c.ID != course.ID)
-        .classed("non-active", true);
-    }
-
-    // geef de klasse .prerequisite aan de prerequisites van het gegeven vak
-    function highlightPrerequisites(course) {
+    // toggle de highlight van alle vakken die geen prerequisite zijn van het gegeven vak
+    function toggleHighlightPrerequisites(course) {
       var prerequisites = course["Gelijktijdig volgen"];
       hypergraph.selectAll(".course-node")
-        .classed("prerequisite", c => prerequisites.split(" ").includes(c.ID));
+        .each(function (c) {
+          if (c.ID != course.ID && !prerequisites.split(" ").includes(c.ID)) {
+            this.classList.toggle("non-active");
+          }
+        })
     }
 
-    // highlight de bijhorende opties van het gegeven vak
-    function highlightConnectedOptions(course) {
-      var disconnectedOptionNodes = hypergraph.selectAll(".option-node")
-        .filter(o => course[o.ID] == 0);
-      disconnectedOptionNodes.classed("non-active", true);
+    // toggle de highlight van opties die niet verbonden zijn met het gegeven vak
+    function toggleHighlightConnectedOptions(course) {
+      hypergraph.selectAll(".option-node")
+        .each(function (o) {
+          if (course[o.ID] == 0) {
+            this.classList.toggle("non-active");
+          }
+        })
     }
 
     // geef boolean terug die aangeeft of er actieve nodes zijn in de graf
@@ -575,7 +568,6 @@ d3.csv("cw-5.csv").then(function (data) {
         .append("li")
         .text(d => d.OPO)
         .on("mouseover", function (d) {
-          deactivateAllOtherCourses(d);
           highlightPrerequisites(d);
         })
         .on("mouseout", function (d) {
