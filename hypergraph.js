@@ -80,7 +80,7 @@ d3.csv("cw-5.csv").then(function (data) {
       x = x / nb;
       y = y / nb;
       color = Math.atan2(y, x) * 180 / Math.PI;
-      console.log(color);
+      
       return 'hsl(' + color + ', 100%, 50%)';
     }
 
@@ -438,7 +438,7 @@ d3.csv("cw-5.csv").then(function (data) {
     // toggle de highlight van de links die aankomen in het gegeven vak
     function toggleHighlightCourseLinks(course) {
       hypergraph.selectAll(".link")
-        .each(function(l) {
+        .each(function (l) {
           if (l.target == course) {
             this.classList.toggle("non-active");
           }
@@ -540,11 +540,11 @@ d3.csv("cw-5.csv").then(function (data) {
         .append("li")
         .text(d => d.OPO)
         .on("mouseover", function (d) {
-            var option = hypergraph.select(".option-node.active").datum();
-            toggleHighlightOption(o);
-            toggleHighlightConnectedOptions(d);
-            toggleHighlightCourseLinks(d);
-            toggleHighlightPrerequisites(d);
+          var option = hypergraph.select(".option-node.active").datum();
+          toggleHighlightOption(o);
+          toggleHighlightConnectedOptions(d);
+          toggleHighlightCourseLinks(d);
+          toggleHighlightPrerequisites(d);
         })
         .on("mouseout", function (d) {
           hideTooltip(d);
@@ -684,7 +684,6 @@ d3.csv("cw-5.csv").then(function (data) {
 
       var sems = [s1, s2, s3, s4];
 
-      console.log(sems);
       d3.select(".bargroup").selectAll("rect").remove();
       drawBar(s1, 0);
       drawBar(s2, 1);
@@ -711,7 +710,8 @@ d3.csv("cw-5.csv").then(function (data) {
           .attr("x", function (d) { return creditLength * d[0][0]; })
           .attr("y", 25 * index)
           .attr("width", function (d) { return creditLength * (d[0][1] - d[0][0]) })
-          .attr("height", 20);
+          .attr("height", 20)
+          .attr("fill", function (d,i) { return colorOfCourse(d[0].data[i]) });
       }
 
     }
