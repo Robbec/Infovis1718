@@ -49,7 +49,10 @@ d3.csv("cw-5.csv").then(function (data) {
     */
     // kleurenpalet aan opties koppelen
     // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=12
-    var colors = ['rgb(178,223,138)', 'rgb(51,160,44)', 'rgb(251,154,153)', 'rgb(227,26,28)', 'rgb(253,191,111)', 'rgb(255,127,0)', 'rgb(202,178,214)', 'rgb(106,61,154)', 'rgb(255,255,153)', 'rgb(177,89,40)', 'rgb(166,206,227)', 'rgb(31,120,180)'];
+    //var colors = ['rgb(77, 203, 77)', 'rgb(130, 77, 203)', 'rgb(203, 138, 77)', 'rgb(203, 203, 77)', 'rgb(77, 132, 203)', 'rgb(203, 77, 144)'];
+    // var colors = ['rgb(203, 140, 77)', 'rgb(77, 203, 77)', 'rgb(203, 203, 77)', 'rgb(77, 203, 203)', 'rgb(77, 77, 203)', 'rgb(161, 77, 203)', 'rgb(203, 77, 203)', 'rgb(203, 77, 77)'];
+    // var colors = ['hsl(300, 100%, 50%)', 'hsl(30, 100%, 50%)', 'hsl(60, 100%, 50%)', 'hsl(120, 100%, 50%)', 'hsl(180, 100%, 50%)', 'hsl(240, 100%, 50%)', 'hsl(266, 100%, 50%)'];
+    var colors = [30, 60, 120, 180, 240, 266, 300];
     var optionColors = [];
     options.forEach((c, i) => optionColors[c] = colors[i]);
     var kulBlue = "#1d8db0";
@@ -61,14 +64,24 @@ d3.csv("cw-5.csv").then(function (data) {
 
     function colorOfCourse(d) {
       // default kleur
-      var color = kulBlue;
+      //var color = 0;
       // kleur van de optie
-      for (i = 0; i < options.length && color == kulBlue; i++) {
+      var x = 0.0;
+      var y = 0.0;
+      var nb = 0;
+      for (i = 0; i < options.length; i++) {
         if (d[options[i]] > 0) {
-          color = optionColors[options[i]];
+          var radian = optionColors[options[i]] * Math.PI / 180;
+          x += Math.cos(radian);
+          y += Math.sin(radian);
+          nb += 1;
         }
       }
-      return color;
+      x = x / nb;
+      y = y / nb;
+      color = Math.atan2(y, x) * 180 / Math.PI;
+      console.log(color);
+      return 'hsl(' + color + ', 100%, 50%)';
     }
 
     // kleur voor opties
@@ -77,7 +90,7 @@ d3.csv("cw-5.csv").then(function (data) {
       var color = getFillColor(d);
       var optionIndex = options.indexOf(d.ID);
       if (optionIndex != -1) {
-        color = optionColors[d.ID];
+        color = 'hsl(' + optionColors[d.ID] + ', 100%, 50%)';
       }
       return color;
     }
