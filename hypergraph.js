@@ -80,7 +80,7 @@ d3.csv("cw-5.csv").then(function (data) {
       x = x / nb;
       y = y / nb;
       color = Math.atan2(y, x) * 180 / Math.PI;
-      
+
       return 'hsl(' + color + ', 100%, 50%)';
     }
 
@@ -666,15 +666,15 @@ d3.csv("cw-5.csv").then(function (data) {
       var s2 = m1.filter(c => c.Semester == 2);
       var b1 = m1.filter(c => c.Semester == 3);
       b1.forEach(c => {
-        s1.push({ OPO: c.OPO, Studiepunten: c.Studiepunten / 2 });
-        s2.push({ OPO: c.OPO, Studiepunten: c.Studiepunten / 2 });
+        s1.push({ ...c, Studiepunten: c.Studiepunten / 2 });
+        s2.push({ ...c, Studiepunten: c.Studiepunten / 2 });
       });
       var s3 = m2.filter(c => c.Semester == 1);
       var s4 = m2.filter(c => c.Semester == 2);
       var b2 = m2.filter(c => c.Semester == 3);
       b2.forEach(c => {
-        s3.push({ OPO: c.OPO, Studiepunten: c.Studiepunten / 2 });
-        s4.push({ OPO: c.OPO, Studiepunten: c.Studiepunten / 2 });
+        s3.push({ ...c, Studiepunten: c.Studiepunten / 2 });
+        s4.push({ ...c, Studiepunten: c.Studiepunten / 2 });
       });
 
       s1 = s1.sort(function (a, b) { return a.Studiepunten > b.Studiepunten });
@@ -711,7 +711,7 @@ d3.csv("cw-5.csv").then(function (data) {
           .attr("y", 25 * index)
           .attr("width", function (d) { return creditLength * (d[0][1] - d[0][0]) })
           .attr("height", 20)
-          .attr("fill", function (d,i) { return colorOfCourse(d[0].data[i]) });
+          .attr("fill", function (d, i) { return colorOfCourse(d[0].data[i]) });
       }
 
     }
