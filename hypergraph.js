@@ -48,7 +48,10 @@ d3.csv("cw-5.csv").then(function(data) {
      */
     // kleurenpalet aan opties koppelen
     // http://colorbrewer2.org/#type=qualitative&scheme=Paired&n=12
-    var colors = ['rgb(178,223,138)', 'rgb(51,160,44)', 'rgb(251,154,153)', 'rgb(227,26,28)', 'rgb(253,191,111)', 'rgb(255,127,0)', 'rgb(202,178,214)', 'rgb(106,61,154)', 'rgb(255,255,153)', 'rgb(177,89,40)', 'rgb(166,206,227)', 'rgb(31,120,180)'];
+    //var colors = ['rgb(77, 203, 77)', 'rgb(130, 77, 203)', 'rgb(203, 138, 77)', 'rgb(203, 203, 77)', 'rgb(77, 132, 203)', 'rgb(203, 77, 144)'];
+    // var colors = ['rgb(203, 140, 77)', 'rgb(77, 203, 77)', 'rgb(203, 203, 77)', 'rgb(77, 203, 203)', 'rgb(77, 77, 203)', 'rgb(161, 77, 203)', 'rgb(203, 77, 203)', 'rgb(203, 77, 77)'];
+    // var colors = ['hsl(300, 100%, 50%)', 'hsl(30, 100%, 50%)', 'hsl(60, 100%, 50%)', 'hsl(120, 100%, 50%)', 'hsl(180, 100%, 50%)', 'hsl(240, 100%, 50%)', 'hsl(266, 100%, 50%)'];
+    var colors = [30, 60, 120, 180, 240, 266, 300];
     var optionColors = [];
     optionNames.forEach((c, i) => optionColors[c] = colors[i]);
     var kulBlue = "#1d8db0";
@@ -60,14 +63,24 @@ d3.csv("cw-5.csv").then(function(data) {
 
     function colorOfCourse(d) {
       // default kleur
-      var color = kulBlue;
+      //var color = 0;
       // kleur van de optie
-      for (i = 0; i < optionNames.length && color == kulBlue; i++) {
-        if (d[optionNames[i]] > 0) {
-          color = optionColors[optionNames[i]];
+      var x = 0.0;
+      var y = 0.0;
+      var nb = 0;
+      for (i = 0; i < optionNames.length; i++) {
+        if (d[options[i]] > 0) {
+          var radian = optionColors[options[i]] * Math.PI / 180;
+          x += Math.cos(radian);
+          y += Math.sin(radian);
+          nb += 1;
         }
       }
-      return color;
+      x = x / nb;
+      y = y / nb;
+      color = Math.atan2(y, x) * 180 / Math.PI;
+
+      return 'hsl(' + color + ', 100%, 50%)';
     }
 
     // kleur voor opties
@@ -76,7 +89,7 @@ d3.csv("cw-5.csv").then(function(data) {
       var color = getFillColor(d);
       var optionIndex = optionNames.indexOf(d.ID);
       if (optionIndex != -1) {
-        color = optionColors[d.ID];
+        color = 'hsl(' + optionColors[d.ID] + ', 100%, 50%)';
       }
       return color;
     }
@@ -404,7 +417,7 @@ d3.csv("cw-5.csv").then(function(data) {
     // toggle de highlight van de links die aankomen in het gegeven vak
     function toggleHighlightCourseLinks(course) {
       hypergraph.selectAll(".link")
-        .each(function(l) {
+        .each(function (l) {
           if (l.target == course) {
             this.classList.toggle("non-active");
           }
@@ -503,7 +516,7 @@ d3.csv("cw-5.csv").then(function(data) {
       li.enter()
         .append("li")
         .text(d => d.OPO)
-        .on("mouseover", function(d) {
+        .on("mouseover", function (d) {
           var option = hypergraph.select(".option-node.active").datum();
           toggleHighlightOption(o);
           toggleHighlightConnectedOptions(d);
@@ -630,27 +643,15 @@ d3.csv("cw-5.csv").then(function(data) {
       var s2 = m1.filter(c => c.Semester == 2);
       var b1 = m1.filter(c => c.Semester == 3);
       b1.forEach(c => {
-        s1.push({
-          OPO: c.OPO,
-          Studiepunten: c.Studiepunten / 2
-        });
-        s2.push({
-          OPO: c.OPO,
-          Studiepunten: c.Studiepunten / 2
-        });
+        s1.push({ ...c, Studiepunten: c.Studiepunten / 2 });
+        s2.push({ ...c, Studiepunten: c.Studiepunten / 2 });
       });
       var s3 = m2.filter(c => c.Semester == 1);
       var s4 = m2.filter(c => c.Semester == 2);
       var b2 = m2.filter(c => c.Semester == 3);
       b2.forEach(c => {
-        s3.push({
-          OPO: c.OPO,
-          Studiepunten: c.Studiepunten / 2
-        });
-        s4.push({
-          OPO: c.OPO,
-          Studiepunten: c.Studiepunten / 2
-        });
+        s3.push({ ...c, Studiepunten: c.Studiepunten / 2 });
+        s4.push({ ...c, Studiepunten: c.Studiepunten / 2 });
       });
 
       s1 = s1.sort(function(a, b) {
@@ -668,7 +669,6 @@ d3.csv("cw-5.csv").then(function(data) {
 
       var sems = [s1, s2, s3, s4];
 
-      console.log(sems);
       d3.select(".bargroup").selectAll("rect").remove();
       drawBar(s1, 0);
       drawBar(s2, 1);
@@ -698,10 +698,9 @@ d3.csv("cw-5.csv").then(function(data) {
             return creditLength * d[0][0];
           })
           .attr("y", 25 * index)
-          .attr("width", function(d) {
-            return creditLength * (d[0][1] - d[0][0])
-          })
-          .attr("height", 20);
+          .attr("width", function (d) { return creditLength * (d[0][1] - d[0][0]) })
+          .attr("height", 20)
+          .attr("fill", function (d, i) { return colorOfCourse(d[0].data[i]) });
       }
 
     }

@@ -56,6 +56,7 @@ body {
 .node {
   cursor: pointer;
   transition: 0.3s linear;
+  filter: saturate(45%);
 }
 
 .option-node {
@@ -84,6 +85,14 @@ body {
 
 .not-interested {
   display: none;
+  /* filter: saturate(20%); */
+  /* opacity: 0.1; */
+}
+
+.chosen-master1,
+.chosen-master2 {
+  filter: brightness(50%);
+  filter: saturate(100%);
 }
 
 .link {
