@@ -69,13 +69,8 @@ d3.csv("cw-5.csv").then(function(data) {
       var y = 0.0;
       var nb = 0;
       for (i = 0; i < optionNames.length; i++) {
-<<<<<<< HEAD
         if (d[optionNames[i]] > 0) {
           var radian = optionColors[optionNames[i]] * Math.PI / 180;
-=======
-        if (d[options[i]] > 0) {
-          var radian = optionColors[options[i]] * Math.PI / 180;
->>>>>>> 0f210a220007f2efbac703e96c0797928e4712f8
           x += Math.cos(radian);
           y += Math.sin(radian);
           nb += 1;
