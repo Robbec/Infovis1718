@@ -51,7 +51,9 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
     //var colors = ['rgb(77, 203, 77)', 'rgb(130, 77, 203)', 'rgb(203, 138, 77)', 'rgb(203, 203, 77)', 'rgb(77, 132, 203)', 'rgb(203, 77, 144)'];
     // var colors = ['rgb(203, 140, 77)', 'rgb(77, 203, 77)', 'rgb(203, 203, 77)', 'rgb(77, 203, 203)', 'rgb(77, 77, 203)', 'rgb(161, 77, 203)', 'rgb(203, 77, 203)', 'rgb(203, 77, 77)'];
     // var colors = ['hsl(300, 100%, 50%)', 'hsl(30, 100%, 50%)', 'hsl(60, 100%, 50%)', 'hsl(120, 100%, 50%)', 'hsl(180, 100%, 50%)', 'hsl(240, 100%, 50%)', 'hsl(266, 100%, 50%)'];
-    var colors = [30, 60, 180, 120, 240, 300]; // 266 magenta
+    var colors = [266, 120, 240, 30, 60, 180]; // 300 schappelijk!
+    //var colors = [266, 120, 60, 30, 240, 180]; // 300 schappelijk!
+    //var colors = [266, 120, 240, 30, 60, 300]; // 180 schappelijk!
     var optionColors = [];
     optionNames.forEach((c, i) => optionColors[c] = colors[i]);
     var kulBlue = "#1d8db0";
