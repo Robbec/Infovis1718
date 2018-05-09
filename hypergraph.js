@@ -37,8 +37,8 @@ hypergraph.attr("width", svgWidth)
 var tooltip = hypergraphContainer.append("div")
   .classed("tooltip", true);
 
-d3.csv("cw-6-tijdelijk.csv").then(function(data) {
-  d3.csv("uniekeReserveringen.csv").then(function(scheduleData) {
+d3.csv("cw-6-tijdelijk.csv").then(function (data) {
+  d3.csv("uniekeReserveringen.csv").then(function (scheduleData) {
     // namen van alle opties
     var columnNames = d3.keys(d3.values(data)[0]);
     var optionNames = columnNames.slice(12, columnNames.length);
@@ -127,7 +127,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
      * Hypergraf
      */
     // maak voor elke optie een node
-    optionNames.forEach(function(o) {
+    optionNames.forEach(function (o) {
       options.push({
         ID: o,
         OPO: o
@@ -151,7 +151,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
     options.push(root);
 
     // maak voor alle vakken een link met de bijhorende opties
-    data.forEach(function(d) {
+    data.forEach(function (d) {
       var courseOptions = getCourseOptions(d);
       if (courseOptions.length < optionNames.length) {
         courseOptions.forEach(o =>
@@ -178,22 +178,22 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
       .append("circle")
       .classed("node option-node", true)
       .attr("r", optionRadius)
-      .attr("fill", function(d) {
+      .attr("fill", function (d) {
         return getOptionColour(d);
       })
-      .on("mouseover", function(d) {
+      .on("mouseover", function (d) {
         showTooltip(d);
         if (!activeNodeExists()) {
           toggleHighlightOption(d);
         }
       })
-      .on("mouseout", function(d) {
+      .on("mouseout", function (d) {
         hideTooltip();
         if (!activeNodeExists()) {
           toggleHighlightOption(d);
         }
       })
-      .on("click", function(d) {
+      .on("click", function (d) {
         if (isActive(d3.select(this))) {
           emptyInfobox();
           toggleActive(d3.select(this));
@@ -212,7 +212,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
       .append("circle")
       .attr("r", courseRadius)
       .classed("node course-node", true)
-      .classed("compulsory", function(d) {
+      .classed("compulsory", function (d) {
         for (var i = 0; i < optionNames.length; i++) {
           if (d[optionNames[i]] == 1) {
             return true;
@@ -220,7 +220,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
         }
         return false;
       })
-      .classed("optional", function(d) {
+      .classed("optional", function (d) {
         for (var i = 0; i < optionNames.length; i++) {
           if (d[optionNames[i]] == 2) {
             return true;
@@ -228,25 +228,25 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
         }
         return false;
       })
-      .attr("fill", function(d) {
+      .attr("fill", function (d) {
         return colorOfCourse(d);
       })
-      .attr("stroke", function(d) {
+      .attr("stroke", function (d) {
         return getStrokeColor(d);
       })
-      .on("mouseover", function(d) {
+      .on("mouseover", function (d) {
         showTooltip(d);
         if (!activeNodeExists()) {
           toggleHighlightCourse(d);
         }
       })
-      .on("mouseout", function(d) {
+      .on("mouseout", function (d) {
         hideTooltip();
         if (!activeNodeExists()) {
           toggleHighlightCourse(d);
         }
       })
-      .on("click", function(d) {
+      .on("click", function (d) {
         var course = d3.select(this);
         var activeCourse = hypergraph.select(".course-node.active");
         var activeCourseExists = !activeCourse.empty();
@@ -333,19 +333,19 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
         var x2Offset = b * dx;
         var y2Offset = b * dy;
         line.attr("x1", function (d) {
-            // if (x1Offset) {
-            //   return d.source.x + x1Offset;
+          // if (x1Offset) {
+          //   return d.source.x + x1Offset;
+          // } else {
+          return d.source.x;
+          // }
+        })
+          .attr("y1", function (d) {
+            // if (y1Offset) {
+            //   return d.source.y + y1Offset;
             // } else {
-              return d.source.x;
+            return d.source.y;
             // }
           })
-          .attr("y1", function (d) {
-              // if (y1Offset) {
-              //   return d.source.y + y1Offset;
-              // } else {
-                return d.source.y;
-              // }
-            })
           .attr("x2", function (d) {
             if (d.source.ID != "Master") {
               return d.target.x - (x2Offset || 0);
@@ -399,7 +399,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
     // toggle de highlight van de vakken die verbonden zijn met de gegeven optie
     function toggleHighlightConnectedCourses(option) {
       hypergraph.selectAll(".course-node")
-        .each(function(c) {
+        .each(function (c) {
           if (c[option.ID] == 0) {
             this.classList.toggle("non-active");
           }
@@ -409,7 +409,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
     // toggle de highlight van de links die vertrekken uit de gegeven optie
     function toggleHighlightOptionLinks(option) {
       hypergraph.selectAll(".link")
-        .each(function(l) {
+        .each(function (l) {
           if (l.source == option) {
             this.classList.toggle("non-active");
           }
@@ -419,7 +419,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
     // toggle de highlight van alle opties verschillend van de gegeven optie
     function toggleHighlightOtherOptions(option) {
       hypergraph.selectAll(".option-node")
-        .each(function(o) {
+        .each(function (o) {
           if (o.ID != "Master" && o.ID != option.ID) {
             this.classList.toggle("non-active");
           }
@@ -436,7 +436,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
     // toggle de highlight van de opties die niet verbonden zijn met het gegeven vak
     function toggleHighlightConnectedOptions(course) {
       hypergraph.selectAll(".option-node")
-        .each(function(o) {
+        .each(function (o) {
           if (course[o.ID] == 0) {
             this.classList.toggle("non-active");
           }
@@ -457,7 +457,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
     function toggleHighlightPrerequisites(course) {
       var prerequisites = course["Gelijktijdig volgen"];
       hypergraph.selectAll(".course-node")
-        .each(function(c) {
+        .each(function (c) {
           if (c.ID != course.ID && !prerequisites.split(" ").includes(c.ID)) {
             this.classList.toggle("non-active");
           }
@@ -489,7 +489,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
         .style("left", (d.x + 20) + "px")
         .style("top", (d.y - 12) + "px");
       clearTimeout(timeout);
-      timeout = setTimeout(function() {
+      timeout = setTimeout(function () {
         tooltip.classed("active", false);
       }, 1000);
     }
@@ -503,7 +503,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
     function resizeCourseNode(course, factor) {
       var newRadius = course.attr("r") * factor;
       course.transition(transition).attr("r", newRadius);
-      forceCollide.radius(function(d, i) {
+      forceCollide.radius(function (d, i) {
         if (d == course.datum()) {
           return newRadius + 5;
         } else {
@@ -530,10 +530,10 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
       var ul = infobox.append("ul").classed("coursesList", true);
 
       // vind alle vakken van de optie en orden ze alfabetisch
-      var courses = data.filter(function(d) {
-          return (0 < d[o.OPO]) && (getCourseOptions(d).length < optionNames.length);
-        })
-        .sort(function(a, b) {
+      var courses = data.filter(function (d) {
+        return (0 < d[o.OPO]) && (getCourseOptions(d).length < optionNames.length);
+      })
+        .sort(function (a, b) {
           return a.OPO.toLowerCase().localeCompare(b.OPO.toLowerCase());
         });
 
@@ -552,13 +552,13 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
           toggleHighlightCourseLinks(d);
           toggleHighlightPrerequisites(d);
         })
-        .on("mouseout", function(d) {
+        .on("mouseout", function (d) {
           hideTooltip(d);
           toggleHighlightConnectedOptions(d);
           toggleHighlightCourseLinks(d);
           toggleHighlightPrerequisites(d);
         })
-        .on("click", function(d) {
+        .on("click", function (d) {
 
         });
     }
@@ -573,7 +573,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
       // 2) studiepunten van het actieve vak
       infobox.append("div")
         .attr("class", "points");
-        //.text(course.Studiepunten + " SP");
+      //.text(course.Studiepunten + " SP");
 
       var stpContainer = infobox.select(".points");
       stpContainer.append("svg")
@@ -596,8 +596,8 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
         }
         // een rechthoekje in verhouding met het niet gehele projectdeel
         var afterPoint = projectStp - floorProjectStp;
-        if (afterPoint > 0){
-          var extraWidth = optionRadius*afterPoint;
+        if (afterPoint > 0) {
+          var extraWidth = optionRadius * afterPoint;
           stp.append("rect")
             .attr("x", x)
             .attr("width", extraWidth)
@@ -614,8 +614,8 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
         // eerst zodat dit past bij het niet gehele projectdeel
         var floorExamStp = Math.floor(examStp);
         var afterPoint = examStp - floorExamStp;
-        if (afterPoint > 0){
-          var extraWidth = optionRadius*afterPoint;
+        if (afterPoint > 0) {
+          var extraWidth = optionRadius * afterPoint;
           stp.append("rect")
             .attr("x", x)
             .attr("width", extraWidth)
@@ -669,7 +669,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
     // vind alle option nodes die verbonden zijn met de gegeven course
     function getCourseOptions(course) {
       var courseOptions = [];
-      options.forEach(function(o) {
+      options.forEach(function (o) {
         if (course[o.ID] > 0) {
           courseOptions.push(o);
         }
@@ -687,9 +687,9 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
       var codeReservations = scheduleData.filter(reservation => reservation.Code == code);
       scheduleOverlappingCourseCodes = new Set();
       // voor elke reservatie horende bij de code
-      codeReservations.forEach(function(codeReservation) {
+      codeReservations.forEach(function (codeReservation) {
         // filter de overlappende reservaties
-        var overlappingReservations = scheduleData.filter(function(reservation) {
+        var overlappingReservations = scheduleData.filter(function (reservation) {
           var hourParser = d3.timeParse("%H:%M:%S");
           var startReservation = hourParser(reservation.Aanvang);
           var endReservation = hourParser(reservation.Einde);
@@ -706,7 +706,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
             reservation.Code != code
         });
         // voor elke overlappende reservatie
-        overlappingReservations.forEach(function(overlappingReservation) {
+        overlappingReservations.forEach(function (overlappingReservation) {
           // voeg zijn code toe aan de set
           scheduleOverlappingCourseCodes.add(overlappingReservation.Code);
         })
@@ -742,22 +742,21 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
         s4.push({ ...c, Studiepunten: c.Studiepunten / 2 });
       });
 
-      s1 = s1.sort(function(a, b) {
+      s1 = s1.sort(function (a, b) {
         return a.Studiepunten > b.Studiepunten
       });
-      S2 = s2.sort(function(a, b) {
+      S2 = s2.sort(function (a, b) {
         return a.Studiepunten > b.Studiepunten
       });
-      s3 = s3.sort(function(a, b) {
+      s3 = s3.sort(function (a, b) {
         return a.Studiepunten > b.Studiepunten
       });
-      S4 = s4.sort(function(a, b) {
+      S4 = s4.sort(function (a, b) {
         return a.Studiepunten > b.Studiepunten
       });
 
       var sems = [s1, s2, s3, s4];
 
-      d3.select(".bargroup").selectAll("rect").remove();
       drawBar(s1, 0);
       drawBar(s2, 1);
       drawBar(s3, 2);
@@ -766,28 +765,38 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
       function drawBar(data, index) {
 
         var stack = d3.stack([data])
-          .keys(function(d) {
+          .keys(function (d) {
             var keys = [];
             for (var i = 0; i < d[0].length; i++)
               keys.push(i);
             return keys;
           })
-          .value(function(d, key) {
+          .value(function (d, key) {
             return d[key].Studiepunten
           });
 
         var barGroup = d3.select(".bargroup")
-          .selectAll(".rect-sem")
+          .selectAll(".rect-sem" + index)
           .data(stack([data]));
 
-        barGroup.enter()
-          .append("rect")
-          .attr("x", function(d) {
+        barGroup.exit().remove(); //remove courses no longer selected
+        barGroup.enter().append("rect") // add new rect for every newly selected course
+          .classed("rect-sem" + index, true);
+
+        var barGroup = d3.select(".bargroup")
+          .selectAll(".rect-sem" + index)
+          .data(stack([data]));
+
+        barGroup.transition() // update all rects to new positions
+          .duration(500)
+          .attr("x", function (d) {
             return creditLength * d[0][0];
           })
           .attr("y", 25 * index)
           .attr("width", function (d) { return creditLength * (d[0][1] - d[0][0]) })
           .attr("height", 20)
+          .attr("rx", 5)
+          .attr("ry", 5)
           .attr("fill", function (d, i) { return colorOfCourse(d[0].data[i]) });
       }
 
@@ -819,7 +828,7 @@ var checkboxInterested = body;
 var checkboxChosenMaster1 = body;
 var checkboxChosenMaster2 = body;
 
-infobox.on("change", function() {
+infobox.on("change", function () {
   // controleer of de checkbox "Niet geïnteresseerd" van status verandert
   var checkboxInterestedNew = infobox.select(".checkbox-interested").select("input");
   if (checkboxInterested !== checkboxInterestedNew) {
@@ -869,11 +878,11 @@ function checkboxInterestedChanged() {
 };
 
 // verander de klasse van de vakken waarin de gebruiker niet geïnteresseerd is als de status van de switch verandert
-switchInterested.on("change", function() {
+switchInterested.on("change", function () {
   // wijzig de klassen .not-interested naar .is-not-interested als de switch wordt ingeschakeld
   if (switchInterested.property("checked")) {
     hypergraph.selectAll(".course-node")
-      .classed("is-not-interested", function() {
+      .classed("is-not-interested", function () {
         return d3.select(this).classed("not-interested");
       })
       .classed("not-interested", false);
@@ -881,7 +890,7 @@ switchInterested.on("change", function() {
   // wijzig de klassen .is-not-interested naar .not-interested als de switch wordt uitgeschakeld
   else {
     hypergraph.selectAll(".course-node")
-      .classed("not-interested", function() {
+      .classed("not-interested", function () {
         return d3.select(this).classed("is-not-interested");
       })
       .classed("is-not-interested", false);
@@ -894,7 +903,7 @@ function checkboxChosenMaster1Changed() {
   var checked = checkboxChosenMaster1.property("checked");
 
   // voeg de klasse .chosen-master1 toe aan het actieve vak als het gemarkeerd is als "Gekozen in 1ste Master"
-  activeCourse.classed("chosen-master1", function() {
+  activeCourse.classed("chosen-master1", function () {
     return checked;
   });
 };
@@ -905,7 +914,7 @@ function checkboxChosenMaster2Changed() {
   var checked = checkboxChosenMaster2.property("checked");
 
   // voeg de klasse .chosen-master2 toe aan het actieve vak als het gemarkeerd is als "Gekozen in 2de Master"
-  activeCourse.classed("chosen-master2", function() {
+  activeCourse.classed("chosen-master2", function () {
     return checked;
   });
 };

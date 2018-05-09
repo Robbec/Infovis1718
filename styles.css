@@ -305,3 +305,10 @@ input:focus + .slider {
 input:checked + .slider:before {
   transform: translateX(1.75rem);
 }
+
+/**
+* Barchart
+*/
+
+.rect-sem {
+}
