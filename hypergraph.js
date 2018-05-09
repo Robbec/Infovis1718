@@ -29,6 +29,9 @@ var x = d3.scaleLinear()
   .range([0, svgWidth]);
 var refreshBars;
 
+// variabelen Infobox
+var stpSize = optionRadius * 2;
+
 // maak een svg voor de hypergraf
 hypergraph.attr("width", svgWidth)
   .attr("height", svgHeight);
@@ -580,6 +583,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
         .attr("class", "stp");
       var stp = stpContainer.select(".stp");
 
+      // x position
       var x = 0;
       var projectStp = course.Project;
       // als het vak een project deel heeft
@@ -589,19 +593,19 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
         for (i = 0; i < floorProjectStp; i++) {
           stp.append("rect")
             .attr("x", x)
-            .attr("width", optionRadius)
-            .attr("height", optionRadius)
+            .attr("width", stpSize)
+            .attr("height", stpSize)
             .attr("fill", kulBlue);
-          x += optionRadius + 1;
+          x += stpSize + 1;
         }
         // een rechthoekje in verhouding met het niet gehele projectdeel
         var afterPoint = projectStp - floorProjectStp;
-        if (afterPoint > 0) {
-          var extraWidth = optionRadius * afterPoint;
+        if (afterPoint > 0){
+          var extraWidth = stpSize*afterPoint;
           stp.append("rect")
             .attr("x", x)
             .attr("width", extraWidth)
-            .attr("height", optionRadius)
+            .attr("height", stpSize)
             .attr("fill", kulBlue);
           x += extraWidth + 1;
         }
@@ -614,12 +618,12 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
         // eerst zodat dit past bij het niet gehele projectdeel
         var floorExamStp = Math.floor(examStp);
         var afterPoint = examStp - floorExamStp;
-        if (afterPoint > 0) {
-          var extraWidth = optionRadius * afterPoint;
+        if (afterPoint > 0){
+          var extraWidth = stpSize*afterPoint;
           stp.append("rect")
             .attr("x", x)
             .attr("width", extraWidth)
-            .attr("height", optionRadius)
+            .attr("height", stpSize)
             .attr("fill", kulOrange);
           x += extraWidth + 1;
         }
@@ -627,10 +631,10 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
         for (i = 0; i < floorExamStp; i++) {
           stp.append("rect")
             .attr("x", x)
-            .attr("width", optionRadius)
-            .attr("height", optionRadius)
+            .attr("width", stpSize)
+            .attr("height", stpSize)
             .attr("fill", kulOrange);
-          x += optionRadius + 1;
+          x += stpSize + 1;
         }
       }
 
