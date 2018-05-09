@@ -600,8 +600,8 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
         }
         // een rechthoekje in verhouding met het niet gehele projectdeel
         var afterPoint = projectStp - floorProjectStp;
-        if (afterPoint > 0){
-          var extraWidth = stpSize*afterPoint;
+        if (afterPoint > 0) {
+          var extraWidth = stpSize * afterPoint;
           stp.append("rect")
             .attr("x", x)
             .attr("width", extraWidth)
@@ -618,8 +618,8 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
         // eerst zodat dit past bij het niet gehele projectdeel
         var floorExamStp = Math.floor(examStp);
         var afterPoint = examStp - floorExamStp;
-        if (afterPoint > 0){
-          var extraWidth = stpSize*afterPoint;
+        if (afterPoint > 0) {
+          var extraWidth = stpSize * afterPoint;
           stp.append("rect")
             .attr("x", x)
             .attr("width", extraWidth)
@@ -724,8 +724,17 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
     // om te testen
     refreshBars = drawHorizontalBar;
 
+    var creditLength = svgWidth / 40;
+    var barGroup = d3.select(".bargroup")
+    barGroup.attr("width", svgWidth);
+    barGroup.append("line")
+      .attr("x1", creditLength * 30)
+      .attr("y1", 0)
+      .attr("x2", creditLength * 30)
+      .attr("y2", 100)
+      .attr("stroke","black");
+
     function drawHorizontalBar() {
-      var creditLength = svgWidth / 40;
 
       var m1 = d3.selectAll(".chosen-master1").data();
       var m2 = d3.selectAll(".chosen-master2").data();
@@ -779,19 +788,19 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
             return d[key].Studiepunten
           });
 
-        var barGroup = d3.select(".bargroup")
+        var bars = barGroup
           .selectAll(".rect-sem" + index)
           .data(stack([data]));
 
-        barGroup.exit().remove(); //remove courses no longer selected
-        barGroup.enter().append("rect") // add new rect for every newly selected course
+        bars.exit().remove(); //remove courses no longer selected
+        bars.enter().append("rect") // add new rect for every newly selected course
           .classed("rect-sem" + index, true);
 
-        var barGroup = d3.select(".bargroup")
+        bars = barGroup
           .selectAll(".rect-sem" + index)
           .data(stack([data]));
 
-        barGroup.transition() // update all rects to new positions
+        bars.transition() // update all rects to new positions
           .duration(500)
           .attr("x", function (d) {
             return creditLength * d[0][0];
