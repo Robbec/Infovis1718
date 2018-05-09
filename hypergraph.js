@@ -3,6 +3,7 @@ var body = d3.select("body");
 var left = d3.select(".left");
 var right = d3.select(".right");
 var hypergraphContainer = left.select(".hypergraph-container");
+var barchartContainer = left.select("bargroup-container");
 var hypergraph = hypergraphContainer.select(".hypergraph");
 var infobox = right.select(".infobox");
 
@@ -38,6 +39,8 @@ hypergraph.attr("width", svgWidth)
 
 // tooltip aanmaken (inhoud wordt ingevuld bij hover over bolletje)
 var tooltip = hypergraphContainer.append("div")
+  .classed("tooltip", true);
+var tooltipBarchart = barchartContainer.append("div")
   .classed("tooltip", true);
 
 d3.csv("cw-6-tijdelijk.csv").then(function (data) {
@@ -249,46 +252,48 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
           toggleHighlightCourse(d);
         }
       })
-      .on("click", function (d) {
-        var course = d3.select(this);
-        var activeCourse = hypergraph.select(".course-node.active");
-        var activeCourseExists = !activeCourse.empty();
-        if (isActive(course)) {
-          // opmerking: het vak blijft gehighlightet tot de mouseout
-          emptyInfobox();
-          resizeCourseNode(course, 2 / 3);
-          toggleActive(course);
-        } else if (activeCourseExists) {
-          // opmerking: de highlights voor de betrokken vakken moeten nu aangepast worden
-          resizeCourseNode(activeCourse, 2 / 3);
-          toggleHighlightCourse(activeCourse.datum());
-          toggleActive(activeCourse);
-          fillInfoboxForCourse(course);
-          resizeCourseNode(course, 1.5);
-          toggleHighlightCourse(course.datum());
-          toggleActive(course);
-        } else {
-          // opmerking: de prerequisites zijn al gehighlightet vanwege de hover
-          fillInfoboxForCourse(course);
-          resizeCourseNode(course, 1.5);
-          toggleActive(course);
-        }
+      .on("click", courseClicked);
 
-        // // sla alle vakken op die overlappen met het actieve vak
-        // if (!newActiveCourse.empty()) {
-        //   var scheduleOverlappingCourses = getScheduleOverlappingCourses(newActiveCourse.datum()["ID"]);
-        // }
-        //
-        // // geef de klasse .schedule-overlap alleen aan vakken die overlappen met het actieve vak
-        // hypergraph.selectAll(".course-node")
-        //   .classed("schedule-overlap", function (dcircle) {
-        //     var id = dcircle.ID;
-        //     if (!newActiveCourse.empty()) {
-        //       return scheduleOverlappingCourses.has(id);
-        //     }
-        //     return false;
-        //   });
-      });
+    function courseClicked(d) {
+      var course = d3.select(this);
+      var activeCourse = hypergraph.select(".course-node.active");
+      var activeCourseExists = !activeCourse.empty();
+      if (isActive(course)) {
+        // opmerking: het vak blijft gehighlightet tot de mouseout
+        emptyInfobox();
+        resizeCourseNode(course, 2 / 3);
+        toggleActive(course);
+      } else if (activeCourseExists) {
+        // opmerking: de highlights voor de betrokken vakken moeten nu aangepast worden
+        resizeCourseNode(activeCourse, 2 / 3);
+        toggleHighlightCourse(activeCourse.datum());
+        toggleActive(activeCourse);
+        fillInfoboxForCourse(course);
+        resizeCourseNode(course, 1.5);
+        toggleHighlightCourse(course.datum());
+        toggleActive(course);
+      } else {
+        // opmerking: de prerequisites zijn al gehighlightet vanwege de hover
+        fillInfoboxForCourse(course);
+        resizeCourseNode(course, 1.5);
+        toggleActive(course);
+      }
+
+      // // sla alle vakken op die overlappen met het actieve vak
+      // if (!newActiveCourse.empty()) {
+      //   var scheduleOverlappingCourses = getScheduleOverlappingCourses(newActiveCourse.datum()["ID"]);
+      // }
+      //
+      // // geef de klasse .schedule-overlap alleen aan vakken die overlappen met het actieve vak
+      // hypergraph.selectAll(".course-node")
+      //   .classed("schedule-overlap", function (dcircle) {
+      //     var id = dcircle.ID;
+      //     if (!newActiveCourse.empty()) {
+      //       return scheduleOverlappingCourses.has(id);
+      //     }
+      //     return false;
+      //   });
+    }
 
     /**
      * Force simulatie voor de hypergraf
@@ -732,7 +737,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
       .attr("y1", 0)
       .attr("x2", creditLength * 30)
       .attr("y2", 100)
-      .attr("stroke","black");
+      .attr("stroke", "black");
 
     function drawHorizontalBar() {
 
@@ -794,7 +799,21 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
 
         bars.exit().remove(); //remove courses no longer selected
         bars.enter().append("rect") // add new rect for every newly selected course
-          .classed("rect-sem" + index, true);
+          .classed("rect-sem" + index, true)
+          .classed("node", true)
+          .on("mouseover", function (d, i) {
+            //showTooltip(d);
+            if (!activeNodeExists()) {
+              toggleHighlightCourse(d[0].data[i]);
+            }
+          })
+          .on("mouseout", function (d, i) {
+            //hideTooltip();
+            if (!activeNodeExists()) {
+              toggleHighlightCourse(d[0].data[i]);
+            }
+          })
+          .on("click", function (d, i) { courseClicked(d[0].data[i]) });
 
         bars = barGroup
           .selectAll(".rect-sem" + index)
