@@ -536,48 +536,58 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
         });
     }
 
+    var radiobuttonInterested = null;
+
     // voeg inhoud voor het gegeven vak toe aan de infobox
-    function fillInfoboxForCourse(c) {
+    function fillInfoboxForCourse(course) {
       emptyInfobox();
-      var course = c.datum();
+      var c = course.datum();
       // 1) titel van het actieve vak
-      infobox.append("h3").text(course.OPO);
+      infobox.append("h3").text(c.OPO);
 
       // 2) studiepunten van het actieve vak
       infobox.append("div")
         .attr("class", "points")
-        .text(course.Studiepunten + " SP");
+        .text(c.Studiepunten + " SP");
 
-      // 3) checkbox "Niet geïnteresseerd" voor het actieve vak
-      var checkboxInterested = infobox.append("label")
-        .text("Niet geïnteresseerd in dit vak.");
-      checkboxInterested.attr("class", "checkbox checkbox-interested")
+      // 3) radiobutton "Niet geïnteresseerd" voor het actieve vak
+      radiobuttonInterested = infobox.append("label")
+        .text("Niet geïnteresseerd in dit vak");
+      radiobuttonInterested.attr("class", "radiobutton radiobutton-interested")
         .append("input")
-        .attr("type", "checkbox")
-        .property("checked", c.classed("not-interested"))
-        .property("checked", c.classed("is-not-interested"));
-      checkboxInterested.append("span")
+        .attr("type", "radio")
+        .attr("name", "radio")
+        .attr("value", "interested")
+        .property("checked", course.classed("not-interested") || course.classed("is-not-interested"));
+      radiobuttonInterested.append("span")
         .attr("class", "checkmark");
+      radiobuttonInterested.on("change", toggleStatusRadioButtons);
 
-      // 4) checkbox "Kies in 1ste Master" voor het actieve vak
-      var checkboxChoose1 = infobox.append("label")
-        .text("Kies dit vak in 1ste Master.");
-      checkboxChoose1.attr("class", "checkbox checkbox-chosen-master1")
+      // 4) radiobutton "Kies in 1ste Master" voor het actieve vak
+      var radiobuttonChoose1 = infobox.append("label")
+        .text("Kies dit vak in 1ste Master");
+      radiobuttonChoose1.attr("class", "radiobutton radiobutton-chosen-master1")
         .append("input")
-        .attr("type", "checkbox")
-        .property("checked", c.classed("chosen-master1"));
-      checkboxChoose1.append("span")
+        .attr("type", "radio")
+        .attr("name", "radio")
+        .attr("value", "choose1")
+        .property("checked", course.classed("chosen-master1"));
+      radiobuttonChoose1.append("span")
         .attr("class", "checkmark");
+      radiobuttonChoose1.on("change", toggleStatusRadioButtons);
 
-      // 5) checkbox "Kies in 2de Master" voor het actieve vak
-      var checkboxChoose2 = infobox.append("label")
-        .text("Kies dit vak in 2de Master.");
-      checkboxChoose2.attr("class", "checkbox checkbox-chosen-master2")
+      // 5) radiobutton "Kies in 2de Master" voor het actieve vak
+      var radiobuttonChoose2 = infobox.append("label")
+        .text("Kies dit vak in 2de Master");
+      radiobuttonChoose2.attr("class", "radiobutton radiobutton-chosen-master2")
         .append("input")
-        .attr("type", "checkbox")
-        .property("checked", c.classed("chosen-master2"));
-      checkboxChoose2.append("span")
+        .attr("type", "radio")
+        .attr("name", "radio")
+        .attr("value", "choose2")
+        .property("checked", course.classed("chosen-master2"));
+      radiobuttonChoose2.append("span")
         .attr("class", "checkmark");
+      radiobuttonChoose2.on("change", toggleStatusRadioButtons);
     }
 
     // vind alle option nodes die verbonden zijn met de gegeven course
@@ -589,6 +599,40 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
         }
       });
       return courseOptions;
+    }
+
+    /**
+    * Functies met betrekking tot de radiobuttonen
+    */
+
+    function toggleStatusRadioButtons() {
+      var radioButton = d3.select(this);
+      var course = hypergraph.select(".course-node.active");
+      var value = radioButton.select("input").node().value;
+      if (value == "interested") {
+        toggleStatusInterested(radioButton, course);
+        course.classed("chosen-master1", false);
+        course.classed("chosen-master2", false);
+      } else if (value == "choose1") {
+        course.classed("not-interested", false);
+        course.node().classList.toggle("chosen-master1");
+        course.classed("chosen-master2", false);
+      } else if (value == "choose2") {
+        course.classed("not-interested", false);
+        course.classed("chosen-master1", false);
+        course.node().classList.toggle("chosen-master2");
+      }
+      drawHorizontalBar();
+    }
+
+    function toggleStatusInterested(radioButton, course) {
+      var switchInterestedChecked = switchInterested.property("checked");
+      // voeg de klasse .is-not-interested toe als een vak gemarkeerd is als "Niet geïnteresseerd" en getoond moet worden in de hypergraph
+      if (switchInterestedChecked) {
+        course.node().classList.toggle("not-interested");
+      } else {
+        console.log("remove");
+      }
     }
 
     /**
@@ -709,80 +753,22 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
   });
 });
 
-
+/**
+ * Overige functies
+ */
 
 // bound the given x coordinate to the visible part of the hypergraph
 function boxBoundedX(x) {
-  return Math.max(courseRadius + 2.5, Math.min(svgWidth - courseRadius - 2.5, x));
+ return Math.max(courseRadius + 2.5, Math.min(svgWidth - courseRadius - 2.5, x));
 }
 
 // bound the given y coordinate to the visible part of the hypergraph
 function boxBoundedY(y) {
-  return Math.max(courseRadius + 2.5, Math.min(svgHeight - courseRadius - 2.5, y));
+ return Math.max(courseRadius + 2.5, Math.min(svgHeight - courseRadius - 2.5, y));
 }
 
-/**
- * Controleer het gedrag van de checkboxes
- */
-
-// waarde van de switch die vakken al dan niet verbergt waarin de gebruiker niet geïnteresseerd is
-var switchInterested = right.select(".switch-interested").select("input");
-
-// creëer variabelen voor de checkboxen (de default waarde mag niet "infobox" zijn)
-var checkboxInterested = body;
-var checkboxChosenMaster1 = body;
-var checkboxChosenMaster2 = body;
-
-infobox.on("change", function() {
-  // controleer of de checkbox "Niet geïnteresseerd" van status verandert
-  var checkboxInterestedNew = infobox.select(".checkbox-interested").select("input");
-  if (checkboxInterested !== checkboxInterestedNew) {
-    checkboxInterested = checkboxInterestedNew;
-    checkboxInterestedChanged();
-  }
-
-  // controleer of de checkbox "Kies in 1ste Master" van status verandert
-  var checkboxChosenMaster1New = infobox.select(".checkbox-chosen-master1").select("input");
-  if (checkboxChosenMaster1 !== checkboxChosenMaster1New) {
-    checkboxChosenMaster1 = checkboxChosenMaster1New;
-    checkboxChosenMaster1Changed();
-  }
-
-  // controleer of de checkbox "Kies in 2de Master" van status verandert
-  var checkboxChosenMaster2New = infobox.select(".checkbox-chosen-master2").select("input");
-  if (checkboxChosenMaster2 !== checkboxChosenMaster2New) {
-    checkboxChosenMaster2 = checkboxChosenMaster2New;
-    checkboxChosenMaster2Changed();
-  }
-});
-
-// verander de klassen m.b.t. interesse voor het actieve vak
-function checkboxInterestedChanged() {
-  var switchInterestedChecked = switchInterested.property("checked");
-  var activeCourse = hypergraph.select(".course-node.active");
-  var checked = checkboxInterested.property("checked");
-
-  // voeg de klasse .is-not-interested toe als een vak gemarkeerd is als "Niet geïnteresseerd" en getoond moet worden in de hypergraph
-  if (checked && switchInterestedChecked) {
-    activeCourse.classed("is-not-interested", true);
-  }
-  // voeg de klasse .not-interested toe als een vak gemarkeerd is als "Niet geïnteresseerd" en verborgen moet worden in de hypergraph
-  else if (checked && !switchInterestedChecked) {
-    activeCourse.classed("not-interested", true);
-  }
-  // verwijder de klassen .not-interested en .is-not-interested als een vak niet gemarkeerd is als "Niet geïnteresseerd"
-  else {
-    activeCourse.classed("not-interested", false)
-      .classed("is-not-interested", false);
-  }
-
-  // update de horizontal bars bij eender welke change vd infobox
-  // lijkt te vlug te gebeuren
-  setTimeout(refreshBars, 100);
-
-};
-
 // verander de klasse van de vakken waarin de gebruiker niet geïnteresseerd is als de status van de switch verandert
+var switchInterested = right.select(".switch-interested").select("input");
 switchInterested.on("change", function() {
   // wijzig de klassen .not-interested naar .is-not-interested als de switch wordt ingeschakeld
   if (switchInterested.property("checked")) {
@@ -801,25 +787,3 @@ switchInterested.on("change", function() {
       .classed("is-not-interested", false);
   }
 });
-
-// verander de klassen m.b.t. 1ste Master voor het actieve vak
-function checkboxChosenMaster1Changed() {
-  var activeCourse = hypergraph.select(".course-node.active");
-  var checked = checkboxChosenMaster1.property("checked");
-
-  // voeg de klasse .chosen-master1 toe aan het actieve vak als het gemarkeerd is als "Gekozen in 1ste Master"
-  activeCourse.classed("chosen-master1", function() {
-    return checked;
-  });
-};
-
-// verander de klassen m.b.t. 2de Master voor het actieve vak
-function checkboxChosenMaster2Changed() {
-  var activeCourse = hypergraph.select(".course-node.active");
-  var checked = checkboxChosenMaster2.property("checked");
-
-  // voeg de klasse .chosen-master2 toe aan het actieve vak als het gemarkeerd is als "Gekozen in 2de Master"
-  activeCourse.classed("chosen-master2", function() {
-    return checked;
-  });
-};
