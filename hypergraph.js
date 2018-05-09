@@ -58,6 +58,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
     var optionColors = [];
     optionNames.forEach((c, i) => optionColors[c] = colors[i]);
     var kulBlue = "#1d8db0";
+    var kulOrange = '#e37305';
 
     // kleur voor de opvulling van vakken
     function getFillColor(d) {
@@ -571,8 +572,67 @@ d3.csv("cw-6-tijdelijk.csv").then(function(data) {
 
       // 2) studiepunten van het actieve vak
       infobox.append("div")
-        .attr("class", "points")
-        .text(course.Studiepunten + " SP");
+        .attr("class", "points");
+        //.text(course.Studiepunten + " SP");
+
+      var stpContainer = infobox.select(".points");
+      stpContainer.append("svg")
+        .attr("class", "stp");
+      var stp = stpContainer.select(".stp");
+
+      var x = 0;
+      var projectStp = course.Project;
+      // als het vak een project deel heeft
+      if (projectStp > 0) {
+        // een vierkantje voor elk geheel projectdeel
+        var floorProjectStp = Math.floor(projectStp);
+        for (i = 0; i < floorProjectStp; i++) {
+          stp.append("rect")
+            .attr("x", x)
+            .attr("width", optionRadius)
+            .attr("height", optionRadius)
+            .attr("fill", kulBlue);
+          x += optionRadius + 1;
+        }
+        // een rechthoekje in verhouding met het niet gehele projectdeel
+        var afterPoint = projectStp - floorProjectStp;
+        if (afterPoint > 0){
+          var extraWidth = optionRadius*afterPoint;
+          stp.append("rect")
+            .attr("x", x)
+            .attr("width", extraWidth)
+            .attr("height", optionRadius)
+            .attr("fill", kulBlue);
+          x += extraWidth + 1;
+        }
+      }
+
+      var examStp = course.Examen;
+      //als het vak een examendeel heeft
+      if (examStp > 0) {
+        // een rechthoekje in verhouding met het niet gehele examen deel
+        // eerst zodat dit past bij het niet gehele projectdeel
+        var floorExamStp = Math.floor(examStp);
+        var afterPoint = examStp - floorExamStp;
+        if (afterPoint > 0){
+          var extraWidth = optionRadius*afterPoint;
+          stp.append("rect")
+            .attr("x", x)
+            .attr("width", extraWidth)
+            .attr("height", optionRadius)
+            .attr("fill", kulOrange);
+          x += extraWidth + 1;
+        }
+        // een vierkantje voor elk geheel examen deel
+        for (i = 0; i < floorExamStp; i++) {
+          stp.append("rect")
+            .attr("x", x)
+            .attr("width", optionRadius)
+            .attr("height", optionRadius)
+            .attr("fill", kulOrange);
+          x += optionRadius + 1;
+        }
+      }
 
       // 3) checkbox "Niet geïnteresseerd" voor het actieve vak
       var checkboxInterested = infobox.append("label")
