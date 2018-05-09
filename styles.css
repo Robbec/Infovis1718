@@ -185,7 +185,11 @@ body {
 
 .coursesList li {
   cursor: pointer;
-  padding-bottom: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.coursesList li:last-child {
+  margin-bottom: 0;
 }
 
 /**

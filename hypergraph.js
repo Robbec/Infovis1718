@@ -252,10 +252,11 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
           toggleHighlightCourse(d);
         }
       })
-      .on("click", courseClicked);
+      .on("click", function () {
+        courseClicked(d3.select(this));
+      });
 
-    function courseClicked(d) {
-      var course = d3.select(this);
+    function courseClicked(course) {
       var activeCourse = hypergraph.select(".course-node.active");
       var activeCourseExists = !activeCourse.empty();
       if (isActive(course)) {
@@ -554,20 +555,22 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
         .append("li")
         .text(d => d.OPO)
         .on("mouseover", function (d) {
-          var option = hypergraph.select(".option-node.active").datum();
           toggleHighlightOption(o);
           toggleHighlightConnectedOptions(d);
           toggleHighlightCourseLinks(d);
           toggleHighlightPrerequisites(d);
         })
         .on("mouseout", function (d) {
-          hideTooltip(d);
+          toggleHighlightOption(o);
           toggleHighlightConnectedOptions(d);
           toggleHighlightCourseLinks(d);
           toggleHighlightPrerequisites(d);
         })
         .on("click", function (d) {
-
+          var course = hypergraph.selectAll(".course-node")
+            .filter(c => c == d);
+          courseClicked(course);
+          toggleActive(hypergraph.select(".option-node.active"));
         });
     }
 
