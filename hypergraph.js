@@ -72,24 +72,14 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
 
     function colorOfCourse(d) {
       // default kleur
-      //var color = 0;
+      var color = kulBlue;
       // kleur van de optie
-      var x = 0.0;
-      var y = 0.0;
-      var nb = 0;
-      for (i = 0; i < optionNames.length; i++) {
-        if (d[optionNames[i]] > 0) {
-          var radian = optionColors[optionNames[i]] * Math.PI / 180;
-          x += Math.cos(radian);
-          y += Math.sin(radian);
-          nb += 1;
+      for (i = 0; i < options.length && color == kulBlue; i++) {
+        if (d[options[i]] > 0) {
+          color = optionColors[options[i]];
         }
       }
-      x = x / nb;
-      y = y / nb;
-      color = Math.atan2(y, x) * 180 / Math.PI;
-
-      return 'hsl(' + color + ', 100%, 50%)';
+      return color;
     }
 
     // kleur voor opties
@@ -98,7 +88,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
       var color = getFillColor(d);
       var optionIndex = optionNames.indexOf(d.ID);
       if (optionIndex != -1) {
-        color = 'hsl(' + optionColors[d.ID] + ', 100%, 50%)';
+        color = optionColors[d.ID];
       }
       return color;
     }
