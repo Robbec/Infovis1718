@@ -49,6 +49,7 @@ body {
 }
 
 .node {
+  fill-opacity: 1;
   stroke-width: 5;
 }
 
@@ -58,20 +59,12 @@ body {
   filter: saturate(45%);
 }
 
-.course-node {
-}
-
 .option-node {
-  opacity: 1;
   stroke-width: 0;
 }
 
-.optional {
-  opacity: 0.7;
-}
-
 .compulsory {
-  fill-opacity: 0.7;
+  fill-opacity: 0.25;
 }
 
 .schedule-overlap {

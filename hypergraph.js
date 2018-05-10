@@ -57,7 +57,6 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
     //var colors = ['rgb(77, 203, 77)', 'rgb(130, 77, 203)', 'rgb(203, 138, 77)', 'rgb(203, 203, 77)', 'rgb(77, 132, 203)', 'rgb(203, 77, 144)'];
     // var colors = ['rgb(203, 140, 77)', 'rgb(77, 203, 77)', 'rgb(203, 203, 77)', 'rgb(77, 203, 203)', 'rgb(77, 77, 203)', 'rgb(161, 77, 203)', 'rgb(203, 77, 203)', 'rgb(203, 77, 77)'];
     // var colors = ['hsl(300, 100%, 50%)', 'hsl(30, 100%, 50%)', 'hsl(60, 100%, 50%)', 'hsl(120, 100%, 50%)', 'hsl(180, 100%, 50%)', 'hsl(240, 100%, 50%)', 'hsl(266, 100%, 50%)'];
-    // hsl hues kleuren van les 2 slide 100
     var colors = [266, 120, 240, 30, 60, 180]; // 300 schappelijk!
     //var colors = [266, 120, 60, 30, 240, 180]; // 300 schappelijk!
     //var colors = [266, 120, 240, 30, 60, 300]; // 180 schappelijk!
@@ -71,21 +70,10 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
       return "#cfd8dc";
     }
 
-    // hsl fill color
     function colorOfCourse(d) {
-      return hueToHsl(getFillHue(d));
-    }
-
-    function getStrokeColor(d) {
-      return hueToHsl(getStrokeHue(d));
-    }
-
-    function hueToHsl(hue) {
-      return 'hsl(' + hue + ', 100%, 50%)'
-    }
-
-    // average hue
-    function getFillHue(d) {
+      // default kleur
+      //var color = 0;
+      // kleur van de optie
       var x = 0.0;
       var y = 0.0;
       var nb = 0;
@@ -99,32 +87,18 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
       }
       x = x / nb;
       y = y / nb;
-      hue = Math.atan2(y, x) * 180 / Math.PI;
-      return hue;
-    }
+      color = Math.atan2(y, x) * 180 / Math.PI;
 
-    function getStrokeHue(d) {
-      var hue = null;
-      for (i = 0; i < optionNames.length & hue == null; i++) {
-        var option = optionNames[i];
-        // if compulsory
-        if (d[option] == 1) {
-          hue = optionColors[option];
-        }
-      }
-      // if not compulsory in an option, take average hue
-      if (hue == null) {
-        hue = getFillHue(d);
-      }
-      return hue;
+      return 'hsl(' + color + ', 100%, 50%)';
     }
 
     // kleur voor opties
     function getOptionColour(d) {
+      // default kul-blauw
       var color = getFillColor(d);
       var optionIndex = optionNames.indexOf(d.ID);
       if (optionIndex != -1) {
-        color = hueToHsl(optionColors[d.ID]);
+        color = 'hsl(' + optionColors[d.ID] + ', 100%, 50%)';
       }
       return color;
     }
@@ -237,8 +211,8 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
       .attr("fill", function (d) {
         return colorOfCourse(d);
       })
-      .attr("stroke", function (d) {
-        return getStrokeColor(d);
+      .attr("stroke", function(d) {
+        return colorOfCourse(d);
       })
       .on("mouseover", function (d) {
         showTooltip(d);
