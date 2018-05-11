@@ -329,4 +329,12 @@ input:checked + .slider:before {
 */
 
 .rect-sem {
+  fill-opacity: 1;
+  cursor: pointer;
+}
+.barchart-line{
+  stroke: #455a64;
+}
+.barchart-text{
+  fill: #455a64;
 }

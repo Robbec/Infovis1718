@@ -214,7 +214,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
         .attr("fill", function (d) {
           return colorOfCourse(d);
         })
-        .attr("stroke", function(d) {
+        .attr("stroke", function (d) {
           return colorOfCourse(d);
         })
         .on("mouseover", function (d) {
@@ -283,7 +283,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
     // force simulation bepaalt de positie van alle nodes
     var forceCollide = d3.forceCollide(courseRadius * 1.3)
       .strength(1)
-      // .iterations(3);
+    // .iterations(3);
     var simulationNodes = d3.forceSimulation(data.concat(options))
       // laat alle nodes elkaar afstoten
       .force("charge", d3.forceManyBody()
@@ -778,7 +778,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
       }
     }
 
-    switchInterested.on("change", function() {
+    switchInterested.on("change", function () {
       if (switchInterested.property("checked")) {
         links = links.concat(hiddenLinks);
         data = data.concat(hiddenCourses);
@@ -850,17 +850,27 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
     // om te testen
     refreshBars = drawHorizontalBar;
 
-    var creditLength = svgWidth / 40;
+    var spacing = 25;
+    var height = 20;
+    var xOffset = 90;
+    var firstClick = true;
+
+    var creditLength = (svgWidth - xOffset) / 40;
     var barGroup = d3.select(".bargroup")
     barGroup.attr("width", svgWidth);
-    barGroup.append("line")
-      .attr("x1", creditLength * 30)
+    barGroup.select(".barchart-layout").append("line")
+      .classed("barchart-line", true)
+      .attr("x1", creditLength * 30 + xOffset)
       .attr("y1", 0)
-      .attr("x2", creditLength * 30)
-      .attr("y2", 100)
-      .attr("stroke", "black");
+      .attr("x2", creditLength * 30 + xOffset)
+      .attr("y2", 100);
+
 
     function drawHorizontalBar() {
+      if(firstClick){
+        firstClick = false;
+        barGroup.select(".barchart-layout").attr("visibility", "visible");
+      }
 
       var m1 = d3.selectAll(".chosen-master1").data();
       var m2 = d3.selectAll(".chosen-master2").data();
@@ -921,7 +931,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
         bars.exit().remove(); //remove courses no longer selected
         bars.enter().append("rect") // add new rect for every newly selected course
           .classed("rect-sem" + index, true)
-          .classed("node", true)
+          .classed("rect-sem", true)
           .on("mouseover", function (d, i) {
             //showTooltip(d);
             if (!activeNodeExists()) {
@@ -934,7 +944,16 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
               toggleHighlightCourse(d[0].data[i]);
             }
           })
-          .on("click", function (d, i) { courseClicked(d[0].data[i]) });
+          .on("click", function (d, i) {
+            // zoek de node die overeenkomt met de bar
+            var cn = d3.selectAll(".node").filter(function (node, index) {
+              if (node == undefined)
+                return false;
+              return node.ID == d[0].data[i].ID;
+            })
+            // functie verwacht de overeenkomstige node om te kijken of die actief is
+            courseClicked(cn)
+          });
 
         bars = barGroup
           .selectAll(".rect-sem" + index)
@@ -943,11 +962,11 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
         bars.transition() // update all rects to new positions
           .duration(500)
           .attr("x", function (d) {
-            return creditLength * d[0][0];
+            return creditLength * d[0][0] + xOffset;
           })
-          .attr("y", 25 * index)
+          .attr("y", spacing * index)
           .attr("width", function (d) { return creditLength * (d[0][1] - d[0][0]) })
-          .attr("height", 20)
+          .attr("height", height)
           .attr("rx", 5)
           .attr("ry", 5)
           .attr("fill", function (d, i) { return colorOfCourse(d[0].data[i]) });
@@ -963,10 +982,10 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
 
 // bound the given x coordinate to the visible part of the hypergraph
 function boxBoundedX(x) {
- return Math.max(courseRadius + 2.5, Math.min(svgWidth - courseRadius - 2.5, x));
+  return Math.max(courseRadius + 2.5, Math.min(svgWidth - courseRadius - 2.5, x));
 }
 
 // bound the given y coordinate to the visible part of the hypergraph
 function boxBoundedY(y) {
- return Math.max(courseRadius + 2.5, Math.min(svgHeight - courseRadius - 2.5, y));
+  return Math.max(courseRadius + 2.5, Math.min(svgHeight - courseRadius - 2.5, y));
 }
