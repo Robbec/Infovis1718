@@ -83,7 +83,7 @@ body {
 }
 
 .not-interested {
-  display: none;
+  opacity: 0.1;
 }
 
 .link {
