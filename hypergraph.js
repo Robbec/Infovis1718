@@ -13,7 +13,7 @@ var options = [];
 var links = [];
 var hiddenCourses = [];
 var hiddenLinks = [];
-var distanceOptionRoot = 75;
+var distanceOptionRoot = 30;
 var distanceOptionCourse = 30;
 var courseRadius = 10;
 var optionRadius = courseRadius / 1.5;
@@ -281,23 +281,28 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
      */
 
     // force simulation bepaalt de positie van alle nodes
-    var forceCollide = d3.forceCollide(courseRadius * 1.5)
+    var forceCollide = d3.forceCollide(courseRadius * 1.3)
       .strength(1)
-      .iterations(3);
+      // .iterations(3);
     var simulationNodes = d3.forceSimulation(data.concat(options))
       // laat alle nodes elkaar afstoten
       .force("charge", d3.forceManyBody()
-        .distanceMin(courseRadius * 1.5)
         .distanceMax(700)
-        // .strength(-50)
+        .strength(function (d) {
+          if (d.ID == "Master") {
+            return -100;
+          } else {
+            return -50;
+          }
+        })
       )
       // voorkom dat nodes overlappen
       .force("collide", forceCollide)
       // duw verbonden elementen uit elkaar
       .force("link", d3.forceLink(links)
-        // .distance(40)
+        .distance(40)
         // .distance(d => d.dist)
-        // .strength(1)
+        .strength(0.5)
       )
       // roep ticked() op in elke iteratiestap van de simulatie
       .on("tick", ticked);
@@ -360,15 +365,16 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
     var simulationOptionNodes = d3.forceSimulation(options)
       // laat option nodes elkaar sterk afstoten
       .force("charge", d3.forceManyBody()
-        .strength(-1000)
-        .distanceMin(50)
-        .distanceMax(400)
+        .strength(-300)
+        // .distanceMin(100)
+        // .distanceMax(400)
       )
       // laat option nodes zich in een cirkel rond het middelpunt van de hypergraf verdelen
-      .force("radial", d3.forceRadial(100, svgWidth / 2, svgHeight / 2)
-        .strength(1)
-      )
-      .on("end", fixOptionNodes);
+      // .force("radial", d3.forceRadial(100, svgWidth / 2, svgHeight / 2)
+      //   .strength(1)
+      // )
+      // .on("end", fixOptionNodes)
+      ;
 
     // fixeer de positie van de option nodes
     function fixOptionNodes() {
@@ -508,6 +514,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
         }
       });
       simulationNodes.alpha(0.05).restart();
+      simulationOptionNodes.alpha(0.05).restart();
     }
 
     /**
@@ -524,22 +531,26 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
     function fillInfoboxForOption(o) {
       emptyInfobox();
       infobox.append("h3").text(o.OPO);
-      var ul = infobox.append("ul").classed("coursesList", true);
 
       // vind alle vakken van de optie en orden ze alfabetisch
-      var courses = data.filter(function (d) {
-        return (0 < d[o.OPO]) && (getCourseOptions(d).length < optionNames.length);
-      })
+      var courses = data
+        .filter(function (d) {
+          return (0 < d[o.OPO]) && (getCourseOptions(d).length < optionNames.length);
+        })
         .sort(function (a, b) {
           return a.OPO.toLowerCase().localeCompare(b.OPO.toLowerCase());
         });
 
-      // bind li's aan de vakken
-      var li = infobox.select(".coursesList")
-        .selectAll(li)
-        .data(courses);
+      updateOptionCourses(o, courses);
+    }
 
-      li.enter()
+    function updateOptionCourses(o, courses) {
+      var ul = infobox.append("ul").attr("class", "coursesList");
+
+      var li = ul.selectAll(li)
+        .data(courses, d => d.ID);
+
+      var liEnter = li.enter()
         .append("li")
         .text(d => d.OPO)
         .on("mouseover", function (d) {
@@ -560,6 +571,47 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
           courseClicked(course);
           toggleActive(hypergraph.select(".option-node.active"));
         });
+
+      addSemesterSymbol(o, liEnter);
+    }
+
+    function addSemesterSymbol(o, courses) {
+      var size = courseRadius * 2.5;
+      var svg = courses.append("svg")
+        .attr("height", size)
+        .attr("width", size);
+
+      svg.append("circle")
+        .attr("r", courseRadius)
+        .attr("cx", size / 2)
+        .attr("cy", size / 2)
+        .classed("node course-node", true)
+        .classed("compulsory", function (d) {
+          for (var i = 0; i < optionNames.length; i++) {
+            if (d[optionNames[i]] == 1) {
+              return true;
+            }
+          }
+          return false;
+        })
+        .classed("optional", function (d) {
+          for (var i = 0; i < optionNames.length; i++) {
+            if (d[optionNames[i]] == 2) {
+              return true;
+            }
+          }
+          return false;
+        })
+        .classed("not-interested", switchInterested.property("checked"))
+        .attr("fill", colors[options.indexOf(o)])
+        .attr("stroke", colors[options.indexOf(o)]);
+
+      svg.append("rect")
+        .attr("class", "semester-rect")
+        .attr("height", size)
+        .attr("width", size / 2)
+        .attr("fill", "white")
+        .attr("x", d => (size / 2) * (d.Semester - 1));
     }
 
     // voeg inhoud voor het gegeven vak toe aan de infobox
@@ -749,9 +801,10 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
 
     function updateHypergraph() {
       updateLinks();
-      // updateOptionNodes();
+      updateOptionNodes();
       updateCourseNodes();
-      simulationNodes.alpha(0.3).restart();
+      simulationNodes.alpha(0.5).restart();
+      simulationOptionNodes.alpha(0.5).restart();
     }
 
     /**
