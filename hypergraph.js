@@ -891,7 +891,8 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
     function updateBarchartSemester(chosen, year, semester) {
       var barXOffset = barchartLeftMargin;
       var chosenSemester = chosen.filter(c => (c.Semester == 3) || (c.Semester == semester));
-      chosenSemester.sort(function (a, b) {
+      
+      chosenSemester = chosenSemester.sort(function (a, b) {
         return semestrialPoints(a) > semestrialPoints(b);
       });
 
