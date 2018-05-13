@@ -33,6 +33,7 @@ var x = d3.scaleLinear()
   .range([0, svgWidth]);
 
 // variabelen Infobox
+var optionChosen = false;
 var stpSize = optionRadius * 2;
 
 // maak een svg voor de hypergraf
@@ -172,8 +173,8 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
             toggleActive(d3.select(this));
             // opmerking: de optie blijft gehighlightet tot de mouseout
           } else if (!activeNodeExists()) {
-            fillInfoboxForOption(d);
             toggleActive(d3.select(this));
+            fillInfoboxForOption(d);
             // opmerking: de optie is al gehighlightet vanwege de hover
           }
         });
@@ -540,6 +541,20 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
         });
 
       updateOptionCourses(o, courses);
+      var chosenOptionActive = !hypergraph.select(".option-chosen.active").
+        empty();
+      if (!optionChosen || chosenOptionActive) {
+        var checkbox = infobox.append("label")
+          .text("Kies deze optie");
+        checkbox.attr("class", "radiobutton checkbox-chooseoption")
+          .append("input")
+          .attr("type", "checkbox")
+          .attr("name", "checkbox")
+          .property("checked", chosenOptionActive);
+        checkbox.append("span")
+          .attr("class", "checkmark");
+        checkbox.on("change", toggleOptionChosen);
+      }
     }
 
     function updateOptionCourses(o, courses) {
@@ -571,6 +586,12 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
         });
 
       addSemesterSymbol(o, liEnter);
+    }
+
+    function toggleOptionChosen() {
+      optionChosen = !optionChosen;
+      var activeOptionNode = hypergraph.select(".option-node.active");
+      activeOptionNode.node().classList.toggle("option-chosen");
     }
 
     function addSemesterSymbol(o, courses) {
@@ -891,7 +912,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
     function updateBarchartSemester(chosen, year, semester) {
       var barXOffset = barchartLeftMargin;
       var chosenSemester = chosen.filter(c => (c.Semester == 3) || (c.Semester == semester));
-      
+
       chosenSemester = chosenSemester.sort(function (a, b) {
         return semestrialPoints(a) > semestrialPoints(b);
       });
