@@ -890,7 +890,9 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
 
     // update de balken in de bar chart
     function updateBarchart() {
-      barchart.classed("hidden", false);
+      var chosenCourse1Exist = !hypergraph.select(".chosen-master1").empty();
+      var chosenCourse2Exist = !hypergraph.select(".chosen-master2").empty();
+      barchart.classed("hidden", !chosenCourse1Exist && !chosenCourse2Exist);
       updateBarchartYear(1);
       updateBarchartYear(2);
     }
@@ -898,7 +900,6 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
     // update de balken voor het opgegeven jaar
     function updateBarchartYear(year) {
       var chosen = hypergraph.selectAll(".chosen-master" + year);
-      // x.domain([0, 40]).nice();
       updateBarchartSemester(chosen, year, 1);
       updateBarchartSemester(chosen, year, 2);
     }
