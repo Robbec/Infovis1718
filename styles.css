@@ -197,7 +197,7 @@ body {
 }
 
 /**
-* radiobuttonen
+* Radio buttons
 */
 
 .radiobutton-interested {
@@ -238,7 +238,7 @@ body {
     height: 1.5rem;
     width: 1.5rem;
     background-color: #eceff1;
-    border-radius: 50%;
+    border-radius: 4px;
 }
 
 /* On mouse-over, add a grey background color */
@@ -265,12 +265,13 @@ body {
 
 /* Style the indicator (dot/circle) */
 .radiobutton .checkmark:after {
- 	top: 0.5rem;
-	left: 0.5rem;
-	width: 0.5rem;
-	height: 0.5rem;
-	border-radius: 50%;
-	background: white;
+  border: solid white;
+  border-width: 0 3px 3px 0;
+  height: 10px;
+  left: 9px;
+  top: 6px;
+  transform: rotate(45deg);
+  width: 5px;
 }
 
 /**
