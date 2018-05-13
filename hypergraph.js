@@ -3,8 +3,9 @@ var body = d3.select("body");
 var left = d3.select(".left");
 var right = d3.select(".right");
 var hypergraphContainer = left.select(".hypergraph-container");
-var barchartContainer = left.select("bargroup-container");
 var hypergraph = hypergraphContainer.select(".hypergraph");
+var barchartContainer = left.select(".barchart-container");
+var barchart = barchartContainer.select(".barchart");
 var switchInterested = right.select(".switch-interested").select("input");
 var infobox = right.select(".infobox");
 
@@ -30,7 +31,6 @@ var svgHeight = 500;
 var x = d3.scaleLinear()
   .domain([0, 40])
   .range([0, svgWidth]);
-var refreshBars;
 
 // variabelen Infobox
 var stpSize = optionRadius * 2;
@@ -41,9 +41,7 @@ hypergraph.attr("width", svgWidth)
 
 // tooltip aanmaken (inhoud wordt ingevuld bij hover over bolletje)
 var tooltip = hypergraphContainer.append("div")
-  .classed("tooltip", true);
-var tooltipBarchart = barchartContainer.append("div")
-  .classed("tooltip", true);
+  .attr("class", "tooltip");
 
 // switch standaard uitschakelen
 switchInterested.property("checked", false);
@@ -610,8 +608,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
         .attr("class", "semester-rect")
         .attr("height", size)
         .attr("width", size / 2)
-        .attr("fill", "white")
-        .attr("x", d => (size / 2) * (d.Semester - 1));
+        .attr("x", d => (size / 2) * (2 - d.Semester));
     }
 
     // voeg inhoud voor het gegeven vak toe aan de infobox
@@ -758,7 +755,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
         course.classed("chosen-master1", false);
         course.node().classList.toggle("chosen-master2");
       }
-      drawHorizontalBar();
+      updateBarchart();
     }
 
     function toggleStatusInterested(course) {
@@ -845,133 +842,100 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
     }
 
     /**
-     * Horizontal bar
+     * Bar chart
      */
-    // om te testen
-    refreshBars = drawHorizontalBar;
 
-    var spacing = 25;
-    var height = 20;
-    var xOffset = 90;
-    var firstClick = true;
+    var barSpacing = 3;
+    var barHeight = 20;
+    var barchartLeftMargin = 90;
+    var creditLength = (svgWidth - barchartLeftMargin) / 40;
 
-    var creditLength = (svgWidth - xOffset) / 40;
-    var barGroup = d3.select(".bargroup")
-    barGroup.attr("width", svgWidth);
-    barGroup.select(".barchart-layout").append("line")
-      .classed("barchart-line", true)
-      .attr("x1", creditLength * 30 + xOffset)
-      .attr("y1", 0)
-      .attr("x2", creditLength * 30 + xOffset)
-      .attr("y2", 100);
+    barchart.attr("width", svgWidth)
+      .attr("height", 4 * barHeight + 3 * barSpacing);
+    // barchart.select(".barchart-layout").append("line")
+    //   .classed("barchart-line", true)
+    //   .attr("x1", creditLength * 30 + barchartLeftMargin)
+    //   .attr("y1", 0)
+    //   .attr("x2", creditLength * 30 + barchartLeftMargin)
+    //   .attr("y2", 100);
 
+    // voeg labels toe voor de balken
+    for (i = 1; i <= 4; i++) {
+      barchart.append("text")
+        .attr("y", barHeight * i + barSpacing * (i - 1) - (barHeight - 10) / 2)
+        .attr("class", "barchart-text")
+        .text("semester " + i);
+    }
 
-    function drawHorizontalBar() {
-      if(firstClick){
-        firstClick = false;
-        barGroup.select(".barchart-layout").attr("visibility", "visible");
-      }
+    // update de balken in de bar chart
+    function updateBarchart() {
+      barchart.classed("hidden", false);
+      updateBarchartYear(1);
+      updateBarchartYear(2);
+    }
 
-      var m1 = d3.selectAll(".chosen-master1").data();
-      var m2 = d3.selectAll(".chosen-master2").data();
-      x.domain([0, 40]).nice();
+    // update de balken voor het opgegeven jaar
+    function updateBarchartYear(year) {
+      var chosen = hypergraph.selectAll(".chosen-master" + year);
+      // x.domain([0, 40]).nice();
+      updateBarchartSemester(chosen, year, 1);
+      updateBarchartSemester(chosen, year, 2);
+    }
 
-      var s1 = m1.filter(c => c.Semester == 1);
-      var s2 = m1.filter(c => c.Semester == 2);
-      var b1 = m1.filter(c => c.Semester == 3);
-      b1.forEach(c => {
-        s1.push({ ...c, Studiepunten: c.Studiepunten / 2 });
-        s2.push({ ...c, Studiepunten: c.Studiepunten / 2 });
-      });
-      var s3 = m2.filter(c => c.Semester == 1);
-      var s4 = m2.filter(c => c.Semester == 2);
-      var b2 = m2.filter(c => c.Semester == 3);
-      b2.forEach(c => {
-        s3.push({ ...c, Studiepunten: c.Studiepunten / 2 });
-        s4.push({ ...c, Studiepunten: c.Studiepunten / 2 });
-      });
+    // bepaal voor hoeveel studiepunten een vak mee telt in een semester
+    function semestrialPoints(d) {
+      return (d.Semester == 3) ? d.Studiepunten / 2 : d.Studiepunten;
+    }
 
-      s1 = s1.sort(function (a, b) {
-        return a.Studiepunten > b.Studiepunten
-      });
-      S2 = s2.sort(function (a, b) {
-        return a.Studiepunten > b.Studiepunten
-      });
-      s3 = s3.sort(function (a, b) {
-        return a.Studiepunten > b.Studiepunten
-      });
-      S4 = s4.sort(function (a, b) {
-        return a.Studiepunten > b.Studiepunten
+    // update de balken voor de gekozen vakken in het gegeven jaar en semester
+    function updateBarchartSemester(chosen, year, semester) {
+      var barXOffset = barchartLeftMargin;
+      var chosenSemester = chosen.filter(c => (c.Semester == 3) || (c.Semester == semester));
+      chosenSemester.sort(function (a, b) {
+        return semestrialPoints(a) > semestrialPoints(b);
       });
 
-      var sems = [s1, s2, s3, s4];
+      var semesterNummer = 2 * (year - 1) + semester;
+      var bars = barchart.selectAll(".rect-sem" + semesterNummer)
+        .data(chosenSemester.data(), d => d.ID);
 
-      drawBar(s1, 0);
-      drawBar(s2, 1);
-      drawBar(s3, 2);
-      drawBar(s4, 3);
+      bars.exit().remove();
 
-      function drawBar(data, index) {
-
-        var stack = d3.stack([data])
-          .keys(function (d) {
-            var keys = [];
-            for (var i = 0; i < d[0].length; i++)
-              keys.push(i);
-            return keys;
-          })
-          .value(function (d, key) {
-            return d[key].Studiepunten
-          });
-
-        var bars = barGroup
-          .selectAll(".rect-sem" + index)
-          .data(stack([data]));
-
-        bars.exit().remove(); //remove courses no longer selected
-        bars.enter().append("rect") // add new rect for every newly selected course
-          .classed("rect-sem" + index, true)
-          .classed("rect-sem", true)
-          .on("mouseover", function (d, i) {
-            //showTooltip(d);
-            if (!activeNodeExists()) {
-              toggleHighlightCourse(d[0].data[i]);
-            }
-          })
-          .on("mouseout", function (d, i) {
-            //hideTooltip();
-            if (!activeNodeExists()) {
-              toggleHighlightCourse(d[0].data[i]);
-            }
-          })
-          .on("click", function (d, i) {
-            // zoek de node die overeenkomt met de bar
-            var cn = d3.selectAll(".node").filter(function (node, index) {
-              if (node == undefined)
-                return false;
-              return node.ID == d[0].data[i].ID;
-            })
-            // functie verwacht de overeenkomstige node om te kijken of die actief is
-            courseClicked(cn)
-          });
-
-        bars = barGroup
-          .selectAll(".rect-sem" + index)
-          .data(stack([data]));
-
-        bars.transition() // update all rects to new positions
-          .duration(500)
-          .attr("x", function (d) {
-            return creditLength * d[0][0] + xOffset;
-          })
-          .attr("y", spacing * index)
-          .attr("width", function (d) { return creditLength * (d[0][1] - d[0][0]) })
-          .attr("height", height)
-          .attr("rx", 5)
-          .attr("ry", 5)
-          .attr("fill", function (d, i) { return colorOfCourse(d[0].data[i]) });
-      }
-
+      bars.enter()
+        .append("rect")
+        .attr("class", "rect-sem rect-sem" + semesterNummer)
+        .attr("width", d => semestrialPoints(d) * creditLength)
+        .attr("height", barHeight)
+        .attr("rx", 4)
+        .attr("ry", 4)
+        .attr("fill", d => colorOfCourse(d))
+        .attr("y", (barHeight + barSpacing) * (semesterNummer - 1))
+        .on("mouseover", function (d) {
+          showTooltip(d);
+          if (!activeNodeExists()) {
+            toggleHighlightCourse(d);
+          }
+        })
+        .on("mouseout", function (d) {
+          hideTooltip();
+          if (!activeNodeExists()) {
+            toggleHighlightCourse(d);
+          }
+        })
+        .on("click", function (d) {
+          // zoek de node die overeenkomt met de bar
+          var node = hypergraph.selectAll(".node")
+            .filter(n => n.ID == d.ID);
+          courseClicked(node);
+        })
+        .merge(bars)
+        .transition(transition)
+        .attr("x", function (d) {
+          var barWidth = creditLength * semestrialPoints(d);
+          var oldXOffset = barXOffset;
+          barXOffset += barWidth + barSpacing;
+          return oldXOffset;
+        });
     }
   });
 });

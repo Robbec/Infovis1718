@@ -36,7 +36,8 @@ body {
   width: 40%;
 }
 
-.hypergraph-container {
+.hypergraph-container,
+.barchart-container {
   position: relative;
 }
 
@@ -191,6 +192,10 @@ body {
   top: 0;
 }
 
+.semester-rect {
+  fill: #fff;
+}
+
 /**
 * radiobuttonen
 */
@@ -328,13 +333,15 @@ input:checked + .slider:before {
 * Barchart
 */
 
+.barchart-container {
+  margin-top: 2rem;
+}
+
 .rect-sem {
   fill-opacity: 1;
   cursor: pointer;
 }
-.barchart-line{
-  stroke: #455a64;
-}
-.barchart-text{
-  fill: #455a64;
+
+.barchart-text {
+  fill: #90a4ae;
 }
