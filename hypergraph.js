@@ -913,7 +913,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
     function updateBarchartSemester(chosen, year, semester) {
       var barXOffset = barchartLeftMargin;
       var chosenSemester = chosen.filter(c => (c.Semester == 3) || (c.Semester == semester));
-
+      var semesterTotal = chosenSemester.data().reduce((total, c) => total + parseInt(semestrialPoints(c)), 0);
       chosenSemester = chosenSemester.sort(function (a, b) {
         return semestrialPoints(a) > semestrialPoints(b);
       });
@@ -927,7 +927,7 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
       bars.enter()
         .append("rect")
         .attr("class", "rect-sem rect-sem" + semesterNummer)
-        .attr("width", d => semestrialPoints(d) * creditLength)
+        .attr("width", d => semestrialPoints(d) * creditLength - barSpacing)
         .attr("height", barHeight)
         .attr("rx", 4)
         .attr("ry", 4)
@@ -956,9 +956,21 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
         .attr("x", function (d) {
           var barWidth = creditLength * semestrialPoints(d);
           var oldXOffset = barXOffset;
-          barXOffset += barWidth + barSpacing;
+          //barXOffset += barWidth + barSpacing;
+          barXOffset += barWidth
           return oldXOffset;
         });
+
+      // draw total amount of stp in text
+      barchart.select(".bar-label" + semesterNummer).remove();
+      if (semesterTotal !== 0) {
+        barchart.append("text")
+          .attr("class", "barchart-text bar-label" + semesterNummer)
+          .attr("x", barchartLeftMargin + semesterTotal * creditLength)
+          .attr("y", barHeight * semesterNummer + barSpacing * (semesterNummer - 1) - (barHeight - 10) / 2)
+          .text(semesterTotal+" stp.");
+      }
+
     }
   });
 });
