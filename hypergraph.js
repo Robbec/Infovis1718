@@ -49,7 +49,6 @@ switchInterested.property("checked", false);
 
 d3.csv("cw-6-tijdelijk.csv").then(function (data) {
   d3.csv("uniekeReserveringen.csv").then(function (scheduleData) {
-    d3.csv("gelijktijdig.csv").then(function (prerequisiteData) {
     // namen van alle opties
     var columnNames = d3.keys(d3.values(data)[0]);
     var optionNames = columnNames.slice(12, columnNames.length);
@@ -458,14 +457,10 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
 
     // toggle de highlight van de vakken die geen prerequisite zijn van het gegeven vak
     function toggleHighlightPrerequisites(course) {
-      var prerequisites = new Set();
-      prerequisiteData.filter(OPO => OPO.OPO == course.ID)
-        .forEach(function(r) {
-          prerequisites.add(r.Voorwaarde);
-        });
+      var prerequisites = course["Gelijktijdig volgen"];
       hypergraph.selectAll(".course-node")
         .each(function (c) {
-          if (c.ID != course.ID && !prerequisites.has(c.ID)) {
+          if (c.ID != course.ID && !prerequisites.split(" ").includes(c.ID)) {
             this.classList.toggle("non-active");
           }
         })
@@ -978,7 +973,6 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
 
     }
   });
-});
 });
 
 /**
