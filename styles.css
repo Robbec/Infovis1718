@@ -119,15 +119,6 @@ body {
 /**
 * Infobox
 */
-.infobox {
-  background-color: #fff;
-  border-radius: 4px;
-  display: flex;
-  flex: 1 0 auto;
-  flex-flow: column;
-  padding: 2rem;
-}
-
 .hidden {
   display: none;
 }
@@ -202,7 +193,7 @@ body {
 
 .radiobutton-interested,
 .checkbox-chooseoption {
-  margin-top: auto;
+  margin-top: 2rem;
 }
 
 /* The container */
@@ -210,14 +201,14 @@ body {
     display: block;
     position: relative;
     padding-left: 2rem;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
     cursor: pointer;
     font-size: 1rem;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
-    line-height: 1.5rem;
+    line-height: 1.25rem;
 }
 
 .radiobutton:last-child {
@@ -236,10 +227,10 @@ body {
     position: absolute;
     top: 0;
     left: 0;
-    height: 1.5rem;
-    width: 1.5rem;
-    background-color: #eceff1;
-    border-radius: 4px;
+    height: 1.25rem;
+    width: 1.25rem;
+    background-color: #cfd8dc;
+    border-radius: 50%;
 }
 
 /* On mouse-over, add a grey background color */
@@ -267,12 +258,12 @@ body {
 /* Style the indicator (dot/circle) */
 .radiobutton .checkmark:after {
   border: solid white;
-  border-width: 0 3px 3px 0;
-  height: 10px;
-  left: 9px;
-  top: 6px;
+  border-width: 0 2px 2px 0;
+  height: 8px;
+  left: 8px;
+  top: 5px;
   transform: rotate(45deg);
-  width: 5px;
+  width: 4px;
 }
 
 /**

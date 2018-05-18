@@ -86,6 +86,28 @@ d3.csv("cw-6.csv").then(function (data) {
      * Hypergraf
      */
 
+     hypergraph.on("click", function() {
+       backgroundClicked();
+     });
+
+     function backgroundClicked() {
+       var activeCourse = hypergraph.select(".course-node.active");
+       if (!activeCourse.empty()) {
+         emptyInfobox();
+         resizeCourseNode(activeCourse, 2 / 3);
+         toggleHighlightCourse(activeCourse.datum());
+         toggleActive(activeCourse);
+       }
+       else {
+         var activeOption = hypergraph.select(".option-node.active");
+         if (!activeOption.empty()) {
+           emptyInfobox();
+           toggleHighlightOption(activeOption.datum());
+           toggleActive(activeOption);
+         }
+       }
+     }
+
     // maak voor elke optie een node
     optionNames.forEach(function (o) {
       options.push({
@@ -234,27 +256,6 @@ d3.csv("cw-6.csv").then(function (data) {
         });
 
       course.exit().remove();
-    }
-
-    hypergraph.on("click", function() {backgroundClicked()});
-
-    function backgroundClicked() {
-      console.log("background")
-      var activeCourse = hypergraph.select(".course-node.active");
-      if (!activeCourse.empty()) {
-        emptyInfobox();
-        resizeCourseNode(activeCourse, 2 / 3);
-        toggleHighlightCourse(activeCourse.datum());
-        toggleActive(activeCourse);
-      }
-      else {
-        var activeOption = hypergraph.select(".option-node.active");
-        if (!activeOption.empty()) {
-          emptyInfobox();
-          toggleHighlightOption(activeOption.datum());
-          toggleActive(activeOption);
-        }
-      }
     }
 
     function courseClicked(course) {
@@ -661,89 +662,101 @@ d3.csv("cw-6.csv").then(function (data) {
       var c = course.datum();
       // 1) titel van het actieve vak
       infobox.append("h3").text(c.OPO);
-
       // 2) studiepunten van het actieve vak
       infobox.append("div")
-        .attr("class", "points");
-      //.text(course.Studiepunten + " SP");
+        .attr("class", "points")
+        .text(c.Studiepunten + " SP");
 
-      var stpContainer = infobox.select(".points");
-      stpContainer.append("svg")
-        .attr("class", "stp");
-      var stp = stpContainer.select(".stp");
-
-      // x position
-      var x = 0;
-      var projectStp = course.Project;
-      // als het vak een project deel heeft
-      if (projectStp > 0) {
-        // een vierkantje voor elk geheel projectdeel
-        var floorProjectStp = Math.floor(projectStp);
-        for (i = 0; i < floorProjectStp; i++) {
-          stp.append("rect")
-            .attr("x", x)
-            .attr("width", stpSize)
-            .attr("height", stpSize)
-            .attr("fill", kulBlue);
-          x += stpSize + 1;
-        }
-        // een rechthoekje in verhouding met het niet gehele projectdeel
-        var afterPoint = projectStp - floorProjectStp;
-        if (afterPoint > 0) {
-          var extraWidth = stpSize * afterPoint;
-          stp.append("rect")
-            .attr("x", x)
-            .attr("width", extraWidth)
-            .attr("height", stpSize)
-            .attr("fill", kulBlue);
-          x += extraWidth + 1;
-        }
-      }
-
-      var examStp = course.Examen;
-      //als het vak een examendeel heeft
-      if (examStp > 0) {
-        // een rechthoekje in verhouding met het niet gehele examen deel
-        // eerst zodat dit past bij het niet gehele projectdeel
-        var floorExamStp = Math.floor(examStp);
-        var afterPoint = examStp - floorExamStp;
-        if (afterPoint > 0) {
-          var extraWidth = stpSize * afterPoint;
-          stp.append("rect")
-            .attr("x", x)
-            .attr("width", extraWidth)
-            .attr("height", stpSize)
-            .attr("fill", kulOrange);
-          x += extraWidth + 1;
-        }
-        // een vierkantje voor elk geheel examen deel
-        for (i = 0; i < floorExamStp; i++) {
-          stp.append("rect")
-            .attr("x", x)
-            .attr("width", stpSize)
-            .attr("height", stpSize)
-            .attr("fill", kulOrange);
-          x += stpSize + 1;
-        }
-      }
+      // var stpContainer = infobox.select(".points");
+      // stpContainer.append("svg")
+      //   .attr("class", "stp");
+      // var stp = stpContainer.select(".stp");
+      //
+      // // x position
+      // var x = 0;
+      // var projectStp = course.Project;
+      // // als het vak een project deel heeft
+      // if (projectStp > 0) {
+      //   // een vierkantje voor elk geheel projectdeel
+      //   var floorProjectStp = Math.floor(projectStp);
+      //   for (i = 0; i < floorProjectStp; i++) {
+      //     stp.append("rect")
+      //       .attr("x", x)
+      //       .attr("width", stpSize)
+      //       .attr("height", stpSize)
+      //       .attr("fill", kulBlue);
+      //     x += stpSize + 1;
+      //   }
+      //   // een rechthoekje in verhouding met het niet gehele projectdeel
+      //   var afterPoint = projectStp - floorProjectStp;
+      //   if (afterPoint > 0) {
+      //     var extraWidth = stpSize * afterPoint;
+      //     stp.append("rect")
+      //       .attr("x", x)
+      //       .attr("width", extraWidth)
+      //       .attr("height", stpSize)
+      //       .attr("fill", kulBlue);
+      //     x += extraWidth + 1;
+      //   }
+      // }
+      //
+      // var examStp = course.Examen;
+      // //als het vak een examendeel heeft
+      // if (examStp > 0) {
+      //   // een rechthoekje in verhouding met het niet gehele examen deel
+      //   // eerst zodat dit past bij het niet gehele projectdeel
+      //   var floorExamStp = Math.floor(examStp);
+      //   var afterPoint = examStp - floorExamStp;
+      //   if (afterPoint > 0) {
+      //     var extraWidth = stpSize * afterPoint;
+      //     stp.append("rect")
+      //       .attr("x", x)
+      //       .attr("width", extraWidth)
+      //       .attr("height", stpSize)
+      //       .attr("fill", kulOrange);
+      //     x += extraWidth + 1;
+      //   }
+      //   // een vierkantje voor elk geheel examen deel
+      //   for (i = 0; i < floorExamStp; i++) {
+      //     stp.append("rect")
+      //       .attr("x", x)
+      //       .attr("width", stpSize)
+      //       .attr("height", stpSize)
+      //       .attr("fill", kulOrange);
+      //     x += stpSize + 1;
+      //   }
+      // }
 
       infobox.append("p")
         .text(function () {
           return c.Beschrijving;
         });
 
-      // 3) radiobutton "Niet geïnteresseerd" voor het actieve vak
+      // radiobutton "Geïnteresseerd" voor het actieve vak
       var radiobuttonInterested = infobox.append("label")
-        .text("Niet geïnteresseerd in dit vak");
+        .text("Geïnteresseerd in dit vak");
       radiobuttonInterested.attr("class", "radiobutton radiobutton-interested")
         .append("input")
         .attr("type", "radio")
         .attr("name", "radio")
         .attr("value", "interested")
-        .property("checked", course.classed("not-interested") || course.classed("is-not-interested"));
+        .property("checked", true);
       radiobuttonInterested.append("span")
         .attr("class", "checkmark");
       radiobuttonInterested.on("change", toggleStatusRadioButtons);
+
+      // radiobutton "Niet geïnteresseerd" voor het actieve vak
+      var radiobuttonNotInterested = infobox.append("label")
+        .text("Niet geïnteresseerd in dit vak");
+      radiobuttonNotInterested.attr("class", "radiobutton")
+        .append("input")
+        .attr("type", "radio")
+        .attr("name", "radio")
+        .attr("value", "not-interested")
+        .property("checked", course.classed("not-interested") || course.classed("is-not-interested"));
+      radiobuttonNotInterested.append("span")
+        .attr("class", "checkmark");
+      radiobuttonNotInterested.on("change", toggleStatusRadioButtons);
 
       // 4) radiobutton "Kies in 1ste Master" voor het actieve vak
       var radiobuttonChoose1 = infobox.append("label")
@@ -795,6 +808,10 @@ d3.csv("cw-6.csv").then(function (data) {
         toggleStatusInterested(course);
         course.classed("chosen-master1", false);
         course.classed("chosen-master2", false);
+      } else if (value == "not-interested") {
+        toggleStatusNotInterested(course);
+        course.classed("chosen-master1", false);
+        course.classed("chosen-master2", false);
       } else if (value == "choose1") {
         course.classed("not-interested", false);
         course.node().classList.toggle("chosen-master1");
@@ -808,6 +825,11 @@ d3.csv("cw-6.csv").then(function (data) {
     }
 
     function toggleStatusInterested(course) {
+      course.classed("not-interested", false);
+      // updateHypergraph();
+    }
+
+    function toggleStatusNotInterested(course) {
       var switchInterestedChecked = switchInterested.property("checked");
       if (switchInterestedChecked) {
         course.node().classList.toggle("not-interested");
@@ -996,7 +1018,7 @@ d3.csv("cw-6.csv").then(function (data) {
           .attr("class", "barchart-text bar-label" + semesterNummer)
           .attr("x", barchartLeftMargin + semesterTotal * creditLength)
           .attr("y", barHeight * semesterNummer + barSpacing * (semesterNummer - 1) - (barHeight - 10) / 2)
-          .text(semesterTotal+" stp.");
+          .text(semesterTotal);
       }
 
     }
