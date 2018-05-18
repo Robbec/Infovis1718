@@ -165,7 +165,6 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
           hideTooltip();
           if (!activeNodeExists()) {
             toggleHighlightOption(d);
-            console.log(d);
           }
         })
         .on("click", function (d) {
@@ -251,7 +250,6 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
       else {
         var activeOption = hypergraph.select(".option-node.active");
         if (!activeOption.empty()) {
-          console.log(activeOption);
           emptyInfobox();
           toggleHighlightOption(activeOption.datum());
           toggleActive(activeOption);
