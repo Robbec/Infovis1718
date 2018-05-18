@@ -165,9 +165,11 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
           hideTooltip();
           if (!activeNodeExists()) {
             toggleHighlightOption(d);
+            console.log(d);
           }
         })
         .on("click", function (d) {
+          d3.event.stopPropagation();
           if (isActive(d3.select(this))) {
             emptyInfobox();
             toggleActive(d3.select(this));
@@ -235,9 +237,32 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
       course.exit().remove();
     }
 
+    hypergraph.on("click", function() {backgroundClicked()});
+
+    function backgroundClicked() {
+      console.log("background")
+      var activeCourse = hypergraph.select(".course-node.active");
+      if (!activeCourse.empty()) {
+        emptyInfobox();
+        resizeCourseNode(activeCourse, 2 / 3);
+        toggleHighlightCourse(activeCourse.datum());
+        toggleActive(activeCourse);
+      }
+      else {
+        var activeOption = hypergraph.select(".option-node.active");
+        if (!activeOption.empty()) {
+          console.log(activeOption);
+          emptyInfobox();
+          toggleHighlightOption(activeOption.datum());
+          toggleActive(activeOption);
+        }
+      }
+    }
+
     function courseClicked(course) {
       var activeCourse = hypergraph.select(".course-node.active");
       var activeCourseExists = !activeCourse.empty();
+      d3.event.stopPropagation();
       if (isActive(course)) {
         // opmerking: het vak blijft gehighlightet tot de mouseout
         emptyInfobox();
