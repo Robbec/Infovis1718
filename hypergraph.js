@@ -47,11 +47,11 @@ var tooltip = hypergraphContainer.append("div")
 // switch standaard uitschakelen
 switchInterested.property("checked", false);
 
-d3.csv("cw-6-tijdelijk.csv").then(function (data) {
+d3.csv("cw-6.csv").then(function (data) {
   d3.csv("uniekeReserveringen.csv").then(function (scheduleData) {
     // namen van alle opties
     var columnNames = d3.keys(d3.values(data)[0]);
-    var optionNames = columnNames.slice(12, columnNames.length);
+    var optionNames = columnNames.slice(13, columnNames.length);
 
     /**
      * Kleuren
@@ -726,6 +726,11 @@ d3.csv("cw-6-tijdelijk.csv").then(function (data) {
           x += stpSize + 1;
         }
       }
+
+      infobox.append("p")
+        .text(function () {
+          return c.Beschrijving;
+        });
 
       // 3) radiobutton "Niet geïnteresseerd" voor het actieve vak
       var radiobuttonInterested = infobox.append("label")
