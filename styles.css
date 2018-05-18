@@ -184,17 +184,12 @@ body {
 }
 
 .semester-rect {
-  fill: #fff;
+  fill: #eceff1;
 }
 
 /**
 * Radio buttons
 */
-
-.radiobutton-interested,
-.checkbox-chooseoption {
-  margin-top: 2rem;
-}
 
 /* The container */
 .radiobutton {
@@ -230,12 +225,7 @@ body {
     height: 1.25rem;
     width: 1.25rem;
     background-color: #cfd8dc;
-    border-radius: 50%;
-}
-
-/* On mouse-over, add a grey background color */
-.radiobutton:hover input ~ .checkmark {
-    background-color: #cfd8dc;
+    border-radius: 4px;
 }
 
 /* When the radio button is checked, add a blue background */
@@ -250,7 +240,8 @@ body {
     display: none;
 }
 
-/* Show the indicator (dot/circle) when checked */
+/* Show the indicator (dot/circle) when checked or hovered */
+.radiobutton:hover input ~ .checkmark:after,
 .radiobutton input:checked ~ .checkmark:after {
     display: block;
 }

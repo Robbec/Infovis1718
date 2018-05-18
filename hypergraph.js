@@ -189,15 +189,16 @@ d3.csv("cw-6.csv").then(function (data) {
             toggleHighlightOption(d);
           }
         })
-        .on("click", function (d) {
+        .on("click", function () {
           d3.event.stopPropagation();
-          if (isActive(d3.select(this))) {
+          var option = d3.select(this);
+          if (isActive(option)) {
+            toggleActive(option);
             emptyInfobox();
-            toggleActive(d3.select(this));
             // opmerking: de optie blijft gehighlightet tot de mouseout
           } else if (!activeNodeExists()) {
-            toggleActive(d3.select(this));
-            fillInfoboxForOption(d);
+            toggleActive(option);
+            fillInfoboxForOption(option);
             // opmerking: de optie is al gehighlightet vanwege de hover
           }
         });
@@ -264,23 +265,23 @@ d3.csv("cw-6.csv").then(function (data) {
       d3.event.stopPropagation();
       if (isActive(course)) {
         // opmerking: het vak blijft gehighlightet tot de mouseout
-        emptyInfobox();
         resizeCourseNode(course, 2 / 3);
         toggleActive(course);
+        emptyInfobox();
       } else if (activeCourseExists) {
         // opmerking: de highlights voor de betrokken vakken moeten nu aangepast worden
         resizeCourseNode(activeCourse, 2 / 3);
         toggleHighlightCourse(activeCourse.datum());
         toggleActive(activeCourse);
-        fillInfoboxForCourse(course);
         resizeCourseNode(course, 1.5);
         toggleHighlightCourse(course.datum());
         toggleActive(course);
+        fillInfoboxForCourse(course);
       } else {
         // opmerking: de prerequisites zijn al gehighlightet vanwege de hover
-        fillInfoboxForCourse(course);
         resizeCourseNode(course, 1.5);
         toggleActive(course);
+        fillInfoboxForCourse(course);
       }
 
       // // sla alle vakken op die overlappen met het actieve vak
@@ -400,12 +401,20 @@ d3.csv("cw-6.csv").then(function (data) {
       ;
 
     // fixeer de positie van de option nodes
-    function fixOptionNodes() {
-      options.forEach(function (o) {
-        o.fx = boxBoundedX(o.x);
-        o.fy = boxBoundedY(o.y);
-      })
-      simulationNodes.nodes(data.concat(options))
+    // function fixOptionNodes() {
+    //   options.forEach(function (o) {
+    //     o.fx = boxBoundedX(o.x);
+    //     o.fy = boxBoundedY(o.y);
+    //   })
+    //   simulationNodes.nodes(data.concat(options))
+    // }
+
+    function updateHypergraph() {
+      updateLinks();
+      updateOptionNodes();
+      updateCourseNodes();
+      simulationNodes.alpha(0.5).restart();
+      simulationOptionNodes.alpha(0.5).restart();
     }
 
     /**
@@ -492,9 +501,8 @@ d3.csv("cw-6.csv").then(function (data) {
 
     // check of er actieve nodes zijn in de graf
     function activeNodeExists() {
-      var activeCourseNodes = hypergraph.select(".course-node.active");
-      var activeOptionNodes = hypergraph.select(".option-node.active");
-      return !activeCourseNodes.empty() || !activeOptionNodes.empty();
+      var activeNode = hypergraph.select(".active");
+      return !activeNode.empty();
     }
 
     // check of de gegeven node actief is
@@ -541,43 +549,77 @@ d3.csv("cw-6.csv").then(function (data) {
     }
 
     /**
-     * Functies met betrekking tot de inhoud in de infobox
+     * Functies met betrekking tot de infobox voor opties
      */
 
     // verwijder alle vakgerelateerde inhoud in de infobox
     function emptyInfobox() {
-      infobox.select(".help").classed("hidden", true);
+      infobox.select(".help").classed("hidden", activeNodeExists());
       infobox.selectAll(".infobox > *:not(.help)").remove();
     }
 
-    // voeg inhoud over de gegeven optie toe aan de infobox
-    function fillInfoboxForOption(o) {
-      emptyInfobox();
-      infobox.append("h3").text(o.OPO);
-
-      // vind alle vakken van de optie en orden ze alfabetisch
-      var courses = data
+    function getOptionCourses(o) {
+      return hypergraph.selectAll(".course-node")
         .filter(function (d) {
           return (0 < d[o.OPO]) && (getCourseOptions(d).length < optionNames.length);
         })
+    }
+
+    // voeg inhoud over de gegeven optie toe aan de infobox
+    function fillInfoboxForOption(option) {
+      emptyInfobox();
+      var o = option.datum();
+      infobox.append("h3").text(o.OPO);
+
+      // orden alle vakken van de optie alfabetisch
+      var courses = getOptionCourses(o).data()
         .sort(function (a, b) {
           return a.OPO.toLowerCase().localeCompare(b.OPO.toLowerCase());
         });
 
       updateOptionCourses(o, courses);
+
+      // radiobutton "Geïnteresseerd"
+      var radiobuttonInterested = infobox.append("label")
+        .text("Geïnteresseerd in deze optie");
+      radiobuttonInterested.attr("class", "radiobutton")
+        .append("input")
+        .attr("type", "radio")
+        .attr("name", "radio")
+        .attr("value", "interested")
+        .property("checked", true);
+      radiobuttonInterested.append("span")
+        .attr("class", "checkmark");
+      radiobuttonInterested.on("change", toggleRadioButtonsOption);
+
+      // radiobutton "Niet geïnteresseerd"
+      var radiobuttonNotInterested = infobox.append("label")
+        .text("Niet geïnteresseerd in deze optie");
+      radiobuttonNotInterested.attr("class", "radiobutton")
+        .append("input")
+        .attr("type", "radio")
+        .attr("name", "radio")
+        .attr("value", "not-interested")
+        .property("checked", option.classed("not-interested"));
+      radiobuttonNotInterested.append("span")
+        .attr("class", "checkmark");
+      radiobuttonNotInterested.on("change", toggleRadioButtonsOption);
+
+      // radiobutton "Kies optie"
       var chosenOptionActive = !hypergraph.select(".option-chosen.active").
         empty();
       if (!optionChosen || chosenOptionActive) {
-        var checkbox = infobox.append("label")
+        var radiobuttonChoose = infobox.append("label")
           .text("Kies deze optie");
-        checkbox.attr("class", "radiobutton checkbox-chooseoption")
+        radiobuttonChoose.attr("class", "radiobutton")
           .append("input")
-          .attr("type", "checkbox")
-          .attr("name", "checkbox")
+          .attr("type", "radio")
+          .attr("name", "radio")
+          .attr("value", "choose")
           .property("checked", chosenOptionActive);
-        checkbox.append("span")
+        radiobuttonChoose.append("span")
           .attr("class", "checkmark");
-        checkbox.on("change", toggleOptionChosen);
+        radiobuttonChoose.on("change", toggleRadioButtonsOption);
       }
     }
 
@@ -610,12 +652,6 @@ d3.csv("cw-6.csv").then(function (data) {
         });
 
       addSemesterSymbol(o, liEnter);
-    }
-
-    function toggleOptionChosen() {
-      optionChosen = !optionChosen;
-      var activeOptionNode = hypergraph.select(".option-node.active");
-      activeOptionNode.node().classList.toggle("option-chosen");
     }
 
     function addSemesterSymbol(o, courses) {
@@ -656,17 +692,56 @@ d3.csv("cw-6.csv").then(function (data) {
         .attr("x", d => (size / 2) * (2 - d.Semester));
     }
 
+    function toggleRadioButtonsOption() {
+      var radioButton = d3.select(this);
+      var option = hypergraph.select(".option-node.active");
+      var value = radioButton.select("input").node().value;
+      if (value == "interested") {
+        toggleOptionInterested(option);
+        option.classed("option-chosen", false);
+      } else if (value == "not-interested") {
+        toggleOptionInterested(option);
+        option.classed("option-chosen", false);
+      } else if (value == "choose") {
+        toggleOptionChosen();
+      }
+      updateBarchart();
+    }
+
+    function toggleOptionInterested(option) {
+      var o = option.datum();
+      option.node().classList.toggle("not-interested");
+      getOptionCourses(o).each(function () {
+        var course = d3.select(this);
+        toggleStatusNotInterested(course);
+      });
+      toggleActive(option);
+      toggleHighlightOption(o);
+      updateHypergraph();
+    }
+
+    function toggleOptionChosen() {
+      optionChosen = !optionChosen;
+      var activeOptionNode = hypergraph.select(".option-node.active");
+      activeOptionNode.node().classList.toggle("option-chosen");
+    }
+
+    /**
+    * Functies met betrekking tot de infobox voor vakken
+    */
+
     // voeg inhoud voor het gegeven vak toe aan de infobox
     function fillInfoboxForCourse(course) {
       emptyInfobox();
       var c = course.datum();
-      // 1) titel van het actieve vak
+
+      // titel
       infobox.append("h3").text(c.OPO);
-      // 2) studiepunten van het actieve vak
+
+      // studiepunten
       infobox.append("div")
         .attr("class", "points")
         .text(c.Studiepunten + " SP");
-
       // var stpContainer = infobox.select(".points");
       // stpContainer.append("svg")
       //   .attr("class", "stp");
@@ -727,15 +802,16 @@ d3.csv("cw-6.csv").then(function (data) {
       //   }
       // }
 
+      // beschrijving
       infobox.append("p")
         .text(function () {
           return c.Beschrijving;
         });
 
-      // radiobutton "Geïnteresseerd" voor het actieve vak
+      // radiobutton "Geïnteresseerd"
       var radiobuttonInterested = infobox.append("label")
         .text("Geïnteresseerd in dit vak");
-      radiobuttonInterested.attr("class", "radiobutton radiobutton-interested")
+      radiobuttonInterested.attr("class", "radiobutton")
         .append("input")
         .attr("type", "radio")
         .attr("name", "radio")
@@ -745,7 +821,7 @@ d3.csv("cw-6.csv").then(function (data) {
         .attr("class", "checkmark");
       radiobuttonInterested.on("change", toggleStatusRadioButtons);
 
-      // radiobutton "Niet geïnteresseerd" voor het actieve vak
+      // radiobutton "Niet geïnteresseerd"
       var radiobuttonNotInterested = infobox.append("label")
         .text("Niet geïnteresseerd in dit vak");
       radiobuttonNotInterested.attr("class", "radiobutton")
@@ -758,7 +834,7 @@ d3.csv("cw-6.csv").then(function (data) {
         .attr("class", "checkmark");
       radiobuttonNotInterested.on("change", toggleStatusRadioButtons);
 
-      // 4) radiobutton "Kies in 1ste Master" voor het actieve vak
+      // radiobutton "Kies in 1ste Master"
       var radiobuttonChoose1 = infobox.append("label")
         .attr("class", "radiobutton radiobutton-chosen-master1")
         .text("Kies dit vak in 1ste Master");
@@ -771,7 +847,7 @@ d3.csv("cw-6.csv").then(function (data) {
         .attr("class", "checkmark");
       radiobuttonChoose1.on("change", toggleStatusRadioButtons);
 
-      // 5) radiobutton "Kies in 2de Master" voor het actieve vak
+      // radiobutton "Kies in 2de Master"
       var radiobuttonChoose2 = infobox.append("label")
         .text("Kies dit vak in 2de Master");
       radiobuttonChoose2.attr("class", "radiobutton radiobutton-chosen-master2")
@@ -795,10 +871,6 @@ d3.csv("cw-6.csv").then(function (data) {
       });
       return courseOptions;
     }
-
-    /**
-    * Functies met betrekking tot de radiobuttonen
-    */
 
     function toggleStatusRadioButtons() {
       var radioButton = d3.select(this);
@@ -840,11 +912,17 @@ d3.csv("cw-6.csv").then(function (data) {
         hiddenCourses.push(c);
         data = data.filter(d => d != c);
         links = links.filter(l => !courseLinks.includes(l));
-        toggleHighlightCourse(c);
+        if (course.classed("active")) {
+          toggleHighlightCourse(c);
+        }
         emptyInfobox();
         updateHypergraph();
       }
     }
+
+    /**
+    * Switch
+    */
 
     switchInterested.on("change", function () {
       if (switchInterested.property("checked")) {
@@ -866,14 +944,6 @@ d3.csv("cw-6.csv").then(function (data) {
         updateHypergraph();
       }
     });
-
-    function updateHypergraph() {
-      updateLinks();
-      updateOptionNodes();
-      updateCourseNodes();
-      simulationNodes.alpha(0.5).restart();
-      simulationOptionNodes.alpha(0.5).restart();
-    }
 
     /**
      * Functies met betrekking tot het uurrooster
