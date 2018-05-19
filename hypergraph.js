@@ -558,9 +558,8 @@ d3.csv("cw-6.csv").then(function (data) {
       infobox.selectAll(".infobox > *:not(.help)").remove();
     }
 
-    function getOptionCourses(o) {
-      return hypergraph.selectAll(".course-node")
-        .filter(function (d) {
+    function getOptionCourses(o, dataset = data) {
+      return dataset.filter(function (d) {
           return (0 < d[o.OPO]) && (getCourseOptions(d).length < optionNames.length);
         })
     }
@@ -572,7 +571,7 @@ d3.csv("cw-6.csv").then(function (data) {
       infobox.append("h3").text(o.OPO);
 
       // orden alle vakken van de optie alfabetisch
-      var courses = getOptionCourses(o).data()
+      var courses = getOptionCourses(o)
         .sort(function (a, b) {
           return a.OPO.toLowerCase().localeCompare(b.OPO.toLowerCase());
         });
@@ -634,15 +633,11 @@ d3.csv("cw-6.csv").then(function (data) {
         .text(d => d.OPO)
         .on("mouseover", function (d) {
           toggleHighlightOption(o);
-          toggleHighlightConnectedOptions(d);
-          toggleHighlightCourseLinks(d);
-          toggleHighlightPrerequisites(d);
+          toggleHighlightCourse(d);
         })
         .on("mouseout", function (d) {
           toggleHighlightOption(o);
-          toggleHighlightConnectedOptions(d);
-          toggleHighlightCourseLinks(d);
-          toggleHighlightPrerequisites(d);
+          toggleHighlightCourse(d);
         })
         .on("click", function (d) {
           var course = hypergraph.selectAll(".course-node")
@@ -695,9 +690,11 @@ d3.csv("cw-6.csv").then(function (data) {
     function toggleRadioButtonsOption() {
       var radioButton = d3.select(this);
       var option = hypergraph.select(".option-node.active");
+      var o = option.datum();
       var value = radioButton.select("input").node().value;
       if (value == "interested") {
-        toggleOptionInterested(option);
+        showOptionCourses(o);
+        option.classed("not-interested", false);
         option.classed("option-chosen", false);
       } else if (value == "not-interested") {
         toggleOptionInterested(option);
@@ -708,13 +705,34 @@ d3.csv("cw-6.csv").then(function (data) {
       updateBarchart();
     }
 
+    function showOptionCourses(o) {
+        var optionLinks = hiddenLinks.filter(l => l.source == o);
+        links = links.concat(optionLinks);
+        hiddenLinks = hiddenLinks.filter(l => !optionLinks.includes(l));
+        for (var optionLink of optionLinks) {
+          for (var link of hiddenLinks) {
+            if (optionLink.target == link.target) {
+              links = links.concat(link);
+              hiddenLinks = hiddenLinks.filter(l => l != link);
+            }
+          }
+        }
+        var optionCourses = getOptionCourses(o, hiddenCourses);
+        data = data.concat(optionCourses);
+        hiddenCourses = hiddenCourses.filter(c => !optionCourses.includes(c));
+        updateHypergraph();
+        toggleHighlightOptionLinks(o);
+    }
+
     function toggleOptionInterested(option) {
       var o = option.datum();
       option.node().classList.toggle("not-interested");
-      getOptionCourses(o).each(function () {
-        var course = d3.select(this);
-        toggleStatusNotInterested(course);
-      });
+      hypergraph.selectAll(".course-node")
+        .filter(c => getOptionCourses(o).includes(c))
+        .each(function () {
+          var course = d3.select(this);
+          toggleStatusNotInterested(course);
+        });
       toggleActive(option);
       toggleHighlightOption(o);
       updateHypergraph();
@@ -940,7 +958,11 @@ d3.csv("cw-6.csv").then(function (data) {
             data = data.filter(d => d != c);
             links = links.filter(l => !courseLinks.includes(l));
           });
-        emptyInfobox();
+        var activeCourse = hypergraph.select(".course-node.active.not-interested");
+        if (activeCourse) {
+          toggleHighlightCourse(activeCourse.datum());
+          emptyInfobox();
+        }
         updateHypergraph();
       }
     });
