@@ -606,47 +606,20 @@ d3.csv("cw-6.csv").then(function (data) {
 
       updateOptionCourses(o, courses);
 
-      // radiobutton "Geïnteresseerd"
-      var radiobuttonInterested = infobox.append("label")
-        .text("Geïnteresseerd in deze optie");
-      radiobuttonInterested.attr("class", "radiobutton")
-        .append("input")
-        .attr("type", "radio")
-        .attr("name", "radio")
-        .attr("value", "interested")
-        .property("checked", true);
-      radiobuttonInterested.append("span")
-        .attr("class", "checkmark");
-      radiobuttonInterested.on("change", toggleRadioButtonsOption);
-
-      // radiobutton "Niet geïnteresseerd"
-      var radiobuttonNotInterested = infobox.append("label")
-        .text("Niet geïnteresseerd in deze optie");
-      radiobuttonNotInterested.attr("class", "radiobutton")
-        .append("input")
-        .attr("type", "radio")
-        .attr("name", "radio")
-        .attr("value", "not-interested")
-        .property("checked", option.classed("not-interested"));
-      radiobuttonNotInterested.append("span")
-        .attr("class", "checkmark");
-      radiobuttonNotInterested.on("change", toggleRadioButtonsOption);
-
-      // radiobutton "Kies optie"
-      var chosenOptionActive = !hypergraph.select(".option-chosen.active").
-        empty();
-      if (!optionChosen || chosenOptionActive) {
-        var radiobuttonChoose = infobox.append("label")
+      // checkbox "Kies optie"
+      var optionActive = !hypergraph.select(".option-chosen.active").empty();
+      if (!optionChosen || optionActive) {
+        var checkboxChoose = infobox.append("label")
           .text("Kies deze optie");
-        radiobuttonChoose.attr("class", "radiobutton")
+        checkboxChoose.attr("class", "radiobutton")
           .append("input")
-          .attr("type", "radio")
-          .attr("name", "radio")
-          .attr("value", "choose")
-          .property("checked", chosenOptionActive);
-        radiobuttonChoose.append("span")
+          .attr("type", "checkbox")
+          .property("checked", optionActive);
+        checkboxChoose.append("span")
           .attr("class", "checkmark");
-        radiobuttonChoose.on("change", toggleRadioButtonsOption);
+        checkboxChoose.on("change", function () {
+          toggleOptionChosen();
+        });
       }
     }
 
@@ -850,61 +823,10 @@ d3.csv("cw-6.csv").then(function (data) {
     * 8. Interactie met de infobox
     */
 
-    function toggleRadioButtonsOption() {
-      var radioButton = d3.select(this);
-      var option = hypergraph.select(".option-node.active");
-      var o = option.datum();
-      var value = radioButton.select("input").node().value;
-      if (value == "interested") {
-        showOptionCourses(o);
-        option.classed("not-interested", false);
-        option.classed("option-chosen", false);
-      } else if (value == "not-interested") {
-        toggleOptionInterested(option);
-        option.classed("option-chosen", false);
-      } else if (value == "choose") {
-        toggleOptionChosen();
-      }
-      updateBarchart();
-    }
-
-    function showOptionCourses(o) {
-        var optionLinks = hiddenLinks.filter(l => l.source == o);
-        links = links.concat(optionLinks);
-        hiddenLinks = hiddenLinks.filter(l => !optionLinks.includes(l));
-        for (var optionLink of optionLinks) {
-          for (var link of hiddenLinks) {
-            if (optionLink.target == link.target) {
-              links = links.concat(link);
-              hiddenLinks = hiddenLinks.filter(l => l != link);
-            }
-          }
-        }
-        var optionCourses = getOptionCourses(o, hiddenCourses);
-        data = data.concat(optionCourses);
-        hiddenCourses = hiddenCourses.filter(c => !optionCourses.includes(c));
-        updateHypergraph();
-        toggleHighlightOptionLinks(o);
-    }
-
-    function toggleOptionInterested(option) {
-      var o = option.datum();
-      option.node().classList.toggle("not-interested");
-      hypergraph.selectAll(".course-node")
-        .filter(c => getOptionCourses(o).includes(c))
-        .each(function () {
-          var course = hypergraph.select(this);
-          toggleStatusNotInterested(course);
-        });
-      toggleActive(option);
-      toggleHighlightOption(o);
-      updateHypergraph();
-    }
-
     function toggleOptionChosen() {
       optionChosen = !optionChosen;
-      var activeOptionNode = hypergraph.select(".option-node.active");
-      activeOptionNode.node().classList.toggle("option-chosen");
+      var activeOption = hypergraph.select(".option-node.active");
+      activeOption.node().classList.toggle("option-chosen");
     }
 
     function toggleStatusRadioButtons() {
