@@ -906,10 +906,12 @@ d3.csv("cw-6.csv").then(function (data) {
         course.classed("not-interested", false);
         course.node().classList.toggle("chosen-master1");
         course.classed("chosen-master2", false);
+        showHiddenPrerequisites(course);
       } else if (value == "choose2") {
         course.classed("not-interested", false);
         course.classed("chosen-master1", false);
         course.node().classList.toggle("chosen-master2");
+        showHiddenPrerequisites(course);
       }
       updateBarchart();
     }
@@ -935,6 +937,21 @@ d3.csv("cw-6.csv").then(function (data) {
         }
         emptyInfobox();
         updateHypergraph();
+      }
+    }
+
+    function showHiddenPrerequisites(course) {
+      var c = course.datum();
+      var prerequisites = c["Gelijktijdig volgen"].split(" ");
+      for (hidden of hiddenCourses) {
+        if (prerequisites.includes(hidden.ID)) {
+          data.push(hidden);
+          hiddenCourses = hiddenCourses.filter(h => h.ID != hidden.ID);
+          var prerequisiteLinks = hiddenLinks.filter(l => l.target == hidden);
+          links = links.concat(prerequisiteLinks);
+          hiddenLinks = hiddenLinks.filter(l => !prerequisiteLinks.includes(l));
+          updateHypergraph();
+        }
       }
     }
 
