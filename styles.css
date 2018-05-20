@@ -20,20 +20,20 @@ body {
   background-color: #eceff1;
   display: flex;
   margin: 0 auto;
-  max-width: 1000px;
+  max-width: 1300px;
   padding: 3rem;
 }
 
 .left {
+  margin-left: auto;
   margin-right: 3rem;
-  overflow: hidden;
-  width: 60%
 }
 
 .right {
   display: flex;
   flex-flow: column;
-  width: 40%;
+  margin-right: auto;
+  width: 400px;
 }
 
 .hypergraph-container,
@@ -331,4 +331,10 @@ input:checked + .slider:before {
 
 .barchart-text {
   fill: #90a4ae;
+  font-size: 0.875rem;
+  font-weight: bold;
+}
+
+.barchart-label {
+  font-weight: normal;
 }

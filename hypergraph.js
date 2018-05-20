@@ -856,31 +856,33 @@ d3.csv("cw-6.csv").then(function (data) {
         .attr("class", "checkmark");
       radiobuttonNotInterested.on("change", toggleStatusRadioButtons);
 
-      // radiobutton "Kies in 1ste Master"
-      var radiobuttonChoose1 = infobox.append("label")
-        .attr("class", "radiobutton radiobutton-chosen-master1")
-        .text("Kies dit vak in 1ste Master");
-      radiobuttonChoose1.append("input")
-        .attr("type", "radio")
-        .attr("name", "radio")
-        .attr("value", "choose1")
-        .property("checked", course.classed("chosen-master1"));
-      radiobuttonChoose1.append("span")
-        .attr("class", "checkmark");
-      radiobuttonChoose1.on("change", toggleStatusRadioButtons);
+      if (optionChosen) {
+        // radiobutton "Kies in 1ste Master"
+        var radiobuttonChoose1 = infobox.append("label")
+          .attr("class", "radiobutton radiobutton-chosen-master1")
+          .text("Kies dit vak in 1ste Master");
+        radiobuttonChoose1.append("input")
+          .attr("type", "radio")
+          .attr("name", "radio")
+          .attr("value", "choose1")
+          .property("checked", course.classed("chosen-master1"));
+        radiobuttonChoose1.append("span")
+          .attr("class", "checkmark");
+        radiobuttonChoose1.on("change", toggleStatusRadioButtons);
 
-      // radiobutton "Kies in 2de Master"
-      var radiobuttonChoose2 = infobox.append("label")
-        .text("Kies dit vak in 2de Master");
-      radiobuttonChoose2.attr("class", "radiobutton radiobutton-chosen-master2")
-        .append("input")
-        .attr("type", "radio")
-        .attr("name", "radio")
-        .attr("value", "choose2")
-        .property("checked", course.classed("chosen-master2"));
-      radiobuttonChoose2.append("span")
-        .attr("class", "checkmark");
-      radiobuttonChoose2.on("change", toggleStatusRadioButtons);
+        // radiobutton "Kies in 2de Master"
+        var radiobuttonChoose2 = infobox.append("label")
+          .text("Kies dit vak in 2de Master");
+        radiobuttonChoose2.attr("class", "radiobutton radiobutton-chosen-master2")
+          .append("input")
+          .attr("type", "radio")
+          .attr("name", "radio")
+          .attr("value", "choose2")
+          .property("checked", course.classed("chosen-master2"));
+        radiobuttonChoose2.append("span")
+          .attr("class", "checkmark");
+        radiobuttonChoose2.on("change", toggleStatusRadioButtons);
+      }
     }
 
     /**
@@ -1111,11 +1113,11 @@ d3.csv("cw-6.csv").then(function (data) {
         });
 
       // draw total amount of stp in text
-      barchart.select(".bar-label" + semesterNummer).remove();
+      barchart.select(".barchart-label" + semesterNummer).remove();
       if (semesterTotal !== 0) {
         barchart.append("text")
-          .attr("class", "barchart-text bar-label" + semesterNummer)
-          .attr("x", barchartLeftMargin + semesterTotal * creditLength)
+          .attr("class", "barchart-text barchart-label barchart-label" + semesterNummer)
+          .attr("x", barchartLeftMargin + semesterTotal * creditLength + 5)
           .attr("y", barHeight * semesterNummer + barSpacing * (semesterNummer - 1) - (barHeight - 10) / 2)
           .text(semesterTotal);
       }
