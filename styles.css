@@ -73,8 +73,11 @@ body {
 }
 
 .non-active {
-  cursor: default;
   opacity: 0.25;
+}
+
+.not-clickable {
+  cursor: default;
 }
 
 .active,
