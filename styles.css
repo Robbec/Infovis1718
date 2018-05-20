@@ -156,13 +156,13 @@ body {
   font-size: 0.875rem;
 }
 
-.coursesList {
+.courses-list {
   list-style-type: none;
   margin: 0;
   padding: 0;
 }
 
-.coursesList li {
+.courses-list li {
   align-items: center;
   cursor: pointer;
   display: flex;
@@ -172,15 +172,15 @@ body {
   position: relative;
 }
 
-.coursesList li:last-child {
+.courses-list li:last-child {
   margin-bottom: 0;
 }
 
-.coursesList li:hover {
+.courses-list li:hover {
   text-decoration: underline;
 }
 
-.coursesList svg {
+.courses-list svg {
   left: 0;
   position: absolute;
   top: 0;

@@ -662,14 +662,8 @@ d3.csv("cw-6.csv").then(function (data) {
       emptyInfobox();
       var o = option.datum();
       infobox.append("h3").text(o.OPO);
-
-      // orden alle vakken van de optie alfabetisch
-      var courses = getOptionCourses(o)
-        .sort(function (a, b) {
-          return a.OPO.toLowerCase().localeCompare(b.OPO.toLowerCase());
-        });
-
-      updateOptionCourses(o, courses);
+      infobox.append("ul").attr("class", "courses-list");
+      updateOptionCourses(o);
 
       // checkbox "Kies optie"
       var optionActive = !hypergraph.select(".option-chosen.active").empty();
@@ -688,15 +682,24 @@ d3.csv("cw-6.csv").then(function (data) {
       }
     }
 
-    function updateOptionCourses(o, courses) {
-      var ul = infobox.append("ul").attr("class", "coursesList");
+    function updateOptionCourses(o) {
+      // orden alle vakken van de optie alfabetisch
+      var courses = getOptionCourses(o)
+        .sort(function (a, b) {
+          return a.OPO.toLowerCase().localeCompare(b.OPO.toLowerCase());
+        });
 
-      var li = ul.selectAll(li)
+      var li = infobox.select(".courses-list").selectAll(li)
         .data(courses, d => d.ID);
 
       var liEnter = li.enter()
         .append("li")
         .text(d => d.OPO)
+        .classed("not-interested", function (d) {
+          var node = hypergraph.selectAll(".course-node")
+            .filter(c => c == d);
+          return node.classed("not-interested");
+        })
         .on("mouseover", function (d) {
           toggleHighlightOption(o);
           toggleHighlightCourse(d);
@@ -710,6 +713,8 @@ d3.csv("cw-6.csv").then(function (data) {
             .filter(c => c == d);
           courseClicked(course);
         });
+
+      li.exit().remove();
 
       addSemesterSymbol(o, liEnter);
     }
@@ -741,7 +746,6 @@ d3.csv("cw-6.csv").then(function (data) {
           }
           return false;
         })
-        .classed("not-interested", switchInterested.property("checked"))
         .attr("fill", colors[options.indexOf(o)])
         .attr("stroke", colors[options.indexOf(o)]);
 
@@ -965,6 +969,7 @@ d3.csv("cw-6.csv").then(function (data) {
     */
 
     switchInterested.on("change", function () {
+      var activeOption = hypergraph.select(".option-node.active");
       if (switchInterested.property("checked")) {
         links = links.concat(hiddenLinks);
         data = data.concat(hiddenCourses);
@@ -981,11 +986,14 @@ d3.csv("cw-6.csv").then(function (data) {
             links = links.filter(l => !courseLinks.includes(l));
           });
         var activeCourse = hypergraph.select(".course-node.active.not-interested");
-        if (activeCourse) {
+        if (!activeCourse.empty()) {
           toggleHighlightCourse(activeCourse.datum());
           emptyInfobox();
         }
         updateHypergraph();
+      }
+      if (!activeOption.empty()) {
+        fillInfoboxForOption(activeOption);
       }
     });
 
