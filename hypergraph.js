@@ -13,6 +13,7 @@ OVERZICHT
 10. Uurrooster
 11. Opbouw van de barchart
 12. Interactie met de barchart
+13. visualisatie aantal studiepunten
 */
 
 /**
@@ -114,13 +115,13 @@ d3.csv("cw-6.csv").then(function (data) {
      * 3. Opbouw van de hypergraf
      */
 
-   for (name of extraOptionNames) {
-     hypergraph.append("text")
-      .text(name)
-      .attr("class", "hypergraph-text")
-      .attr("x", 18.5)
-      .attr("y", 25 + 75 * extraOptionNames.indexOf(name))
-      .style("display", "none");
+    for (name of extraOptionNames) {
+      hypergraph.append("text")
+        .text(name)
+        .attr("class", "hypergraph-text")
+        .attr("x", 18.5)
+        .attr("y", 25 + 75 * extraOptionNames.indexOf(name))
+        .style("display", "none");
     }
 
     // maak voor elke optie een node
@@ -259,12 +260,12 @@ d3.csv("cw-6.csv").then(function (data) {
     for (i of extraOptionNames) {
       var extra = extraData.filter(d => d[i] > 0);
       d3.forceSimulation(extra)
-      .force("x", d3.forceX(function(d) {
-        return 30 + (extra.indexOf(d) % 7) * 35;
-      }))
-      .force("y", d3.forceY(function(d) {
-        return 50 + Math.floor(extra.indexOf(d) / 7) * 35 + extraOptionNames.indexOf(i) * 75;
-      }));
+        .force("x", d3.forceX(function (d) {
+          return 30 + (extra.indexOf(d) % 7) * 35;
+        }))
+        .force("y", d3.forceY(function (d) {
+          return 50 + Math.floor(extra.indexOf(d) / 7) * 35 + extraOptionNames.indexOf(i) * 75;
+        }));
     }
 
     // bound the given x coordinate to the visible part of the hypergraph
@@ -1304,30 +1305,78 @@ d3.csv("cw-6.csv").then(function (data) {
 
       bars.exit().remove();
     }
+
+
+    /**
+   * 13. visualisatie aantal studiepunten
+   */
+    function getTotalStp(courses) {
+      return courses.reduce((total, c) => total + parseInt(c.Studiepunten), 0);
+    }
+
+    var stpbox = right.select(".stpbox")
+      .classed("hidden", false)
+      .attr("width", 300);
+
+    stpbox.append("g").attr("id", "fillgauge1");
+    var gauge1 = loadLiquidFillGauge("fillgauge1", 0);
+    stpbox.append("text")
+      .classed("totalStp", true)
+      .text("0/120")
+      .attr("y", 20)
+      .attr("x", 0);
+    stpbox.append("text")
+      .classed("optionStp", true)
+      .text("0/18")
+      .attr("y", 40);
+    stpbox.append("text")
+      .classed("optionExtraStp", true)
+      .text("0/18")
+      .attr("y", 60);
+    // Voor AVO is er een maximum van 14, maar we tonen het minimum 12
+    stpbox.append("text")
+      .classed("AVOStp", true)
+      .text("0/12")
+      .attr("y", 80);
+
+    function updateStpbox() {
+      // haal alle gekozen vakken
+      var chosen1 = hypergraph.selectAll(".chosen-master1").data();
+      var chosen2 = hypergraph.selectAll(".chosen-master2").data();
+      var chosen = [...chosen1, ...chosen2];
+      var option = hypergraph.select(".option-chosen").data()[0].ID;
+
+      // bereken totaal aantal studiepunten
+      var total = getTotalStp(chosen);
+
+      var inOption = chosen.filter(function (d) {
+        return (0 < d[option]) && (getCourseOptions(d).length < optionNames.length);
+      });
+      // komt uit verdere optie of uit eigen keuze of andere opties
+      var inOptionExtra = chosen.filter(function (d) {
+        return d[option] == 0 && (0 < d["Verdere optie"] || (getCourseOptions(d).length < optionNames.length));
+      });
+      var inAVO = chosen.filter(function (d) {
+        return (0 < d["Algemeen vormende en onderzoeksondersteunende groep"]);
+      });
+
+      inOption = getTotalStp(inOption);
+      inOptionExtra = getTotalStp(inOptionExtra);
+      inAVO = getTotalStp(inAVO);
+      // overflow binnen eigen optie telt mee voor verdere optie
+      if (inOption > 18) inOptionExtra += (inOption - 18);
+
+      stpbox.select(".totalStp")
+        .text(total + "/120");
+      stpbox.select(".optionStp")
+        .text(inOption + "/18");
+      stpbox.select(".optionExtraStp")
+        .text(inOptionExtra + "/18");
+      stpbox.select(".AVOStp")
+        .text(inAVO + "/12");
+    }
+
+
   });
-
-  /**
- * 13. visualisatie aantal studiepunten
- */
-
-  var stpbox = right.select(".stpbox")
-    .classed("hidden", false)
-    .attr("width", 300);
-
-  stpbox.append("text")
-    .classed("totalStp", true)
-    .text("0/120")
-    .attr("y", 20)
-    .attr("x", 0);
-
-  function updateStpbox() {
-    var chosen1 = hypergraph.selectAll(".chosen-master1").data();
-    var chosen2 = hypergraph.selectAll(".chosen-master2").data();
-    var chosen = [...chosen1, ...chosen2];
-    var total = chosen.reduce((total, c) => total + parseInt(c.Studiepunten), 0);
-    stpbox.select(".totalStp")
-      .text(total+"/120");
-  }
-
 
 });
