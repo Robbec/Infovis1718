@@ -1314,27 +1314,29 @@ d3.csv("cw-6.csv").then(function (data) {
       return courses.reduce((total, c) => total + parseInt(c.Studiepunten), 0);
     }
 
-    right.append("svg")
+    // create svg's for each bar
+    var svg1 = right.append("svg")
       .attr("width", 70)
-      .attr("height", 70)
+      .attr("height", 100)
       .attr("id", "gauge1")
       .attr("class", "gauge");
-    right.append("svg")
+    var svg2 = right.append("svg")
       .attr("width", 70)
-      .attr("height", 70)
+      .attr("height", 100)
       .attr("id", "gauge2")
       .attr("class", "gauge");
-    right.append("svg")
+    var svg3 = right.append("svg")
       .attr("width", 70)
-      .attr("height", 70)
+      .attr("height", 100)
       .attr("id", "gauge3")
       .attr("class", "gauge");
-    right.append("svg")
+    var svg4 = right.append("svg")
       .attr("width", 70)
-      .attr("height", 70)
+      .attr("height", 100)
       .attr("id", "gauge4")
       .attr("class", "gauge");
 
+    // put gauge in each svg
     var config1 = liquidFillGaugeDefaultSettings();
     config1.maxValue = 120;
     config1.suffix = "/120";
@@ -1353,6 +1355,26 @@ d3.csv("cw-6.csv").then(function (data) {
     config4.suffix = "/12";
     config4.toomuchValue = 15;
     var gauge4 = loadLiquidFillGauge("gauge4", 0, config4);
+
+    //append a label
+    svg1.append("text")
+      .text("Totaal")
+      .attr("y", 90)
+      .attr("x", 10);
+    svg2.append("text")
+      .text("Optie")
+      .attr("y", 90)
+      .attr("x", 10);
+    svg3.append("text")
+      .text("Verdere optie")
+      .attr("y", 90)
+      .attr("x", 10);
+    svg4.append("text")
+      .text("AVO")
+      .attr("y", 90)
+      .attr("x", 10);
+
+
 
 
     function updateStpbox() {
