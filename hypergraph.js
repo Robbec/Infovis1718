@@ -71,6 +71,14 @@ d3.csv("cw-6.csv").then(function (data) {
     // namen van alle opties
     var columnNames = d3.keys(d3.values(data)[0]);
     var optionNames = columnNames.slice(13, columnNames.length);
+    var extraOptionNames = columnNames.slice(9, 13);
+    var extraData = data.filter(function (d) {
+      var isOptionCourse = false;
+      for (i of extraOptionNames) {
+        isOptionCourse = isOptionCourse || d[i] != 0;
+      }
+      return isOptionCourse;
+    });
 
     /**
     * 2. Kleuren
@@ -103,6 +111,15 @@ d3.csv("cw-6.csv").then(function (data) {
     /**
      * 3. Opbouw van de hypergraf
      */
+
+   for (name of extraOptionNames) {
+     hypergraph.append("text")
+      .text(name)
+      .attr("class", "hypergraph-text")
+      .attr("x", 18.5)
+      .attr("y", 25 + 75 * extraOptionNames.indexOf(name))
+      .style("display", "none");
+    }
 
     // maak voor elke optie een node
     optionNames.forEach(function (o) {
@@ -152,9 +169,9 @@ d3.csv("cw-6.csv").then(function (data) {
     */
 
     // force simulation bepaalt de positie van alle nodes
-    var forceCollide = d3.forceCollide(courseRadius * 1.3)
-      .strength(1);
-    var simulationNodes = d3.forceSimulation(data.concat(options))
+    var forceCollide = d3.forceCollide(courseRadius * 1.3).strength(1);
+
+    var simulationNodes = d3.forceSimulation(data.filter(d => !extraData.includes(d)).concat(options))
       // laat alle nodes elkaar afstoten
       .force("charge", d3.forceManyBody()
         .distanceMax(700)
@@ -236,6 +253,17 @@ d3.csv("cw-6.csv").then(function (data) {
       .force("charge", d3.forceManyBody()
         .strength(-300)
       );
+
+      for (i of extraOptionNames) {
+        var extra = extraData.filter(d => d[i] > 0);
+        d3.forceSimulation(extra)
+        .force("x", d3.forceX(function(d) {
+          return 30 + (extra.indexOf(d) % 7) * 35;
+        }))
+        .force("y", d3.forceY(function(d) {
+          return 50 + Math.floor(extra.indexOf(d) / 7) * 35 + extraOptionNames.indexOf(i) * 75;
+        }));
+      }
 
       // bound the given x coordinate to the visible part of the hypergraph
       function boxBoundedX(x) {
@@ -319,6 +347,12 @@ d3.csv("cw-6.csv").then(function (data) {
           return false;
         })
         .classed("not-interested", switchInterested.property("checked"))
+        .classed("extra-course-node", d => extraData.includes(d))
+        .style("display", function (d) {
+          if (extraData.includes(d)) {
+            return "none";
+          }
+        })
         .attr("fill", function (d) {
           return colorOfCourse(d);
         })
@@ -634,8 +668,8 @@ d3.csv("cw-6.csv").then(function (data) {
     function showTooltip(d) {
       tooltip.classed("active", true)
         .text(d.OPO)
-        .style("left", (d.x + 20) + "px")
-        .style("top", (d.y - 12) + "px");
+        .style("left", (boxBoundedX(d.x) + 20) + "px")
+        .style("top", (boxBoundedY(d.y) - 12) + "px");
       clearTimeout(timeout);
       timeout = setTimeout(function () {
         tooltip.classed("active", false);
@@ -897,6 +931,66 @@ d3.csv("cw-6.csv").then(function (data) {
       optionChosen = !optionChosen;
       var activeOption = hypergraph.select(".option-node.active");
       activeOption.node().classList.toggle("option-chosen");
+      var rootX = root.fx;
+      var notExtra = hypergraph.selectAll(".node:not(.extra-course-node)");
+      var xOffset = 250;
+
+      if (optionChosen) {
+        svgWidth += xOffset;
+        hypergraph.transition()
+          .duration(1000)
+          .attr("width", svgWidth);
+        hypergraph.selectAll(".link")
+          .transition()
+          .duration(1000)
+          .attr("x1", d => d.source.x + xOffset)
+          .attr("x2", d => d.target.x + xOffset);
+        notExtra.transition()
+          .duration(1000)
+          .attr("cx", d => d.x + xOffset)
+          .on("end", function (d) {
+            d.x += xOffset;
+            root.fx = rootX + xOffset;
+          });
+        hypergraph.selectAll(".extra-course-node")
+          .transition()
+          .delay(1000)
+          .style("display", "block");
+        hypergraph.selectAll(".hypergraph-text")
+          .transition()
+          .delay(1000)
+          .style("display", "block");
+      } else {
+        hypergraph.selectAll(".extra-course-node")
+          .style("display", "none");
+        hypergraph.selectAll(".hypergraph-text")
+          .style("display", "none");
+        hypergraph.selectAll(".link")
+          .transition()
+          .delay(500)
+          .duration(1000)
+          .attr("x1", d => d.source.x - xOffset)
+          .attr("x2", d => d.target.x - xOffset);
+        notExtra
+          .transition()
+          .delay(500)
+          .duration(1000)
+          .attr("cx", d => d.x - xOffset)
+          .on("end", function (d) {
+            d.x -= xOffset;
+            root.fx = rootX - xOffset;
+          });
+        hypergraph
+          .transition()
+          .delay(500)
+          .duration(1000)
+          .attr("width", function () {
+            return svgWidth - xOffset;
+          })
+          .on("end", function () {
+            svgWidth -= xOffset;
+          });
+      }
     }
 
     function toggleStatusRadioButtons() {
