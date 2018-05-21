@@ -200,8 +200,9 @@ d3.csv("cw-6.csv").then(function (data) {
     function ticked() {
       // pas de positie aan van de course nodes
       hypergraph.selectAll(".course-node")
-        .attr("cx", d => boxBoundedX(d.x))
-        .attr("cy", d => boxBoundedY(d.y));
+      .attr("transform", d => "translate(" + boxBoundedX(d.x) + "," + boxBoundedY(d.y) + ")");
+        // .attr("cx", d => boxBoundedX(d.x))
+        // .attr("cy", d => boxBoundedY(d.y));
 
       // pas de positie aan van de option nodes
       hypergraph.selectAll(".option-node")
@@ -329,40 +330,51 @@ d3.csv("cw-6.csv").then(function (data) {
       var course = hypergraph.selectAll(".course-node")
         .data(data, d => d.ID);
 
-      course.enter()
-        .append("circle")
-        .attr("r", courseRadius)
-        .classed("node course-node", true)
-        .classed("compulsory", function (d) {
-          return checkCompulsoryOrOptional(d, 1);
-        })
-        .classed("optional", function (d) {
-          return checkCompulsoryOrOptional(d, 2);
-        })
-        .classed("not-interested", switchInterested.property("checked"))
-        .classed("extra-course-node", d => extraData.includes(d))
-        .style("display", function (d) {
-          if (extraData.includes(d)) {
-            return "none";
-          }
-        })
-        .attr("fill", function (d) {
-          return colorOfCourse(d);
-        })
-        .attr("stroke", function (d) {
-          return colorOfCourse(d);
-        })
-        .on("mouseover", function (d) {
-          showTooltip(d);
-          toggleMouseoverCourse(d);
-        })
-        .on("mouseout", function (d) {
-          hideTooltip();
-          toggleMouseoverCourse(d);
-        })
-        .on("click", function () {
-          courseClicked(d3.select(this));
-        });
+      course.enter().each(function (c) {
+        // var pie = d3.pie(c);
+        // console.log(c);
+
+        var arc = d3.arc()
+          .innerRadius(0)
+          .outerRadius(10)
+          .startAngle(0)
+          .endAngle(Math.PI * 2);
+
+        d3.select(this)
+          .append("path")
+          .attr("d", arc)
+          .classed("node course-node", true)
+          .classed("compulsory", function (d) {
+            return checkCompulsoryOrOptional(d, 1);
+          })
+          .classed("optional", function (d) {
+            return checkCompulsoryOrOptional(d, 2);
+          })
+          .classed("not-interested", switchInterested.property("checked"))
+          .classed("extra-course-node", d => extraData.includes(d))
+          .style("display", function (d) {
+            if (extraData.includes(d)) {
+              return "none";
+            }
+          })
+          .attr("fill", function (d) {
+            return colorOfCourse(d);
+          })
+          .attr("stroke", function (d) {
+            return colorOfCourse(d);
+          })
+          .on("mouseover", function (d) {
+            showTooltip(d);
+            toggleMouseoverCourse(d);
+          })
+          .on("mouseout", function (d) {
+            hideTooltip();
+            toggleMouseoverCourse(d);
+          })
+          .on("click", function () {
+            courseClicked(d3.select(this));
+          });
+      });
 
       course.exit().remove();
     }
