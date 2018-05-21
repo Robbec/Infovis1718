@@ -25,6 +25,7 @@ function liquidFillGaugeDefaultSettings() {
         textColor: '#455a64', // The color of the value text when the wave does not overlap it.
         waveTextColor: 'white', // The color of the value text when the wave overlaps it.
 
+        radius: 30,
         suffix: "%"
     };
 }
@@ -34,7 +35,8 @@ function loadLiquidFillGauge(elementId, value, config) {
         config = liquidFillGaugeDefaultSettings();
     }
     var gauge = d3.select('#' + elementId);
-    var radius = Math.min(parseInt(gauge.style('width'), 10), parseInt(gauge.style('height'), 10)) / 2;
+    //var radius = Math.min(parseInt(gauge.style('width'), 10), parseInt(gauge.style('height'), 10)) / 2;
+    var radius = config.radius;
     var locationX = parseInt(gauge.style('width'), 10) / 2 - radius;
     var locationY = parseInt(gauge.style('height'), 10) / 2 - radius;
     let fillPercent = Math.max(config.minValue, Math.min(config.maxValue, value)) / config.maxValue;
