@@ -1243,30 +1243,45 @@ d3.csv("cw-6.csv").then(function (data) {
       return courses.reduce((total, c) => total + parseInt(c.Studiepunten), 0);
     }
 
-    var stpbox = right.select(".stpbox")
-      .classed("hidden", false)
-      .attr("width", 300);
+    right.append("svg")
+      .attr("width", 70)
+      .attr("height", 70)
+      .attr("id", "gauge1")
+      .attr("class", "gauge");
+    right.append("svg")
+      .attr("width", 70)
+      .attr("height", 70)
+      .attr("id", "gauge2")
+      .attr("class", "gauge");
+    right.append("svg")
+      .attr("width", 70)
+      .attr("height", 70)
+      .attr("id", "gauge3")
+      .attr("class", "gauge");
+    right.append("svg")
+      .attr("width", 70)
+      .attr("height", 70)
+      .attr("id", "gauge4")
+      .attr("class", "gauge");
 
-    stpbox.append("g").attr("id", "fillgauge1");
-    var gauge1 = loadLiquidFillGauge("fillgauge1", 0);
-    stpbox.append("text")
-      .classed("totalStp", true)
-      .text("0/120")
-      .attr("y", 20)
-      .attr("x", 0);
-    stpbox.append("text")
-      .classed("optionStp", true)
-      .text("0/18")
-      .attr("y", 40);
-    stpbox.append("text")
-      .classed("optionExtraStp", true)
-      .text("0/18")
-      .attr("y", 60);
-    // Voor AVO is er een maximum van 14, maar we tonen het minimum 12
-    stpbox.append("text")
-      .classed("AVOStp", true)
-      .text("0/12")
-      .attr("y", 80);
+    var config1 = liquidFillGaugeDefaultSettings();
+    config1.maxValue = 120;
+    config1.suffix = "/120";
+    var gauge1 = loadLiquidFillGauge("gauge1", 0, config1);
+
+    var config2 = liquidFillGaugeDefaultSettings();
+    config2.maxValue = 18;
+    config2.suffix = "/18";
+    var gauge2 = loadLiquidFillGauge("gauge2", 0, config2);
+    var config3 = liquidFillGaugeDefaultSettings();
+    config3.maxValue = 18;
+    config3.suffix = "/18";
+    var gauge3 = loadLiquidFillGauge("gauge3", 0, config3);
+    var config4 = liquidFillGaugeDefaultSettings();
+    config4.maxValue = 12;
+    config4.suffix = "/12";
+    var gauge4 = loadLiquidFillGauge("gauge4", 0, config4);
+
 
     function updateStpbox() {
       // haal alle gekozen vakken
@@ -1295,17 +1310,15 @@ d3.csv("cw-6.csv").then(function (data) {
       // overflow binnen eigen optie telt mee voor verdere optie
       if (inOption > 18) inOptionExtra += (inOption - 18);
 
-      stpbox.select(".totalStp")
-        .text(total + "/120");
-      stpbox.select(".optionStp")
-        .text(inOption + "/18");
-      stpbox.select(".optionExtraStp")
-        .text(inOptionExtra + "/18");
-      stpbox.select(".AVOStp")
-        .text(inAVO + "/12");
+      gauge1.update(total);
+      gauge2.update(inOption);
+      gauge3.update(inOptionExtra);
+      gauge4.update(inAVO);
+
     }
 
 
   });
 
 });
+var ext_gauge;
