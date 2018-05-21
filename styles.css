@@ -384,3 +384,9 @@ input:checked + .slider:before {
 .barchart-label {
   font-weight: normal;
 }
+
+/**
+* Stp counter
+*/
+.gauge {
+}

@@ -2,26 +2,30 @@ function liquidFillGaugeDefaultSettings() {
     return {
         minValue: 0, // The gauge minimum value.
         maxValue: 100, // The gauge maximum value.
+        toomuchValue: Infinity,
         circleThickness: 0.05, // The outer circle thickness as a percentage of it's radius.
         circleFillGap: 0.05, // The size of the gap between the outer circle and wave circle as a percentage of the outer circles radius.
-        circleColor: '#178BCA', // The color of the outer circle.
+        circleColor: 'red', // The color of the outer circle.
+        circleColorFull: 'green',
         waveHeight: 0.05, // The wave height as a percentage of the radius of the wave circle.
         waveCount: 1, // The number of full waves per width of the wave circle.
         waveRiseTime: 1000, // The amount of time in milliseconds for the wave to rise from 0 to it's final height.
         waveAnimateTime: 18000, // The amount of time in milliseconds for a full wave to enter the wave circle.
         waveRise: true, // Control if the wave should rise from 0 to it's full height, or start at it's full height.
-        // tslint:disable-next-line:max-line-length
+
         waveHeightScaling: true, // Controls wave size scaling at low and high fill percentages. When true, wave height reaches it's maximum at 50% fill, and minimum at 0% and 100% fill. This helps to prevent the wave from making the wave circle from appear totally full or empty when near it's minimum or maximum fill.
         waveAnimate: true, // Controls if the wave scrolls or is static.
-        waveColor: '#178BCA', // The color of the fill wave.
+        waveColor: '#90a4ae', // The color of the fill wave.
         waveOffset: 0, // The amount to initially offset the wave. 0 = no offset. 1 = offset of one full wave.
         textVertPosition: .5, // The height at which to display the percentage text withing the wave circle. 0 = bottom, 1 = top.
         textSize: 1, // The relative height of the text to display in the wave circle. 1 = 50%
-        // tslint:disable-next-line:max-line-length
+
         valueCountUp: true, // If true, the displayed value counts up from 0 to it's final value upon loading. If false, the final value is displayed.
-        displayPercent: true, // If true, a % symbol is displayed after the value.
-        textColor: '#045681', // The color of the value text when the wave does not overlap it.
-        waveTextColor: '#A4DBf8' // The color of the value text when the wave overlaps it.
+        displayPercent: true, // If true, a suffix symbol is displayed after the value.
+        textColor: '#455a64', // The color of the value text when the wave does not overlap it.
+        waveTextColor: 'white', // The color of the value text when the wave overlaps it.
+
+        suffix: "%"
     };
 }
 
@@ -49,7 +53,7 @@ function loadLiquidFillGauge(elementId, value, config) {
     var textPixels = (config.textSize * radius / 2);
     var textFinalValue = parseFloat(value).toFixed(2);
     var textStartValue = config.valueCountUp ? config.minValue : textFinalValue;
-    var percentText = config.displayPercent ? '%' : '';
+    var percentText = config.displayPercent ? config.suffix : '';
     var circleThickness = config.circleThickness * radius;
     var circleFillGap = config.circleFillGap * radius;
     var fillCircleMargin = circleThickness + circleFillGap;
@@ -219,35 +223,33 @@ function loadLiquidFillGauge(elementId, value, config) {
     }
 
     function GaugeUpdater() {
-        this.update = function (val) {
-            var newFinalValue = parseFloat(val).toFixed(2);
-            let textRounderUpdater = function (val2) {
-                return '' + Math.round(val2);
-            };
-            if (parseFloat(newFinalValue) !== parseFloat(textRounderUpdater(newFinalValue))) {
-                textRounderUpdater = function (val2) {
-                    return parseFloat(val2).toFixed(1);
-                };
+        this.update = function (value) {
+            var newFinalValue = parseFloat(value).toFixed(2);
+            var textRounderUpdater = function (value) { return Math.round(value); };
+            if (parseFloat(newFinalValue) != parseFloat(textRounderUpdater(newFinalValue))) {
+                textRounderUpdater = function (value) { return parseFloat(value).toFixed(1); };
             }
-            if (parseFloat(newFinalValue) !== parseFloat(textRounderUpdater(newFinalValue))) {
-                textRounderUpdater = function (val2) {
-                    return parseFloat(val2).toFixed(2);
-                };
+            if (parseFloat(newFinalValue) != parseFloat(textRounderUpdater(newFinalValue))) {
+                textRounderUpdater = function (value) { return parseFloat(value).toFixed(2); };
             }
-
-            var textTween = () => {
+            this.textContent = "";
+            var textTween = function () {
                 var i = d3.interpolate(this.textContent, parseFloat(value).toFixed(2));
-                return function (t) {
-                    this.textContent = textRounderUpdater(i(t)) + percentText;
-                };
+                return function (t) { this.textContent = textRounderUpdater(i(t)) + percentText; }
             };
 
             text1.transition()
                 .duration(config.waveRiseTime)
-                .tween('text', textTween);
+                .tween('text', textTween());
             text2.transition()
                 .duration(config.waveRiseTime)
-                .tween('text', textTween);
+                .tween('text', textTween());
+
+            if (value >= config.maxValue && value < config.toomuchValue)
+                gaugeGroup.select("path").style("fill", config.circleColorFull);
+            else
+                gaugeGroup.select("path").style("fill", config.circleColor);
+
 
             fillPercent = Math.max(config.minValue, Math.min(config.maxValue, value)) / config.maxValue;
             waveHeight = fillCircleRadius * waveHeightScale(fillPercent * 100);
