@@ -42,6 +42,7 @@ var transition = d3.transition()
   .duration(750)
   .ease(d3.easeLinear);
 var timeout;
+var bachelor = 0;
 
 // afmetingen van de svg
 var svgWidth = 500;
@@ -57,6 +58,7 @@ var optionChosen = false;
 var stpSize = optionRadius * 2;
 
 // maak een svg voor de hypergraf
+hypergraphContainer.attr("height", svgHeight);
 hypergraph.attr("width", svgWidth)
   .attr("height", svgHeight);
 
@@ -942,31 +944,15 @@ d3.csv("cw-6.csv").then(function (data) {
       var notExtra = hypergraph.selectAll(".node:not(.extra-course-node)");
       var xOffset = 250;
 
-      if (optionChosen) {
-        svgWidth += xOffset;
-        hypergraph.transition()
-          .duration(1000)
-          .attr("width", svgWidth);
-        hypergraph.selectAll(".link")
+      if (optionChosen && bachelor == 0) {
+        hypergraph.style("opacity", 1)
           .transition()
           .duration(1000)
-          .attr("x1", d => d.source.x + xOffset)
-          .attr("x2", d => d.target.x + xOffset);
-        notExtra.transition()
-          .duration(1000)
-          .attr("cx", d => d.x + xOffset)
-          .on("end", function (d) {
-            d.x += xOffset;
-            root.fx = rootX + xOffset;
-          });
-        hypergraph.selectAll(".extra-course-node")
-          .transition()
-          .delay(1000)
-          .style("display", "block");
-        hypergraph.selectAll(".hypergraph-text")
-          .transition()
-          .delay(1000)
-          .style("display", "block");
+          .style("opacity", 0)
+          .on("end", showChooseBachelor);
+      } else if (optionChosen) {
+        moveHypergraph();
+        showExtraCourses();
       } else {
         hypergraph.selectAll(".extra-course-node")
           .style("display", "none");
@@ -998,6 +984,91 @@ d3.csv("cw-6.csv").then(function (data) {
             svgWidth -= xOffset;
           });
       }
+    }
+
+    function showChooseBachelor() {
+      hypergraph.attr("display", "none");
+      var chooseBachelorContainer = left.insert("div", ":first-child")
+        .attr("class", "choose-bachelor-container");
+      var chooseBachelor = chooseBachelorContainer.append("div")
+        .attr("class", "choose-bachelor")
+        .style("opacity", 0);
+      chooseBachelor.append("p")
+        .text("Je moet enkele vakken verplicht opnemen, afhankelijk van je voorkennis.");
+      chooseBachelor.append("p")
+        .text("Welke Bachelor heb je gevolgd?");
+      var chooseBachelorButtons = chooseBachelor.append("div");
+      chooseBachelorButtons.append("p")
+        .attr("class", "choose-bachelor-button")
+        .text("Ingenieurswetenschappen: computerwetenschappen")
+        .on("click", function () {
+          bachelor = 1;
+          hideChooseBachelor();
+        });
+      chooseBachelorButtons.append("p")
+        .attr("class", "choose-bachelor-button")
+        .text("Informatica")
+        .on("click", function () {
+          bachelor = 2;
+          hideChooseBachelor();
+        });
+      chooseBachelor.transition()
+        .duration(1000)
+        .style("opacity", 1);
+    }
+
+    function hideChooseBachelor() {
+      var chooseBachelorContainer = left.select(".choose-bachelor-container");
+      chooseBachelorContainer.transition()
+        .duration(1000)
+        .style("opacity", 0)
+        .on("end", function () {
+          chooseBachelorContainer.remove();
+          hypergraph.attr("display", "block")
+            .style("opacity", 1);
+          moveHypergraph();
+          showExtraCourses();
+        });
+
+    }
+
+    function moveHypergraph() {
+      var rootX = root.fx;
+      var notExtra = hypergraph.selectAll(".node:not(.extra-course-node)");
+      var xOffset = 250;
+      svgWidth += xOffset;
+      hypergraph.transition()
+        .duration(1000)
+        .attr("width", svgWidth);
+      hypergraph.selectAll(".link")
+        .transition()
+        .duration(1000)
+        .attr("x1", d => d.source.x + xOffset)
+        .attr("x2", d => d.target.x + xOffset);
+      notExtra.transition()
+        .duration(1000)
+        .attr("cx", d => d.x + xOffset)
+        .on("end", function (d) {
+          d.x += xOffset;
+          root.fx = rootX + xOffset;
+        });
+    }
+
+    function showExtraCourses() {
+      hypergraph.selectAll(".extra-course-node")
+        .style("opacity", 0)
+        .style("display", "block")
+        .transition()
+        .delay(1000)
+        .duration(1000)
+        .style("opacity", 1);
+      hypergraph.selectAll(".hypergraph-text")
+        .style("opacity", 0)
+        .style("display", "block")
+        .transition()
+        .delay(1000)
+        .duration(1000)
+        .style("opacity", 1);
     }
 
     function toggleStatusRadioButtons() {
