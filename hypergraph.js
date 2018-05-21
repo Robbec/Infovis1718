@@ -1247,6 +1247,8 @@ d3.csv("cw-6.csv").then(function (data) {
       .classed("hidden", false)
       .attr("width", 300);
 
+    stpbox.append("g").attr("id", "fillgauge1");
+    var gauge1 = loadLiquidFillGauge("fillgauge1", 0);
     stpbox.append("text")
       .classed("totalStp", true)
       .text("0/120")
@@ -1256,6 +1258,15 @@ d3.csv("cw-6.csv").then(function (data) {
       .classed("optionStp", true)
       .text("0/18")
       .attr("y", 40);
+    stpbox.append("text")
+      .classed("optionExtraStp", true)
+      .text("0/18")
+      .attr("y", 60);
+    // Voor AVO is er een maximum van 14, maar we tonen het minimum 12
+    stpbox.append("text")
+      .classed("AVOStp", true)
+      .text("0/12")
+      .attr("y", 80);
 
     function updateStpbox() {
       // haal alle gekozen vakken
@@ -1270,12 +1281,28 @@ d3.csv("cw-6.csv").then(function (data) {
       var inOption = chosen.filter(function (d) {
         return (0 < d[option]) && (getCourseOptions(d).length < optionNames.length);
       });
+      // komt uit verdere optie of uit eigen keuze of andere opties
+      var inOptionExtra = chosen.filter(function (d) {
+        return d[option] == 0 && (0 < d["Verdere optie"] || (getCourseOptions(d).length < optionNames.length));
+      });
+      var inAVO = chosen.filter(function (d) {
+        return (0 < d["Algemeen vormende en onderzoeksondersteunende groep"]);
+      });
+
       inOption = getTotalStp(inOption);
+      inOptionExtra = getTotalStp(inOptionExtra);
+      inAVO = getTotalStp(inAVO);
+      // overflow binnen eigen optie telt mee voor verdere optie
+      if (inOption > 18) inOptionExtra += (inOption - 18);
 
       stpbox.select(".totalStp")
         .text(total + "/120");
       stpbox.select(".optionStp")
         .text(inOption + "/18");
+      stpbox.select(".optionExtraStp")
+        .text(inOptionExtra + "/18");
+      stpbox.select(".AVOStp")
+        .text(inAVO + "/12");
     }
 
 
