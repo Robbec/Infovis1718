@@ -331,20 +331,10 @@ d3.csv("cw-6.csv").then(function (data) {
         .attr("r", courseRadius)
         .classed("node course-node", true)
         .classed("compulsory", function (d) {
-          for (var i = 0; i < optionNames.length; i++) {
-            if (d[optionNames[i]] == 1) {
-              return true;
-            }
-          }
-          return false;
+          return checkCompulsoryOrOptional(d, 1);
         })
         .classed("optional", function (d) {
-          for (var i = 0; i < optionNames.length; i++) {
-            if (d[optionNames[i]] == 2) {
-              return true;
-            }
-          }
-          return false;
+          return checkCompulsoryOrOptional(d, 2);
         })
         .classed("not-interested", switchInterested.property("checked"))
         .classed("extra-course-node", d => extraData.includes(d))
@@ -380,6 +370,22 @@ d3.csv("cw-6.csv").then(function (data) {
       updateCourseNodes();
       simulationNodes.alpha(0.5).restart();
       simulationOptionNodes.alpha(0.5).restart();
+    }
+
+    function checkCompulsoryOrOptional(d, n) {
+      for (var i = 0; i < optionNames.length; i++) {
+        var optionName = optionNames[i];
+        if (d[optionName] == n) {
+          return true;
+        }
+      }
+      for (var i = 0; i < extraOptionNames.length; i++) {
+        var extraName = extraOptionNames[i];
+        if (d[extraName] == n) {
+          return true;
+        }
+      }
+      return false;
     }
 
     // vind alle opties die het gegeven vak aanbieden
