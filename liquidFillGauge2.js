@@ -245,7 +245,7 @@ function loadLiquidFillGauge(elementId, value, config) {
                 .duration(config.waveRiseTime)
                 .tween('text', textTween());
 
-            if (value >= config.maxValue && value < toomuchValue)
+            if (value >= config.maxValue && value < config.toomuchValue)
                 gaugeGroup.select("path").style("fill", config.circleColorFull);
             else
                 gaugeGroup.select("path").style("fill", config.circleColor);

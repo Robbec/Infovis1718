@@ -1351,6 +1351,7 @@ d3.csv("cw-6.csv").then(function (data) {
     var config4 = liquidFillGaugeDefaultSettings();
     config4.maxValue = 12;
     config4.suffix = "/12";
+    config4.toomuchValue = 15;
     var gauge4 = loadLiquidFillGauge("gauge4", 0, config4);
 
 
@@ -1369,7 +1370,7 @@ d3.csv("cw-6.csv").then(function (data) {
       });
       // komt uit verdere optie of uit eigen keuze of andere opties
       var inOptionExtra = chosen.filter(function (d) {
-        return d[option] == 0 && (0 < d["Verdere optie"] || (getCourseOptions(d).length < optionNames.length));
+        return d[option] == 0 && (0 < d["Verdere optie"] || (getCourseOptions(d).length < optionNames.length && d["Algemeen vormende en onderzoeksondersteunende groep"] == 0));
       });
       var inAVO = chosen.filter(function (d) {
         return (0 < d["Algemeen vormende en onderzoeksondersteunende groep"]);
