@@ -200,9 +200,11 @@ d3.csv("cw-6.csv").then(function (data) {
     function ticked() {
       // pas de positie aan van de course nodes
       hypergraph.selectAll(".course-node")
-      .attr("transform", d => "translate(" + boxBoundedX(d.x) + "," + boxBoundedY(d.y) + ")");
-        // .attr("cx", d => boxBoundedX(d.x))
-        // .attr("cy", d => boxBoundedY(d.y));
+        .attr("transform", function (d) {
+          var courseX = boxBoundedX(d.x);
+          var courseY = boxBoundedY(d.y);
+          return "translate(" + courseX + "," + courseY + ")";
+        });
 
       // pas de positie aan van de option nodes
       hypergraph.selectAll(".option-node")
@@ -331,14 +333,16 @@ d3.csv("cw-6.csv").then(function (data) {
         .data(data, d => d.ID);
 
       course.enter().each(function (c) {
-        // var pie = d3.pie(c);
-        // console.log(c);
-
+        var optionData = d3.values(c)
+          .splice(13, optionNames.length)
+          .map(e => (e > 0) ? 1 : 0);
+        var pie = d3.pie()(optionData);
         var arc = d3.arc()
           .innerRadius(0)
           .outerRadius(10)
           .startAngle(0)
-          .endAngle(Math.PI * 2);
+          .endAngle(2*Math.PI)
+          ;
 
         d3.select(this)
           .append("path")
@@ -952,9 +956,6 @@ d3.csv("cw-6.csv").then(function (data) {
       optionChosen = !optionChosen;
       var activeOption = hypergraph.select(".option-node.active");
       activeOption.node().classList.toggle("option-chosen");
-      var rootX = root.fx;
-      var notExtra = hypergraph.selectAll(".node:not(.extra-course-node)");
-      var xOffset = 250;
 
       if (optionChosen && bachelor == 0) {
         hypergraph.style("opacity", 1)
@@ -963,38 +964,10 @@ d3.csv("cw-6.csv").then(function (data) {
           .style("opacity", 0)
           .on("end", showChooseBachelor);
       } else if (optionChosen) {
-        moveHypergraph();
+        moveHypergraph(250);
         showExtraCourses();
       } else {
-        hypergraph.selectAll(".extra-course-node")
-          .style("display", "none");
-        hypergraph.selectAll(".hypergraph-text")
-          .style("display", "none");
-        hypergraph.selectAll(".link")
-          .transition()
-          .delay(500)
-          .duration(1000)
-          .attr("x1", d => d.source.x - xOffset)
-          .attr("x2", d => d.target.x - xOffset);
-        notExtra
-          .transition()
-          .delay(500)
-          .duration(1000)
-          .attr("cx", d => d.x - xOffset)
-          .on("end", function (d) {
-            d.x -= xOffset;
-            root.fx = rootX - xOffset;
-          });
-        hypergraph
-          .transition()
-          .delay(500)
-          .duration(1000)
-          .attr("width", function () {
-            return svgWidth - xOffset;
-          })
-          .on("end", function () {
-            svgWidth -= xOffset;
-          });
+        hideExtraCourses(250);
       }
     }
 
@@ -1038,16 +1011,14 @@ d3.csv("cw-6.csv").then(function (data) {
           chooseBachelorContainer.remove();
           hypergraph.attr("display", "block")
             .style("opacity", 1);
-          moveHypergraph();
+          moveHypergraph(250);
           showExtraCourses();
         });
 
     }
 
-    function moveHypergraph() {
-      var rootX = root.fx;
-      var notExtra = hypergraph.selectAll(".node:not(.extra-course-node)");
-      var xOffset = 250;
+    function moveHypergraph(xOffset) {
+      var notExtra = hypergraph.selectAll(".course-node:not(.extra-course-node)");
       svgWidth += xOffset;
       hypergraph.transition()
         .duration(1000)
@@ -1057,12 +1028,18 @@ d3.csv("cw-6.csv").then(function (data) {
         .duration(1000)
         .attr("x1", d => d.source.x + xOffset)
         .attr("x2", d => d.target.x + xOffset);
-      notExtra.transition()
+      hypergraph.selectAll(".option-node").transition()
         .duration(1000)
         .attr("cx", d => d.x + xOffset)
-        .on("end", function (d) {
+        .on("end", d => d.x += xOffset);
+      notExtra.transition()
+        .duration(1000)
+        .attr("transform", d => "translate(" + (d.x + xOffset) + "," + d.y + ")")
+        .on("end", function (d, i) {
           d.x += xOffset;
-          root.fx = rootX + xOffset;
+          if (i == 0) {
+            root.fx += xOffset;
+          }
         });
     }
 
@@ -1081,6 +1058,46 @@ d3.csv("cw-6.csv").then(function (data) {
         .delay(1000)
         .duration(1000)
         .style("opacity", 1);
+    }
+
+    function hideExtraCourses(xOffset) {
+      var notExtra = hypergraph.selectAll(".course-node:not(.extra-course-node)");
+      hypergraph.selectAll(".extra-course-node")
+        .style("display", "none");
+      hypergraph.selectAll(".hypergraph-text")
+        .style("display", "none");
+      hypergraph.selectAll(".link")
+        .transition()
+        .delay(500)
+        .duration(1000)
+        .attr("x1", d => d.source.x - xOffset)
+        .attr("x2", d => d.target.x - xOffset);
+      hypergraph.selectAll(".option-node").transition()
+        .delay(500)
+        .duration(1000)
+        .attr("cx", d => d.x - xOffset)
+        .on("end", d => d.x -= xOffset);
+      notExtra
+        .transition()
+        .delay(500)
+        .duration(1000)
+        .attr("transform", d => "translate(" + (d.x - xOffset) + "," + d.y + ")")
+        .on("end", function (d, i) {
+          d.x -= xOffset;
+          if (i == 0) {
+            root.fx -= xOffset;
+          }
+        });
+      hypergraph
+        .transition()
+        .delay(500)
+        .duration(1000)
+        .attr("width", function () {
+          return svgWidth - xOffset;
+        })
+        .on("end", function () {
+          svgWidth -= xOffset;
+        });
     }
 
     function toggleStatusRadioButtons() {
