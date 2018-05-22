@@ -3,6 +3,7 @@ function liquidFillGaugeDefaultSettings() {
         minValue: 0, // The gauge minimum value.
         maxValue: 100, // The gauge maximum value.
         toomuchValue: Infinity,
+        enoughValue: Infinity,
         circleThickness: 0.05, // The outer circle thickness as a percentage of it's radius.
         circleFillGap: 0.05, // The size of the gap between the outer circle and wave circle as a percentage of the outer circles radius.
         circleColor: 'red', // The color of the outer circle.
@@ -247,7 +248,7 @@ function loadLiquidFillGauge(elementId, value, config) {
                 .duration(config.waveRiseTime)
                 .tween('text', textTween());
 
-            if (value >= config.maxValue && value < config.toomuchValue)
+            if ((value >= config.maxValue || value >= config.enoughValue) && value < config.toomuchValue)
                 gaugeGroup.select("path").style("fill", config.circleColorFull);
             else
                 gaugeGroup.select("path").style("fill", config.circleColor);

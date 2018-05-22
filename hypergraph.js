@@ -1368,20 +1368,21 @@ d3.csv("cw-6.csv").then(function (data) {
     // put gauge in each svg
     var config1 = liquidFillGaugeDefaultSettings();
     config1.maxValue = 120;
-    config1.suffix = "/120";
+    config1.suffix = "";
     var gauge1 = loadLiquidFillGauge("gauge1", 0, config1);
 
     var config2 = liquidFillGaugeDefaultSettings();
     config2.maxValue = 18;
-    config2.suffix = "/18";
+    config2.suffix = "";
     var gauge2 = loadLiquidFillGauge("gauge2", 0, config2);
     var config3 = liquidFillGaugeDefaultSettings();
     config3.maxValue = 18;
-    config3.suffix = "/18";
+    config3.suffix = "";
     var gauge3 = loadLiquidFillGauge("gauge3", 0, config3);
     var config4 = liquidFillGaugeDefaultSettings();
-    config4.maxValue = 12;
-    config4.suffix = "/12";
+    config4.maxValue = 14;
+    config4.enoughValue = 12;
+    config4.suffix = "";
     config4.toomuchValue = 15;
     var gauge4 = loadLiquidFillGauge("gauge4", 0, config4);
 
