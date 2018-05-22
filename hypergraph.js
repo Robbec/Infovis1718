@@ -174,7 +174,12 @@ d3.csv("cw-6.csv").then(function (data) {
     // force simulation bepaalt de positie van alle nodes
     var forceCollide = d3.forceCollide(courseRadius * 1.3).strength(1);
 
-    var simulationNodes = d3.forceSimulation(data.filter(d => !extraData.includes(d)).concat(options))
+    var hypergraphData = data
+      .filter(d => !extraData.includes(d))
+      .filter(d => getCourseOptions(d).length != optionNames.length)
+      .concat(options);
+
+    var simulationNodes = d3.forceSimulation(hypergraphData)
       // laat alle nodes elkaar afstoten
       .force("charge", d3.forceManyBody()
         .distanceMax(700)
@@ -1056,21 +1061,24 @@ d3.csv("cw-6.csv").then(function (data) {
         .attr("class", "choose-bachelor-button")
         .text("Ingenieurswetenschappen: computerwetenschappen")
         .on("click", function () {
-          bachelorChosen(extraOptionNames[0]);
+          bachelorChosen(extraOptionNames[0], extraOptionNames[1]);
         });
       chooseBachelorButtons.append("p")
         .attr("class", "choose-bachelor-button")
         .text("Informatica")
         .on("click", function () {
-          bachelorChosen(extraOptionNames[1]);
+          bachelorChosen(extraOptionNames[1], extraOptionNames[0]);
         });
       chooseBachelor.transition()
         .duration(1000)
         .style("opacity", 1);
     }
 
-    function bachelorChosen(b) {
-      bachelor = b;
+    function bachelorChosen(chosen, notChosen) {
+      bachelor = chosen;
+      hypergraph.selectAll(".course-node")
+        .filter(d => d[notChosen] > 0)
+        .remove();
       simulateExtraCourses();
       hideChooseBachelor();
     }
