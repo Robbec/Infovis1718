@@ -388,12 +388,5 @@ input:checked + .slider:before {
 /**
 * Stp counter
 */
-
-.stpbox{
-  display: flex;
-  flex-flow: row;
-}
-
 .gauge {
-  display: flex;
 }

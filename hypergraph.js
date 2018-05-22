@@ -42,8 +42,7 @@ var transition = d3.transition()
   .duration(750)
   .ease(d3.easeLinear);
 var timeout;
-var optionChosen = false;
-var bachelor = null;
+var bachelor = 0;
 
 // afmetingen van de svg
 var svgWidth = 500;
@@ -60,6 +59,7 @@ var x = d3.scaleLinear()
   .range([0, svgWidth]);
 
 // variabelen Infobox
+var optionChosen = false;
 var stpSize = optionRadius * 2;
 
 // maak een svg voor de hypergraf
@@ -74,16 +74,14 @@ var tooltip = hypergraphContainer.append("div")
 // switch standaard uitschakelen
 switchInterested.property("checked", false);
 
-d3.csv("cw-6.csv").then(function (data) {
+d3.csv("cw-7.csv").then(function (data) {
   d3.csv("uniekeReserveringen.csv").then(function (scheduleData) {
     // namen van alle opties
     var columnNames = d3.keys(d3.values(data)[0]);
-    var indexFirstOption = 13;
+    var indexFirstOption = 14;
     var optionNames = columnNames.slice(indexFirstOption, columnNames.length);
     var indexFirstExtraOption = 9;
     var extraOptionNames = columnNames.slice(indexFirstExtraOption, indexFirstOption);
-    var extraOptionGroupNames = extraOptionNames.slice(2, extraOptionNames.length);
-    extraOptionGroupNames.unshift("Verplicht");
     var extraData = data.filter(function (d) {
       var isOptionCourse = false;
       for (i of extraOptionNames) {
@@ -123,6 +121,15 @@ d3.csv("cw-6.csv").then(function (data) {
     /**
      * 3. Opbouw van de hypergraf
      */
+
+    for (name of extraOptionNames) {
+      hypergraph.append("text")
+        .text(name)
+        .attr("class", "hypergraph-text")
+        .attr("x", 18.5)
+        .attr("y", 25 + 75 * extraOptionNames.indexOf(name))
+        .style("display", "none");
+    }
 
     // maak voor elke optie een node
     optionNames.forEach(function (o) {
@@ -260,35 +267,15 @@ d3.csv("cw-6.csv").then(function (data) {
         .strength(-300)
       );
 
-    function simulateExtraCourses() {
-      var labelY = 50;
-      var spacing = 30;
-      for (name of extraOptionGroupNames) {
-        if (extraOptionGroupNames.indexOf(name) == 0) {
-          var extra = data
-            .filter(d => getCourseOptions(d).length == optionNames.length)
-            .concat(data.filter(d => d[bachelor] > 0));
-        } else {
-          var extra = extraData.filter(d => d[name] > 0);
-        }
-
-        hypergraph.append("text")
-          .text(name)
-          .attr("class", "hypergraph-text")
-          .attr("x", 18.5)
-          .attr("y", labelY)
-          .style("display", "none");
-
-        d3.forceSimulation(extra)
-          .force("x", d3.forceX(function (d) {
-            return 30 + (extra.indexOf(d) % 7) * 35;
-          }))
-          .force("y", d3.forceY(function (d) {
-            return labelY + spacing + Math.floor(extra.indexOf(d) / 7) * 35;
-          }));
-
-        labelY += (Math.ceil(extra.length / 7) * 35 + 2 * spacing);
-      }
+    for (i of extraOptionNames) {
+      var extra = extraData.filter(d => d[i] > 0);
+      d3.forceSimulation(extra)
+        .force("x", d3.forceX(function (d) {
+          return 30 + (extra.indexOf(d) % 7) * 35;
+        }))
+        .force("y", d3.forceY(function (d) {
+          return 50 + Math.floor(extra.indexOf(d) / 7) * 35 + extraOptionNames.indexOf(i) * 75;
+        }));
     }
 
     // bound the given x coordinate to the visible part of the hypergraph
@@ -1026,7 +1013,7 @@ d3.csv("cw-6.csv").then(function (data) {
       var activeOption = hypergraph.select(".option-node.active");
       activeOption.node().classList.toggle("option-chosen");
 
-      if (optionChosen && bachelor == null) {
+      if (optionChosen && bachelor == 0) {
         hypergraph.style("opacity", 1)
           .transition()
           .duration(1000)
@@ -1056,23 +1043,19 @@ d3.csv("cw-6.csv").then(function (data) {
         .attr("class", "choose-bachelor-button")
         .text("Ingenieurswetenschappen: computerwetenschappen")
         .on("click", function () {
-          bachelorChosen(extraOptionNames[0]);
+          bachelor = 1;
+          hideChooseBachelor();
         });
       chooseBachelorButtons.append("p")
         .attr("class", "choose-bachelor-button")
         .text("Informatica")
         .on("click", function () {
-          bachelorChosen(extraOptionNames[1]);
+          bachelor = 2;
+          hideChooseBachelor();
         });
       chooseBachelor.transition()
         .duration(1000)
         .style("opacity", 1);
-    }
-
-    function bachelorChosen(b) {
-      bachelor = b;
-      simulateExtraCourses();
-      hideChooseBachelor();
     }
 
     function hideChooseBachelor() {
@@ -1411,25 +1394,23 @@ d3.csv("cw-6.csv").then(function (data) {
       return courses.reduce((total, c) => total + parseInt(c.Studiepunten), 0);
     }
 
-    var stpbox = right.select(".stpbox");
-
     // create svg's for each bar
-    var svg1 = stpbox.append("svg")
+    var svg1 = right.append("svg")
       .attr("width", 70)
       .attr("height", 100)
       .attr("id", "gauge1")
       .attr("class", "gauge");
-    var svg2 = stpbox.append("svg")
+    var svg2 = right.append("svg")
       .attr("width", 70)
       .attr("height", 100)
       .attr("id", "gauge2")
       .attr("class", "gauge");
-    var svg3 = stpbox.append("svg")
+    var svg3 = right.append("svg")
       .attr("width", 70)
       .attr("height", 100)
       .attr("id", "gauge3")
       .attr("class", "gauge");
-    var svg4 = stpbox.append("svg")
+    var svg4 = right.append("svg")
       .attr("width", 70)
       .attr("height", 100)
       .attr("id", "gauge4")
@@ -1459,21 +1440,23 @@ d3.csv("cw-6.csv").then(function (data) {
     //append a label
     svg1.append("text")
       .text("Totaal")
-      .attr("y", 95)
-      .attr("x", 15);
+      .attr("y", 90)
+      .attr("x", 10);
     svg2.append("text")
       .text("Optie")
-      .attr("y", 95)
-      .attr("x", 15);
+      .attr("y", 90)
+      .attr("x", 10);
     svg3.append("text")
       .text("Verdere optie")
-      .attr("y", 95)
-      .attr("x", 0)
-      .style("font-size", "11.6px");
+      .attr("y", 90)
+      .attr("x", 10);
     svg4.append("text")
       .text("AVO")
-      .attr("y", 95)
-      .attr("x", 20);
+      .attr("y", 90)
+      .attr("x", 10);
+
+
+
 
     function updateStpbox() {
       // haal alle gekozen vakken
@@ -1513,3 +1496,4 @@ d3.csv("cw-6.csv").then(function (data) {
   });
 
 });
+var ext_gauge;
