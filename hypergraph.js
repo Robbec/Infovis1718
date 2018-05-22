@@ -76,7 +76,6 @@ switchInterested.property("checked", false);
 
 d3.csv("cw-6.csv").then(function (data) {
   d3.csv("uniekeReserveringen.csv").then(function (scheduleData) {
-    // namen van alle opties
     var columnNames = d3.keys(d3.values(data)[0]);
     var indexFirstOption = 13;
     var optionNames = columnNames.slice(indexFirstOption, columnNames.length);
@@ -84,13 +83,18 @@ d3.csv("cw-6.csv").then(function (data) {
     var extraOptionNames = columnNames.slice(indexFirstExtraOption, indexFirstOption);
     var extraOptionGroupNames = extraOptionNames.slice(2, extraOptionNames.length);
     extraOptionGroupNames.unshift("Verplicht");
-    var extraData = data.filter(function (d) {
-      var isOptionCourse = false;
-      for (i of extraOptionNames) {
-        isOptionCourse = isOptionCourse || d[i] != 0;
-      }
-      return isOptionCourse;
-    });
+
+    var coursesCompulsoryForAllOptions = data
+      .filter(d => getCourseOptionsNames(d).length == optionNames.length);
+    var extraData = data
+      .filter(function (d) {
+        var isOptionCourse = false;
+        for (i of extraOptionNames) {
+          isOptionCourse = isOptionCourse || d[i] != 0;
+        }
+        return isOptionCourse;
+      })
+      .concat(coursesCompulsoryForAllOptions);
 
     /**
     * 2. Kleuren
@@ -176,7 +180,6 @@ d3.csv("cw-6.csv").then(function (data) {
 
     var hypergraphData = data
       .filter(d => !extraData.includes(d))
-      .filter(d => getCourseOptions(d).length != optionNames.length)
       .concat(options);
 
     var simulationNodes = d3.forceSimulation(hypergraphData)
@@ -270,8 +273,7 @@ d3.csv("cw-6.csv").then(function (data) {
       var spacing = 30;
       for (name of extraOptionGroupNames) {
         if (extraOptionGroupNames.indexOf(name) == 0) {
-          var extra = data
-            .filter(d => getCourseOptions(d).length == optionNames.length)
+          var extra = coursesCompulsoryForAllOptions
             .concat(data.filter(d => d[bachelor] > 0));
         } else {
           var extra = extraData.filter(d => d[name] > 0);
@@ -435,11 +437,21 @@ d3.csv("cw-6.csv").then(function (data) {
     // vind alle opties die het gegeven vak aanbieden
     function getCourseOptions(course) {
       var courseOptions = [];
-      options.forEach(function (o) {
+      for (o of options) {
         if (course[o.ID] > 0) {
           courseOptions.push(o);
         }
-      });
+      }
+      return courseOptions;
+    }
+
+    function getCourseOptionsNames(course) {
+      var courseOptions = [];
+      for (name of optionNames) {
+        if (course[name] > 0) {
+          courseOptions.push(name);
+        }
+      }
       return courseOptions;
     }
 
