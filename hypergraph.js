@@ -69,12 +69,14 @@ var tooltip = hypergraphContainer.append("div")
 // switch standaard uitschakelen
 switchInterested.property("checked", false);
 
-d3.csv("cw-6.csv").then(function (data) {
+d3.csv("cw-7.csv").then(function (data) {
   d3.csv("uniekeReserveringen.csv").then(function (scheduleData) {
     // namen van alle opties
     var columnNames = d3.keys(d3.values(data)[0]);
-    var optionNames = columnNames.slice(13, columnNames.length);
-    var extraOptionNames = columnNames.slice(9, 13);
+    var indexFirstOption = 14;
+    var optionNames = columnNames.slice(indexFirstOption, columnNames.length);
+    var indexFirstExtraOption = 9;
+    var extraOptionNames = columnNames.slice(indexFirstExtraOption, indexFirstOption);
     var extraData = data.filter(function (d) {
       var isOptionCourse = false;
       for (i of extraOptionNames) {
@@ -334,7 +336,7 @@ d3.csv("cw-6.csv").then(function (data) {
 
       course.enter().each(function (c) {
         var optionData = d3.values(c)
-          .splice(13, optionNames.length)
+          .splice(indexFirstOption, optionNames.length)
           .map(e => (e > 0) ? 1 : 0);
         var pie = d3.pie()(optionData);
         var arc = d3.arc()
