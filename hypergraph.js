@@ -106,6 +106,9 @@ d3.csv("cw-6.csv").then(function (data) {
     // kleur voor de vakken
     function colorOfCourse(d) {
       var color = defaultGray;
+      if (coursesCompulsoryForAllOptions.includes(d)) {
+        return color;
+      }
       for (i = 0; i < optionNames.length && color == defaultGray; i++) {
         if (d[optionNames[i]] > 0) {
           color = colors[i];
@@ -416,6 +419,7 @@ d3.csv("cw-6.csv").then(function (data) {
       updateCourseNodes();
       simulationNodes.alpha(0.5).restart();
       simulationOptionNodes.alpha(0.5).restart();
+      simulateExtraCourses();
     }
 
     function checkCompulsoryOrOptional(d, n) {
@@ -457,9 +461,9 @@ d3.csv("cw-6.csv").then(function (data) {
 
     // vind alle vakken voor een optie
     function getOptionCourses(o) {
-      return data.filter(function (d) {
-        return (0 < d[o.OPO]) && (getCourseOptions(d).length < optionNames.length);
-      });
+      return data
+        .filter(d => 0 < d[o.OPO])
+        .filter(d => !coursesCompulsoryForAllOptions.includes(d));
     }
 
     // vind alle links die in een course node aankomen
@@ -642,12 +646,11 @@ d3.csv("cw-6.csv").then(function (data) {
     }
 
     // toggle de highlight van de vakken die verbonden zijn met de gegeven optie
-    function toggleHighlightConnectedCourses(option) {
+    function toggleHighlightConnectedCourses(o) {
       hypergraph.selectAll(".course-node")
-        .each(function (c) {
-          if (c[option.ID] == 0) {
-            this.classList.toggle("non-active");
-          }
+        .filter(c => !getOptionCourses(o).includes(c))
+        .each(function () {
+          this.classList.toggle("non-active");
         })
     }
 
@@ -1143,14 +1146,16 @@ d3.csv("cw-6.csv").then(function (data) {
         .transition()
         .delay(1000)
         .duration(1000)
-        .style("opacity", 1);
+        .style("opacity", 1)
+        .style("opacity", null);
       hypergraph.selectAll(".hypergraph-text")
         .style("opacity", 0)
         .style("display", "block")
         .transition()
         .delay(1000)
         .duration(1000)
-        .style("opacity", 1);
+        .style("opacity", 1)
+        .style("opacity", null);
     }
 
     function hideExtraCourses(xOffset) {
