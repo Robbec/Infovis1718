@@ -1345,23 +1345,25 @@ d3.csv("cw-7.csv").then(function (data) {
       return courses.reduce((total, c) => total + parseInt(c.Studiepunten), 0);
     }
 
+    var stpbox = right.select(".stpbox");
+
     // create svg's for each bar
-    var svg1 = right.append("svg")
+    var svg1 = stpbox.append("svg")
       .attr("width", 70)
       .attr("height", 100)
       .attr("id", "gauge1")
       .attr("class", "gauge");
-    var svg2 = right.append("svg")
+    var svg2 = stpbox.append("svg")
       .attr("width", 70)
       .attr("height", 100)
       .attr("id", "gauge2")
       .attr("class", "gauge");
-    var svg3 = right.append("svg")
+    var svg3 = stpbox.append("svg")
       .attr("width", 70)
       .attr("height", 100)
       .attr("id", "gauge3")
       .attr("class", "gauge");
-    var svg4 = right.append("svg")
+    var svg4 = stpbox.append("svg")
       .attr("width", 70)
       .attr("height", 100)
       .attr("id", "gauge4")
@@ -1391,20 +1393,21 @@ d3.csv("cw-7.csv").then(function (data) {
     //append a label
     svg1.append("text")
       .text("Totaal")
-      .attr("y", 90)
-      .attr("x", 10);
+      .attr("y", 95)
+      .attr("x", 15);
     svg2.append("text")
       .text("Optie")
-      .attr("y", 90)
-      .attr("x", 10);
+      .attr("y", 95)
+      .attr("x", 15);
     svg3.append("text")
       .text("Verdere optie")
-      .attr("y", 90)
-      .attr("x", 10);
+      .attr("y", 95)
+      .attr("x", 0)
+      .style("font-size", "11.6px");
     svg4.append("text")
       .text("AVO")
-      .attr("y", 90)
-      .attr("x", 10);
+      .attr("y", 95)
+      .attr("x", 20);
 
 
 
@@ -1447,4 +1450,3 @@ d3.csv("cw-7.csv").then(function (data) {
   });
 
 });
-var ext_gauge;
