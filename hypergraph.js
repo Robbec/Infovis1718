@@ -49,6 +49,11 @@ var svgWidth = 500;
 var svgHeight = 500;
 
 // variabelen voor horizontal bar chart
+var barSpacing = 3;
+var barHeight = 20;
+var barRound = 4;
+var barchartLeftMargin = 90;
+var creditLength = (svgWidth - barchartLeftMargin) / 40;
 var x = d3.scaleLinear()
   .domain([0, 40])
   .range([0, svgWidth]);
@@ -821,14 +826,63 @@ d3.csv("cw-7.csv").then(function (data) {
     function fillInfoboxForCourse(course) {
       emptyInfobox();
       var c = course.datum();
-
+      //Semester, ik wil dit eigenlijk langs de titel, want langs de studiepunten ziet er niet mooi uit
+      var size = optionRadius*2.5;
+      var sem = infobox.append("svg")
+        .attr("height", size)
+        .attr("width", size);
+      sem.append("circle")
+        .attr("r", optionRadius)
+        .attr("cx", size / 2)
+        .attr("cy", size / 2)
+        .classed("courseBulletPoint", true)
+        .attr("fill", defaultGray);
+      sem.append("rect")
+        .attr("class", "semester-rect")
+        .attr("height", size)
+        .attr("width", size / 2)
+        .attr("x", d => (size / 2) * (2 - c.Semester));
       // titel
-      infobox.append("h3").text(c.OPO);
-
+      infobox.append("h3")
+        .text(c.OPO)
       // studiepunten
-      infobox.append("div")
-        .attr("class", "points")
-        .text(c.Studiepunten + " SP");
+      var points = infobox.append("svg")
+        .attr("height", size);
+      var infoBarHeight = optionRadius * 2;
+      var rounding = barRound * infoBarHeight / barHeight;
+      var x = 0;
+      var projectLength = c.Project * creditLength;
+      if (projectLength > 0) {
+        points.append("rect")
+          .attr("x", x)
+          .attr("y", (size - infoBarHeight)/2)
+          .attr("width", projectLength)
+          .attr("height", infoBarHeight)
+          .attr("rx", rounding)
+          .attr("ry", rounding)
+          .attr("fill", defaultGray);
+        x += projectLength + barSpacing;
+      }
+      var examLength = c.Examen * creditLength;
+      if (examLength > 0) {
+        points.append("rect")
+          .attr("x", x)
+          .attr("y", (size - infoBarHeight)/2)
+          .attr("width", examLength)
+          .attr("height", infoBarHeight)
+          .attr("rx", rounding)
+          .attr("ry", rounding)
+          .attr("fill", defaultGray);
+          x += examLength + 5;
+      }
+      points.append("text")
+        .text(c.Studiepunten)
+        .attr("x", x)
+        .attr("y", infoBarHeight);
+      // studiepunten
+      // infobox.append("div")
+      //   .attr("class", "points")
+      //   .text(c.Studiepunten + " SP");
       // var stpContainer = infobox.select(".points");
       // stpContainer.append("svg")
       //   .attr("class", "stp");
@@ -1242,11 +1296,6 @@ d3.csv("cw-7.csv").then(function (data) {
      * 11. Opbouw van de barchart
      */
 
-    var barSpacing = 3;
-    var barHeight = 20;
-    var barchartLeftMargin = 90;
-    var creditLength = (svgWidth - barchartLeftMargin) / 40;
-
     barchart.attr("width", svgWidth)
       .attr("height", 4 * barHeight + 3 * barSpacing);
 
@@ -1292,8 +1341,8 @@ d3.csv("cw-7.csv").then(function (data) {
         .attr("class", "rect-sem rect-sem" + semesterNummer)
         .attr("width", d => semestrialPoints(d) * creditLength - barSpacing)
         .attr("height", barHeight)
-        .attr("rx", 4)
-        .attr("ry", 4)
+        .attr("rx", barRound)
+        .attr("ry", barRound)
         .attr("fill", d => colorOfCourse(d))
         .attr("y", (barHeight + barSpacing) * (semesterNummer - 1))
         .on("mouseover", function (d) {
