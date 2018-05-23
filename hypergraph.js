@@ -922,7 +922,7 @@ d3.csv("cw-6.csv").then(function (data) {
       var size = optionRadius * 2.5;
       var sem = infobox.append("svg")
         .attr("height", size)
-        .attr("width", 1000);
+        .attr("width", 350);
       sem.append("circle")
         .attr("r", optionRadius)
         .attr("cx", size / 2)
