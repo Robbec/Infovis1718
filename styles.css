@@ -82,9 +82,8 @@ body > div {
   fill-opacity: 0.75;
 }
 
-.schedule-overlap {
-  fill: #000000;
-  fill-opacity: 0.25;
+.schedule-overlap path {
+  fill: red;
 }
 
 .non-active {
