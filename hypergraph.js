@@ -879,7 +879,7 @@ d3.csv("cw-6.csv").then(function (data) {
       emptyInfobox();
       var c = course.datum();
       //Semester, ik wil dit eigenlijk langs de titel, want langs de studiepunten ziet er niet mooi uit
-      var size = optionRadius*2.5;
+      var size = optionRadius * 2.5;
       var sem = infobox.append("svg")
         .attr("height", size)
         .attr("width", size);
@@ -907,7 +907,7 @@ d3.csv("cw-6.csv").then(function (data) {
       if (projectLength > 0) {
         points.append("rect")
           .attr("x", x)
-          .attr("y", (size - infoBarHeight)/2)
+          .attr("y", (size - infoBarHeight) / 2)
           .attr("width", projectLength)
           .attr("height", infoBarHeight)
           .attr("rx", rounding)
@@ -919,13 +919,13 @@ d3.csv("cw-6.csv").then(function (data) {
       if (examLength > 0) {
         points.append("rect")
           .attr("x", x)
-          .attr("y", (size - infoBarHeight)/2)
+          .attr("y", (size - infoBarHeight) / 2)
           .attr("width", examLength)
           .attr("height", infoBarHeight)
           .attr("rx", rounding)
           .attr("ry", rounding)
           .attr("fill", defaultGray);
-          x += examLength + 5;
+        x += examLength + 5;
       }
       points.append("text")
         .text(c.Studiepunten)
@@ -1055,6 +1055,46 @@ d3.csv("cw-6.csv").then(function (data) {
         radiobuttonChoose2.on("change", toggleStatusRadioButtons);
       }
     }
+
+    // Stap 1 vullen met opties
+
+    var li = infobox.select(".optionlist").selectAll(li)
+      .data(optionNames);
+
+    var liEnter = li.enter()
+      .append("li")
+      .text(d => d)
+      .on("mouseover", function (d) {
+        var opt = hypergraph.selectAll(".option-node")
+          .filter(o => o.ID == d);
+        toggleHighlightOption(opt.datum());
+      })
+      .on("mouseout", function (d) {
+        var opt = hypergraph.selectAll(".option-node")
+          .filter(o => o.ID == d);
+        toggleHighlightOption(opt.datum());
+      })
+      .on("click", function (d) {
+        var opt = hypergraph.selectAll(".option-node")
+          .filter(o => o.ID == d);
+        toggleActive(opt);
+        fillInfoboxForOption(opt);
+        toggleClickabilityOptions(opt.datum());
+        toggleClickabilityCourses(opt.datum());
+        toggleHighlightOption(opt.datum());
+      });
+    var size = optionRadius * 2.5;
+    var svg = liEnter.append("svg")
+      .attr("height", size)
+      .attr("width", size);
+
+    svg.append("circle")
+      .attr("r", optionRadius)
+      .attr("cx", size / 2)
+      .attr("cy", size / 2)
+      .attr("fill", d => {
+        return colors[options.indexOf(options.filter(o => o.ID == d)[0])];
+      });
 
     /**
     * 8. Interactie met de infobox
@@ -1467,10 +1507,10 @@ d3.csv("cw-6.csv").then(function (data) {
         .attr("id", "gauge" + i)
         .attr("class", "gauge")
         .append("text")
-          .text(gaugeLabels[i - 1])
-          .attr("x", gaugeWidth / 2)
-          .attr("y", gaugeHeight - 5)
-          .attr("text-anchor", "middle");
+        .text(gaugeLabels[i - 1])
+        .attr("x", gaugeWidth / 2)
+        .attr("y", gaugeHeight - 5)
+        .attr("text-anchor", "middle");
     }
 
     // put gauge in each svg
@@ -1534,7 +1574,7 @@ d3.csv("cw-6.csv").then(function (data) {
     }
 
     function getTotalStp(courses) {
-     return courses.reduce((total, c) => total + parseInt(c.Studiepunten), 0);
+      return courses.reduce((total, c) => total + parseInt(c.Studiepunten), 0);
     }
   });
 });

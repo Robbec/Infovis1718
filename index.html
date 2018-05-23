@@ -12,25 +12,24 @@
 </head>
 
 <body>
-  <div class="left">
-    <div class="hypergraph-container">
-      <svg class="hypergraph"></svg>
-    </div>
-    <div class="barchart-container">
-      <svg class="barchart hidden"></svg>
-    </div>
+  <label class="switch switch-interested">
+    Toon vakken die je niet interesseren
+    <input type="checkbox">
+    <span class="slider"></span>
+  </label>
+  <div class="hypergraph-container">
+    <svg class="hypergraph"></svg>
   </div>
-  <div class="right">
-    <label class="switch switch-interested">
-      Toon vakken die je niet interesseren
-      <input type="checkbox">
-      <span class="slider"></span>
-    </label>
-    <div class="infobox">
-      <div class="help">
-        Klik op een van de vakken voor meer informatie over dat vak.
+  <div class="barchart-container">
+    <svg class="barchart hidden"></svg>
+  </div>
+  <div class="infobox">
+    <div class="help">
+
+      <div class="stap1">
+        <h3>Stap 1: Verken de opties en hun vakken</h3>
+        Klik voor meer info op:
         <div class="legenda">
-          <h3>Legenda</h3>
           <div class="legenda-item">
             <svg width="30" height="30">
               <circle r="6.66" cx="15" cy="15" class="node option-node" />
@@ -50,12 +49,13 @@
             verplicht vak
           </div>
         </div>
+        Kies de optie die je het meeste aanspreekt.
+        <div class="optionlist"></div>
       </div>
     </div>
-    <h3>Vereisten voor gekozen vakken</h3>
-    <div class="stpbox hidden">
 
-    </div>
+  </div>
+  <div class="gauges hidden"></div>
   </div>
 </body>
 
