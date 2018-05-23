@@ -30,7 +30,8 @@ var barchartContainer = body.select(".barchart-container");
 var barchart = barchartContainer.select(".barchart");
 var switchInterested = body.select(".switch-interested").select("input");
 var infobox = body.select(".infobox");
-var gauges = body.select(".gauges");
+var gauges = body.select(".gauges-svg");
+var gaugesContainer = body.select(".gauges");
 
 // globale variabelen voor de opbouw van de hypergraf
 var options = [];
@@ -637,12 +638,20 @@ d3.csv("cw-6.csv").then(function (data) {
     }
 
     function toggleScheduleOverlap(course) {
-      var scheduleOverlappingCourses = getScheduleOverlappingCourses(course.datum()["ID"]);
-      hypergraph.selectAll(".course-node")
-        .filter(c => scheduleOverlappingCourses.has(c.ID))
-        .each(function () {
-          this.classList.toggle("schedule-overlap");
-        })
+      if (optionChosen) {
+        var scheduleOverlappingCourses = getScheduleOverlappingCourses(course.datum()["ID"]);
+        if (scheduleOverlappingCourses.size > 0) {
+          body.selectAll(".overlap-warning")
+            .each(function () {
+              this.classList.toggle("invisible");
+            });
+          hypergraph.selectAll(".course-node")
+            .filter(c => scheduleOverlappingCourses.has(c.ID))
+            .each(function () {
+              this.classList.toggle("schedule-overlap");
+            })
+        }
+      }
     }
 
     // verander de straal van de gegeven course node met de gegeven factor
@@ -784,7 +793,7 @@ d3.csv("cw-6.csv").then(function (data) {
       clearTimeout(timeout);
       timeout = setTimeout(function () {
         tooltip.classed("active", false);
-      }, 1000);
+      }, 2000);
     }
 
     // verberg de tooltip
@@ -905,11 +914,15 @@ d3.csv("cw-6.csv").then(function (data) {
     function fillInfoboxForCourse(course) {
       emptyInfobox();
       var c = course.datum();
-      //Semester, ik wil dit eigenlijk langs de titel, want langs de studiepunten ziet er niet mooi uit
+      var infoboxCourseTitle = infobox.append("div")
+        .classed("infoboxCourseTitle", true);
+      // titel
+      infoboxCourseTitle.append("h3")
+        .text(c.OPO)
       var size = optionRadius * 2.5;
       var sem = infobox.append("svg")
         .attr("height", size)
-        .attr("width", size);
+        .attr("width", 1000);
       sem.append("circle")
         .attr("r", optionRadius)
         .attr("cx", size / 2)
@@ -921,18 +934,13 @@ d3.csv("cw-6.csv").then(function (data) {
         .attr("height", size)
         .attr("width", size / 2)
         .attr("x", d => (size / 2) * (2 - c.Semester));
-      // titel
-      infobox.append("h3")
-        .text(c.OPO)
-      // studiepunten
-      var points = infobox.append("svg")
-        .attr("height", size);
+      //studiepunten
       var infoBarHeight = optionRadius * 2;
       var rounding = barRound * infoBarHeight / barHeight;
-      var x = 0;
-      var projectLength = c.Project * creditLength;
+      var x = size + 10;
+      var projectLength = c.Studiepunten * creditLength;
       if (projectLength > 0) {
-        points.append("rect")
+        sem.append("rect")
           .attr("x", x)
           .attr("y", (size - infoBarHeight) / 2)
           .attr("width", projectLength)
@@ -942,22 +950,44 @@ d3.csv("cw-6.csv").then(function (data) {
           .attr("fill", defaultGray);
         x += projectLength + barSpacing;
       }
-      var examLength = c.Examen * creditLength;
-      if (examLength > 0) {
-        points.append("rect")
-          .attr("x", x)
-          .attr("y", (size - infoBarHeight) / 2)
-          .attr("width", examLength)
-          .attr("height", infoBarHeight)
-          .attr("rx", rounding)
-          .attr("ry", rounding)
-          .attr("fill", defaultGray);
-        x += examLength + 5;
-      }
-      points.append("text")
+      sem.append("text")
         .text(c.Studiepunten)
         .attr("x", x)
         .attr("y", infoBarHeight);
+      // studiepunten
+      // var points = infobox.append("svg")
+      //   .attr("height", size);
+      // var infoBarHeight = optionRadius * 2;
+      // var rounding = barRound * infoBarHeight / barHeight;
+      // var x = 0;
+      // var projectLength = c.Project * creditLength;
+      // if (projectLength > 0) {
+      //   points.append("rect")
+      //     .attr("x", x)
+      //     .attr("y", (size - infoBarHeight) / 2)
+      //     .attr("width", projectLength)
+      //     .attr("height", infoBarHeight)
+      //     .attr("rx", rounding)
+      //     .attr("ry", rounding)
+      //     .attr("fill", defaultGray);
+      //   x += projectLength + barSpacing;
+      // }
+      // var examLength = c.Examen * creditLength;
+      // if (examLength > 0) {
+      //   points.append("rect")
+      //     .attr("x", x)
+      //     .attr("y", (size - infoBarHeight) / 2)
+      //     .attr("width", examLength)
+      //     .attr("height", infoBarHeight)
+      //     .attr("rx", rounding)
+      //     .attr("ry", rounding)
+      //     .attr("fill", defaultGray);
+      //   x += examLength + 5;
+      // }
+      // points.append("text")
+      //   .text(c.Studiepunten)
+      //   .attr("x", x)
+      //   .attr("y", infoBarHeight);
       // studiepunten
       // infobox.append("div")
       //   .attr("class", "points")
@@ -1138,11 +1168,15 @@ d3.csv("cw-6.csv").then(function (data) {
           .duration(1000)
           .style("opacity", 0)
           .on("end", showChooseBachelor);
+        enableStap2();
       } else if (optionChosen) {
         moveHypergraph(250);
         showExtraCourses();
+        updateGauges();
+        enableStap2();
       } else {
         hideExtraCourses(250);
+        enableStap1();
       }
     }
 
@@ -1332,6 +1366,7 @@ d3.csv("cw-6.csv").then(function (data) {
           toggleScheduleOverlap(course);
         }
         emptyInfobox();
+        infobox.select(".help").classed("hidden", false);
         updateHypergraph();
       }
     }
@@ -1349,6 +1384,15 @@ d3.csv("cw-6.csv").then(function (data) {
           updateHypergraph();
         }
       }
+    }
+
+    function enableStap1() {
+      infobox.selectAll(".stap1_text").classed("hidden", false);
+      infobox.selectAll(".stap2_text").classed("hidden", true);
+    }
+    function enableStap2() {
+      infobox.selectAll(".stap1_text").classed("hidden", true);
+      infobox.selectAll(".stap2_text").classed("hidden", false);
     }
 
     /**
@@ -1521,24 +1565,60 @@ d3.csv("cw-6.csv").then(function (data) {
    * 13. visualisatie aantal studiepunten
    */
 
-    var stpbox = right.select(".stpbox");
-
     // create svg's for each bar
     var gaugeWidth = 85;
     var gaugeHeight = 85;
     var gaugeLabels = ["totaal", "optie", "verdere optie", "AVO"];
-    for (i = 1; i <= 4; i++) {
-      gauges.append("svg")
-        .attr("width", gaugeWidth)
-        .attr("height", gaugeHeight)
-        .attr("id", "gauge" + i)
-        .attr("class", "gauge")
-        .append("text")
-        .text(gaugeLabels[i - 1])
-        .attr("x", gaugeWidth / 2)
-        .attr("y", gaugeHeight - 5)
-        .attr("text-anchor", "middle");
-    }
+
+    gauges.append("svg")
+      .attr("width", gaugeWidth)
+      .attr("height", gaugeHeight)
+      .attr("id", "gauge1")
+      .attr("class", "gauge")
+      .on("mouseover", (d, a, b) => showTooltipGauge(b,0))
+      .on("mouseout", hideTooltipGauge)
+      .append("text")
+      .text(gaugeLabels[0])
+      .attr("x", gaugeWidth / 2)
+      .attr("y", gaugeHeight - 5)
+      .attr("text-anchor", "middle");
+    gauges.append("svg")
+      .attr("width", gaugeWidth)
+      .attr("height", gaugeHeight)
+      .attr("id", "gauge2")
+      .attr("class", "gauge")
+      .on("mouseover", () => (d, a, b) => showTooltipGauge(b,1))
+      .on("mouseout", hideTooltipGauge)
+      .append("text")
+      .text(gaugeLabels[1])
+      .attr("x", gaugeWidth / 2)
+      .attr("y", gaugeHeight - 5)
+      .attr("text-anchor", "middle");
+    gauges.append("svg")
+      .attr("width", gaugeWidth)
+      .attr("height", gaugeHeight)
+      .attr("id", "gauge3")
+      .attr("class", "gauge")
+      .on("mouseover", () => (d, a, b) => showTooltipGauge(b, 2))
+      .on("mouseout", hideTooltipGauge)
+      .append("text")
+      .text(gaugeLabels[2])
+      .attr("x", gaugeWidth / 2)
+      .attr("y", gaugeHeight - 5)
+      .attr("text-anchor", "middle");
+    gauges.append("svg")
+      .attr("width", gaugeWidth)
+      .attr("height", gaugeHeight)
+      .attr("id", "gauge4")
+      .attr("class", "gauge")
+      .on("mouseover", (d, a, b) => showTooltipGauge(b, 3))
+      .on("mouseout", hideTooltipGauge)
+      .append("text")
+      .text(gaugeLabels[3])
+      .attr("x", gaugeWidth / 2)
+      .attr("y", gaugeHeight - 5)
+      .attr("text-anchor", "middle");
+
 
     // put gauge in each svg
     var config1 = liquidFillGaugeDefaultSettings();
@@ -1561,6 +1641,39 @@ d3.csv("cw-6.csv").then(function (data) {
     config4.toomuchValue = 15;
     var gauge4 = loadLiquidFillGauge("gauge4", 0, config4);
 
+    // create tooltip
+    var tooltipGauge = gaugesContainer.select(".gauges-svg").append("div")
+      .attr("class", "tooltip");
+
+    // toon een tooltip die na 1s weer verdwijnt voor de gegeven node
+    function showTooltipGauge(b, i) {
+      var tekst;
+      var rect = b[0].getBoundingClientRect();
+      switch (i) {
+        case 0:
+          tekst = "Kies voor minstens 120 stp."
+          break;
+        case 1:
+          tekst = "Kies voor minstens 18 stp uit je gekozen optie."
+          break;
+        case 2:
+          tekst = "Kies voor minstens 18 stp uit alle opties of verdere optie."
+          break;
+        case 3:
+          tekst = "Kies voor minstens 12 stp en maximum 14 stp uit AVO."
+          break;
+      }
+      tooltipGauge.classed("active", true)
+        .text(tekst)
+        .style("left", rect.left + "px")
+        .style("top", rect.top + "px");
+    }
+
+    // verberg de tooltip
+    function hideTooltipGauge() {
+      tooltipGauge.classed("active", false);
+    }
+
     function updateGauges() {
       var verdereOptie = extraOptionNames[2];
       var AVO = extraOptionNames[3];
@@ -1570,6 +1683,8 @@ d3.csv("cw-6.csv").then(function (data) {
       var chosen2 = hypergraph.selectAll(".chosen-master2").data();
       var chosen = chosen1.concat(chosen2);
       var chosenOption = hypergraph.select(".option-chosen").datum().ID;
+
+      gaugesContainer.classed("hidden", chosen.length == 0);
 
       // bereken totaal aantal studiepunten
       var total = getTotalStp(chosen);
