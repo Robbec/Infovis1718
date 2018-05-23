@@ -18,24 +18,44 @@ h3 {
 
 body {
   background-color: #eceff1;
-  display: flex;
-  margin: 0 auto;
-  width: 1300px;
-  padding: 3rem;
+  display: grid;
+  grid-column-gap: 3rem;
+  grid-row-gap: 1.5rem;
+  grid-template-columns: auto 400px;
+  grid-template-rows: auto 500px auto;
+  justify-content: center;
+  margin: 2rem 0;
 }
 
-.left {
-  border: solid;
-  margin-left: auto;
-  margin-right: 3rem;
+.switch {
+  grid-column: 2;
+  grid-row: 1;
 }
 
-.right {
-  border: solid;
+.hypergraph-container {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.infobox {
   display: flex;
   flex-flow: column;
-  margin-right: auto;
-  width: 400px;
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.barchart-container {
+  grid-column: 1;
+  grid-row: 3;
+}
+
+.gauges {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+body > div {
+  border: solid;
 }
 
 .hypergraph-container,
@@ -71,7 +91,7 @@ body {
 
 .schedule-overlap {
   fill: #000000;
-  fill-opacity: 1;
+  fill-opacity: 0.25;
 }
 
 .non-active {
@@ -141,8 +161,8 @@ body {
 }
 
 .choose-bachelor > p:nth-child(2) {
-    font-weight: bold;
-    margin: 3rem 0;
+  font-weight: bold;
+  margin: 3rem 0;
 }
 
 .choose-bachelor-button {
@@ -204,6 +224,7 @@ body {
 .courses-list {
   list-style-type: none;
   margin: 2rem 0;
+  overflow-y: scroll;
   padding: 0;
 }
 
@@ -322,10 +343,6 @@ body {
 /* Hide default HTML checkbox */
 .switch input {display:none;}
 
-.switch-interested {
-  margin-bottom: 2rem;
-}
-
 /* The slider */
 .slider {
   border-radius: 1rem;
@@ -365,17 +382,14 @@ input:checked + .slider:before {
 * Barchart
 */
 
-.barchart-container {
-  margin-top: 2rem;
-}
-
 .rect-sem {
   fill-opacity: 1;
   cursor: pointer;
 }
 
 .hypergraph-text,
-.barchart-text {
+.barchart-text,
+.gauge text {
   fill: #90a4ae;
   font-size: 0.875rem;
   font-weight: bold;
@@ -385,11 +399,7 @@ input:checked + .slider:before {
   font-weight: normal;
 }
 
-/**
-* Stp counter
-*/
-
-.stpbox{
+.gauges {
   display: flex;
   flex-flow: row;
 }

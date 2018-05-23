@@ -24,12 +24,13 @@ OVERZICHT
 var body = d3.select("body");
 var left = d3.select(".left");
 var right = d3.select(".right");
-var hypergraphContainer = left.select(".hypergraph-container");
+var hypergraphContainer = body.select(".hypergraph-container");
 var hypergraph = hypergraphContainer.select(".hypergraph");
-var barchartContainer = left.select(".barchart-container");
+var barchartContainer = body.select(".barchart-container");
 var barchart = barchartContainer.select(".barchart");
-var switchInterested = right.select(".switch-interested").select("input");
-var infobox = right.select(".infobox");
+var switchInterested = body.select(".switch-interested").select("input");
+var infobox = body.select(".infobox");
+var gauges = body.select(".gauges");
 
 // globale variabelen voor de opbouw van de hypergraf
 var options = [];
@@ -359,58 +360,60 @@ d3.csv("cw-6.csv").then(function (data) {
 
     // updatepatroon voor de course nodes
     function updateCourseNodes() {
-      var course = hypergraph.selectAll(".course-node")
-        .data(data, d => d.ID);
+      var courseSvg = hypergraph.selectAll(".course-svg")
+        .data(data, d => d.ID)
+        .enter()
+        .append("svg")
+        .attr("height", 25)
+        .attr("width", 25)
+        .classed("node course-node", true)
+        .classed("not-interested", switchInterested.property("checked"))
+        .classed("extra-course-node", d => extraData.includes(d))
+        .style("display", function (d) {
+          if (extraData.includes(d)) {
+            return "none";
+          }
+        })
+        .on("mouseover", function (d) {
+          showTooltip(d);
+          toggleMouseoverCourse(d);
+        })
+        .on("mouseout", function (d) {
+          hideTooltip();
+          toggleMouseoverCourse(d);
+        })
+        .on("click", function () {
+          courseClicked(d3.select(this));
+        })
+        .append("g")
+        .attr("transform", "translate(" + 12.5 + "," + 12.5 + ")");
 
-      course.enter().each(function (c) {
-        var optionData = d3.values(c)
-          .splice(indexFirstOption, optionNames.length)
-          .map(e => (e > 0) ? 1 : 0);
-        var pie = d3.pie()(optionData);
-        var arc = d3.arc()
-          .innerRadius(0)
-          .outerRadius(10)
-          .startAngle(0)
-          .endAngle(2*Math.PI)
-          ;
+      courseSvg.selectAll("path")
+        .data(d => d3.pie()(d3.values(d)
+            .splice(indexFirstOption, optionNames.length)
+            .map(e => (e > 0) ? 1 : 0))
+        )
+        .enter()
+        .append("path")
+        .attr("d", d => d3.arc().innerRadius(0).outerRadius(12.5)(d))
+        .attr("fill", (d, i) => colors[i])
+        // .attr("stroke", (d, i) => colors[i])
+        // .attr("class", "course-piece")
+        // .classed("compulsory", function (d) {
+        //   return checkCompulsoryOrOptional(d, 1);
+        // })
+        // .classed("optional", function (d) {
+        //   return checkCompulsoryOrOptional(d, 2);
+        // })
+        // .attr("fill", function (d) {
+        //   return colorOfCourse(d);
+        // })
+        // .attr("stroke", function (d) {
+        //   return colorOfCourse(d);
+        // })
+        ;
 
-        d3.select(this)
-          .append("path")
-          .attr("d", arc)
-          .classed("node course-node", true)
-          .classed("compulsory", function (d) {
-            return checkCompulsoryOrOptional(d, 1);
-          })
-          .classed("optional", function (d) {
-            return checkCompulsoryOrOptional(d, 2);
-          })
-          .classed("not-interested", switchInterested.property("checked"))
-          .classed("extra-course-node", d => extraData.includes(d))
-          .style("display", function (d) {
-            if (extraData.includes(d)) {
-              return "none";
-            }
-          })
-          .attr("fill", function (d) {
-            return colorOfCourse(d);
-          })
-          .attr("stroke", function (d) {
-            return colorOfCourse(d);
-          })
-          .on("mouseover", function (d) {
-            showTooltip(d);
-            toggleMouseoverCourse(d);
-          })
-          .on("mouseout", function (d) {
-            hideTooltip();
-            toggleMouseoverCourse(d);
-          })
-          .on("click", function () {
-            courseClicked(d3.select(this));
-          });
-      });
-
-      course.exit().remove();
+      // courseSvg.exit().remove();
     }
 
     function updateHypergraph() {
@@ -508,6 +511,7 @@ d3.csv("cw-6.csv").then(function (data) {
       if (!activeCourse.empty()) {
         resizeCourseNode(activeCourse, 2 / 3);
         toggleHighlightCourse(activeCourse.datum());
+        toggleScheduleOverlap(activeCourse);
         toggleActive(activeCourse);
         emptyInfobox();
       } else if (!activeOption.empty()) {
@@ -537,6 +541,7 @@ d3.csv("cw-6.csv").then(function (data) {
         toggleActive(activeCourse);
         toggleActive(option);
         toggleHighlightOption(o);
+        toggleScheduleOverlap(activeCourse);
         emptyInfobox();
         fillInfoboxForOption(option);
         toggleClickabilityOptions(o);
@@ -565,20 +570,24 @@ d3.csv("cw-6.csv").then(function (data) {
         resizeCourseNode(course, 2 / 3);
         toggleActive(course);
         emptyInfobox();
+        toggleScheduleOverlap(course);
       } else if (activeCourseExists) {
         var ac = activeCourse.datum();
         // opmerking: de highlights voor de betrokken vakken moeten nu aangepast worden
         resizeCourseNode(activeCourse, 2 / 3);
         toggleHighlightCourse(ac);
         toggleActive(activeCourse);
+        toggleScheduleOverlap(course);
         resizeCourseNode(course, 1.5);
         toggleHighlightCourse(c);
+        toggleScheduleOverlap(activeCourse);
         toggleActive(course);
         fillInfoboxForCourse(course);
       } else if (activeOptionExists && getOptionCourses(ao).includes(c)) {
         // opmerking: de prerequisites zijn al gehighlightet vanwege de hover
         toggleActive(activeOption);
         resizeCourseNode(course, 1.5);
+        toggleScheduleOverlap(course);
         toggleActive(course);
         fillInfoboxForCourse(course);
         toggleClickabilityOptions(ao);
@@ -586,24 +595,34 @@ d3.csv("cw-6.csv").then(function (data) {
       } else if (!activeNodeExists()) {
         // opmerking: de prerequisites zijn al gehighlightet vanwege de hover
         resizeCourseNode(course, 1.5);
+        toggleScheduleOverlap(course);
         toggleActive(course);
         fillInfoboxForCourse(course);
       }
 
       // // sla alle vakken op die overlappen met het actieve vak
-      // if (!newActiveCourse.empty()) {
-      //   var scheduleOverlappingCourses = getScheduleOverlappingCourses(newActiveCourse.datum()["ID"]);
+      // if (!activeCourse.empty()) {
+      //   var scheduleOverlappingCourses = getScheduleOverlappingCourses(activeCourse.datum()["ID"]);
       // }
       //
       // // geef de klasse .schedule-overlap alleen aan vakken die overlappen met het actieve vak
       // hypergraph.selectAll(".course-node")
       //   .classed("schedule-overlap", function (dcircle) {
       //     var id = dcircle.ID;
-      //     if (!newActiveCourse.empty()) {
+      //     if (!activeCourse.empty()) {
       //       return scheduleOverlappingCourses.has(id);
       //     }
       //     return false;
       //   });
+    }
+
+    function toggleScheduleOverlap(course) {
+      var scheduleOverlappingCourses = getScheduleOverlappingCourses(course.datum()["ID"]);
+      hypergraph.selectAll(".course-node")
+        .filter(c => scheduleOverlappingCourses.has(c.ID))
+        .each(function () {
+          this.classList.toggle("schedule-overlap");
+        })
     }
 
     // verander de straal van de gegeven course node met de gegeven factor
@@ -1062,7 +1081,7 @@ d3.csv("cw-6.csv").then(function (data) {
 
     function showChooseBachelor() {
       hypergraph.attr("display", "none");
-      var chooseBachelorContainer = left.insert("div", ":first-child")
+      var chooseBachelorContainer = hypergraphContainer.insert("div", ":first-child")
         .attr("class", "choose-bachelor-container");
       var chooseBachelor = chooseBachelorContainer.append("div")
         .attr("class", "choose-bachelor")
@@ -1099,7 +1118,7 @@ d3.csv("cw-6.csv").then(function (data) {
     }
 
     function hideChooseBachelor() {
-      var chooseBachelorContainer = left.select(".choose-bachelor-container");
+      var chooseBachelorContainer = hypergraphContainer.select(".choose-bachelor-container");
       chooseBachelorContainer.transition()
         .duration(1000)
         .style("opacity", 0)
@@ -1222,7 +1241,7 @@ d3.csv("cw-6.csv").then(function (data) {
         showHiddenPrerequisites(course);
       }
       updateBarchart();
-      updateStpbox();
+      updateGauges();
     }
 
     function toggleStatusInterested(course) {
@@ -1243,6 +1262,7 @@ d3.csv("cw-6.csv").then(function (data) {
         links = links.filter(l => !courseLinks.includes(l));
         if (course.classed("active")) {
           toggleHighlightCourse(c);
+          toggleScheduleOverlap(course);
         }
         emptyInfobox();
         updateHypergraph();
@@ -1288,6 +1308,7 @@ d3.csv("cw-6.csv").then(function (data) {
         var activeCourse = hypergraph.select(".course-node.active.not-interested");
         if (!activeCourse.empty()) {
           toggleHighlightCourse(activeCourse.datum());
+          toggleScheduleOverlap(activeCourse);
           emptyInfobox();
         }
         updateHypergraph();
@@ -1432,33 +1453,25 @@ d3.csv("cw-6.csv").then(function (data) {
     /**
    * 13. visualisatie aantal studiepunten
    */
-    function getTotalStp(courses) {
-      return courses.reduce((total, c) => total + parseInt(c.Studiepunten), 0);
-    }
 
     var stpbox = right.select(".stpbox");
 
     // create svg's for each bar
-    var svg1 = stpbox.append("svg")
-      .attr("width", 70)
-      .attr("height", 100)
-      .attr("id", "gauge1")
-      .attr("class", "gauge");
-    var svg2 = stpbox.append("svg")
-      .attr("width", 70)
-      .attr("height", 100)
-      .attr("id", "gauge2")
-      .attr("class", "gauge");
-    var svg3 = stpbox.append("svg")
-      .attr("width", 70)
-      .attr("height", 100)
-      .attr("id", "gauge3")
-      .attr("class", "gauge");
-    var svg4 = stpbox.append("svg")
-      .attr("width", 70)
-      .attr("height", 100)
-      .attr("id", "gauge4")
-      .attr("class", "gauge");
+    var gaugeWidth = 85;
+    var gaugeHeight = 85;
+    var gaugeLabels = ["totaal", "optie", "verdere optie", "AVO"];
+    for (i = 1; i <= 4; i++) {
+      gauges.append("svg")
+        .attr("width", gaugeWidth)
+        .attr("height", gaugeHeight)
+        .attr("id", "gauge" + i)
+        .attr("class", "gauge")
+        .append("text")
+          .text(gaugeLabels[i - 1])
+          .attr("x", gaugeWidth / 2)
+          .attr("y", gaugeHeight - 5)
+          .attr("text-anchor", "middle");
+    }
 
     // put gauge in each svg
     var config1 = liquidFillGaugeDefaultSettings();
@@ -1481,60 +1494,47 @@ d3.csv("cw-6.csv").then(function (data) {
     config4.toomuchValue = 15;
     var gauge4 = loadLiquidFillGauge("gauge4", 0, config4);
 
-    //append a label
-    svg1.append("text")
-      .text("Totaal")
-      .attr("y", 95)
-      .attr("x", 15);
-    svg2.append("text")
-      .text("Optie")
-      .attr("y", 95)
-      .attr("x", 15);
-    svg3.append("text")
-      .text("Verdere optie")
-      .attr("y", 95)
-      .attr("x", 0)
-      .style("font-size", "11.6px");
-    svg4.append("text")
-      .text("AVO")
-      .attr("y", 95)
-      .attr("x", 20);
+    function updateGauges() {
+      var verdereOptie = extraOptionNames[2];
+      var AVO = extraOptionNames[3];
 
-    function updateStpbox() {
       // haal alle gekozen vakken
       var chosen1 = hypergraph.selectAll(".chosen-master1").data();
       var chosen2 = hypergraph.selectAll(".chosen-master2").data();
-      var chosen = [...chosen1, ...chosen2];
-      var option = hypergraph.select(".option-chosen").data()[0].ID;
+      var chosen = chosen1.concat(chosen2);
+      var chosenOption = hypergraph.select(".option-chosen").datum().ID;
 
       // bereken totaal aantal studiepunten
       var total = getTotalStp(chosen);
 
-      var inOption = chosen.filter(function (d) {
-        return (0 < d[option]) && (getCourseOptions(d).length < optionNames.length);
-      });
+      var inOption = chosen
+        .filter(d => 0 < d[chosenOption])
+        .filter(d => !coursesCompulsoryForAllOptions.includes(d));
+
       // komt uit verdere optie of uit eigen keuze of andere opties
-      var inOptionExtra = chosen.filter(function (d) {
-        return d[option] == 0 && (0 < d["Verdere optie"] || (getCourseOptions(d).length < optionNames.length && d["Algemeen vormende en onderzoeksondersteunende groep"] == 0));
-      });
-      var inAVO = chosen.filter(function (d) {
-        return (0 < d["Algemeen vormende en onderzoeksondersteunende groep"]);
-      });
+      var inOptionExtra = chosen
+        .filter(d => d[chosenOption] == 0)
+        .filter(function (d) {
+          return (0 < d[verdereOptie]) || (!coursesCompulsoryForAllOptions.includes(d) && d[AVO] == 0);
+        });
+      var inAVO = chosen.filter(d => 0 < d[AVO]);
 
       inOption = getTotalStp(inOption);
       inOptionExtra = getTotalStp(inOptionExtra);
       inAVO = getTotalStp(inAVO);
       // overflow binnen eigen optie telt mee voor verdere optie
-      if (inOption > 18) inOptionExtra += (inOption - 18);
+      if (inOption > 18) {
+        inOptionExtra += (inOption - 18);
+      }
 
       gauge1.update(total);
       gauge2.update(inOption);
       gauge3.update(inOptionExtra);
       gauge4.update(inAVO);
-
     }
 
-
+    function getTotalStp(courses) {
+     return courses.reduce((total, c) => total + parseInt(c.Studiepunten), 0);
+    }
   });
-
 });
