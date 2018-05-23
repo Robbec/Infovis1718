@@ -1649,6 +1649,7 @@ d3.csv("cw-6.csv").then(function (data) {
     function showTooltipGauge(b, i) {
       var tekst;
       var rect = b[0].getBoundingClientRect();
+      var bodyRect = document.body.getBoundingClientRect();
       switch (i) {
         case 0:
           tekst = "Kies voor minstens 120 stp."
@@ -1665,8 +1666,8 @@ d3.csv("cw-6.csv").then(function (data) {
       }
       tooltipGauge.classed("active", true)
         .text(tekst)
-        .style("left", rect.left + "px")
-        .style("top", rect.top + "px");
+        .style("left", (rect.left - bodyRect.left) + "px")
+        .style("top", (rect.top - bodyRect.top - 20) + "px");
     }
 
     // verberg de tooltip
