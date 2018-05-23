@@ -927,138 +927,44 @@ d3.csv("cw-6.csv").then(function (data) {
       // titel
       infoboxCourseTitle.append("h3")
         .text(c.OPO)
-      var size = optionRadius * 2.5;
-      var sem = infobox.append("svg")
-        .attr("height", size)
-        .attr("width", 350);
-      sem.append("circle")
-        .attr("r", optionRadius)
-        .attr("cx", size / 2)
-        .attr("cy", size / 2)
-        .classed("courseBulletPoint", true)
-        .attr("fill", defaultGray);
-      sem.append("rect")
-        .attr("class", "semester-rect")
-        .attr("height", size)
-        .attr("width", size / 2)
-        .attr("x", d => (size / 2) * (2 - c.Semester));
-      //studiepunten
-      var infoBarHeight = optionRadius * 2;
-      var rounding = barRound * infoBarHeight / barHeight;
-      var x = size + 10;
-      var projectLength = c.Studiepunten * creditLength;
-      if (projectLength > 0) {
-        sem.append("rect")
-          .attr("x", x)
-          .attr("y", (size - infoBarHeight) / 2)
-          .attr("width", projectLength)
-          .attr("height", infoBarHeight)
-          .attr("rx", rounding)
-          .attr("ry", rounding)
+
+      if (optionChosen) { 
+        var size = optionRadius * 2.5;
+        var sem = infobox.append("svg")
+          .attr("height", size)
+          .attr("width", 350);
+        sem.append("circle")
+          .attr("r", optionRadius)
+          .attr("cx", size / 2)
+          .attr("cy", size / 2)
+          .classed("courseBulletPoint", true)
           .attr("fill", defaultGray);
-        x += projectLength + barSpacing;
+        sem.append("rect")
+          .attr("class", "semester-rect")
+          .attr("height", size)
+          .attr("width", size / 2)
+          .attr("x", d => (size / 2) * (2 - c.Semester));
+        //studiepunten
+        var infoBarHeight = optionRadius * 2;
+        var rounding = barRound * infoBarHeight / barHeight;
+        var x = size + 10;
+        var projectLength = c.Studiepunten * creditLength;
+        if (projectLength > 0) {
+          sem.append("rect")
+            .attr("x", x)
+            .attr("y", (size - infoBarHeight) / 2)
+            .attr("width", projectLength)
+            .attr("height", infoBarHeight)
+            .attr("rx", rounding)
+            .attr("ry", rounding)
+            .attr("fill", defaultGray);
+          x += projectLength + barSpacing;
+        }
+        sem.append("text")
+          .text(c.Studiepunten)
+          .attr("x", x)
+          .attr("y", infoBarHeight);
       }
-      sem.append("text")
-        .text(c.Studiepunten)
-        .attr("x", x)
-        .attr("y", infoBarHeight);
-      // studiepunten
-      // var points = infobox.append("svg")
-      //   .attr("height", size);
-      // var infoBarHeight = optionRadius * 2;
-      // var rounding = barRound * infoBarHeight / barHeight;
-      // var x = 0;
-      // var projectLength = c.Project * creditLength;
-      // if (projectLength > 0) {
-      //   points.append("rect")
-      //     .attr("x", x)
-      //     .attr("y", (size - infoBarHeight) / 2)
-      //     .attr("width", projectLength)
-      //     .attr("height", infoBarHeight)
-      //     .attr("rx", rounding)
-      //     .attr("ry", rounding)
-      //     .attr("fill", defaultGray);
-      //   x += projectLength + barSpacing;
-      // }
-      // var examLength = c.Examen * creditLength;
-      // if (examLength > 0) {
-      //   points.append("rect")
-      //     .attr("x", x)
-      //     .attr("y", (size - infoBarHeight) / 2)
-      //     .attr("width", examLength)
-      //     .attr("height", infoBarHeight)
-      //     .attr("rx", rounding)
-      //     .attr("ry", rounding)
-      //     .attr("fill", defaultGray);
-      //   x += examLength + 5;
-      // }
-      // points.append("text")
-      //   .text(c.Studiepunten)
-      //   .attr("x", x)
-      //   .attr("y", infoBarHeight);
-      // studiepunten
-      // infobox.append("div")
-      //   .attr("class", "points")
-      //   .text(c.Studiepunten + " SP");
-      // var stpContainer = infobox.select(".points");
-      // stpContainer.append("svg")
-      //   .attr("class", "stp");
-      // var stp = stpContainer.select(".stp");
-      //
-      // // x position
-      // var x = 0;
-      // var projectStp = course.Project;
-      // // als het vak een project deel heeft
-      // if (projectStp > 0) {
-      //   // een vierkantje voor elk geheel projectdeel
-      //   var floorProjectStp = Math.floor(projectStp);
-      //   for (i = 0; i < floorProjectStp; i++) {
-      //     stp.append("rect")
-      //       .attr("x", x)
-      //       .attr("width", stpSize)
-      //       .attr("height", stpSize)
-      //       .attr("fill", kulBlue);
-      //     x += stpSize + 1;
-      //   }
-      //   // een rechthoekje in verhouding met het niet gehele projectdeel
-      //   var afterPoint = projectStp - floorProjectStp;
-      //   if (afterPoint > 0) {
-      //     var extraWidth = stpSize * afterPoint;
-      //     stp.append("rect")
-      //       .attr("x", x)
-      //       .attr("width", extraWidth)
-      //       .attr("height", stpSize)
-      //       .attr("fill", kulBlue);
-      //     x += extraWidth + 1;
-      //   }
-      // }
-      //
-      // var examStp = course.Examen;
-      // //als het vak een examendeel heeft
-      // if (examStp > 0) {
-      //   // een rechthoekje in verhouding met het niet gehele examen deel
-      //   // eerst zodat dit past bij het niet gehele projectdeel
-      //   var floorExamStp = Math.floor(examStp);
-      //   var afterPoint = examStp - floorExamStp;
-      //   if (afterPoint > 0) {
-      //     var extraWidth = stpSize * afterPoint;
-      //     stp.append("rect")
-      //       .attr("x", x)
-      //       .attr("width", extraWidth)
-      //       .attr("height", stpSize)
-      //       .attr("fill", kulOrange);
-      //     x += extraWidth + 1;
-      //   }
-      //   // een vierkantje voor elk geheel examen deel
-      //   for (i = 0; i < floorExamStp; i++) {
-      //     stp.append("rect")
-      //       .attr("x", x)
-      //       .attr("width", stpSize)
-      //       .attr("height", stpSize)
-      //       .attr("fill", kulOrange);
-      //     x += stpSize + 1;
-      //   }
-      // }
 
       // beschrijving
       infobox.append("p")
