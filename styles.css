@@ -91,7 +91,7 @@ body > div {
 
 .schedule-overlap {
   fill: #000000;
-  fill-opacity: 1;
+  fill-opacity: 0.25;
 }
 
 .non-active {

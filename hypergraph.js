@@ -509,6 +509,7 @@ d3.csv("cw-6.csv").then(function (data) {
       if (!activeCourse.empty()) {
         resizeCourseNode(activeCourse, 2 / 3);
         toggleHighlightCourse(activeCourse.datum());
+        toggleScheduleOverlap(activeCourse);
         toggleActive(activeCourse);
         emptyInfobox();
       } else if (!activeOption.empty()) {
@@ -538,6 +539,7 @@ d3.csv("cw-6.csv").then(function (data) {
         toggleActive(activeCourse);
         toggleActive(option);
         toggleHighlightOption(o);
+        toggleScheduleOverlap(activeCourse);
         emptyInfobox();
         fillInfoboxForOption(option);
         toggleClickabilityOptions(o);
@@ -574,6 +576,7 @@ d3.csv("cw-6.csv").then(function (data) {
         toggleActive(activeCourse);
         resizeCourseNode(course, 1.5);
         toggleHighlightCourse(c);
+        toggleScheduleOverlap(activeCourse);
         toggleActive(course);
         fillInfoboxForCourse(course);
       } else if (activeOptionExists && getOptionCourses(ao).includes(c)) {
@@ -591,20 +594,31 @@ d3.csv("cw-6.csv").then(function (data) {
         fillInfoboxForCourse(course);
       }
 
+      toggleScheduleOverlap(course);
+
       // // sla alle vakken op die overlappen met het actieve vak
-      // if (!newActiveCourse.empty()) {
-      //   var scheduleOverlappingCourses = getScheduleOverlappingCourses(newActiveCourse.datum()["ID"]);
+      // if (!activeCourse.empty()) {
+      //   var scheduleOverlappingCourses = getScheduleOverlappingCourses(activeCourse.datum()["ID"]);
       // }
       //
       // // geef de klasse .schedule-overlap alleen aan vakken die overlappen met het actieve vak
       // hypergraph.selectAll(".course-node")
       //   .classed("schedule-overlap", function (dcircle) {
       //     var id = dcircle.ID;
-      //     if (!newActiveCourse.empty()) {
+      //     if (!activeCourse.empty()) {
       //       return scheduleOverlappingCourses.has(id);
       //     }
       //     return false;
       //   });
+    }
+
+    function toggleScheduleOverlap(course) {
+      var scheduleOverlappingCourses = getScheduleOverlappingCourses(course.datum()["ID"]);
+      hypergraph.selectAll(".course-node")
+        .filter(c => scheduleOverlappingCourses.has(c.ID))
+        .each(function () {
+          this.classList.toggle("schedule-overlap");
+        })
     }
 
     // verander de straal van de gegeven course node met de gegeven factor
