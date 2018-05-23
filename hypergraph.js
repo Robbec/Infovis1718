@@ -621,7 +621,7 @@ d3.csv("cw-6.csv").then(function (data) {
         if (scheduleOverlappingCourses.size > 0) {
           body.selectAll(".overlap-warning")
             .each( function () {
-            this.classList.toggle("hidden");
+            this.classList.toggle("invisible");
           });
         hypergraph.selectAll(".course-node")
           .filter(c => scheduleOverlappingCourses.has(c.ID))
