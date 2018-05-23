@@ -1337,6 +1337,7 @@ d3.csv("cw-6.csv").then(function (data) {
           toggleScheduleOverlap(course);
         }
         emptyInfobox();
+        infobox.select(".help").classed("hidden", false);
         updateHypergraph();
       }
     }
