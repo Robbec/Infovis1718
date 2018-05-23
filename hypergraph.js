@@ -30,6 +30,7 @@ var barchartContainer = left.select(".barchart-container");
 var barchart = barchartContainer.select(".barchart");
 var switchInterested = right.select(".switch-interested").select("input");
 var infobox = right.select(".infobox");
+var gauges = right.select(".gauges");
 
 // globale variabelen voor de opbouw van de hypergraf
 var options = [];
@@ -1222,7 +1223,7 @@ d3.csv("cw-6.csv").then(function (data) {
         showHiddenPrerequisites(course);
       }
       updateBarchart();
-      updateStpbox();
+      updateGauges();
     }
 
     function toggleStatusInterested(course) {
@@ -1432,33 +1433,23 @@ d3.csv("cw-6.csv").then(function (data) {
     /**
    * 13. visualisatie aantal studiepunten
    */
-    function getTotalStp(courses) {
-      return courses.reduce((total, c) => total + parseInt(c.Studiepunten), 0);
-    }
-
-    var stpbox = right.select(".stpbox");
 
     // create svg's for each bar
-    var svg1 = stpbox.append("svg")
-      .attr("width", 70)
-      .attr("height", 100)
-      .attr("id", "gauge1")
-      .attr("class", "gauge");
-    var svg2 = stpbox.append("svg")
-      .attr("width", 70)
-      .attr("height", 100)
-      .attr("id", "gauge2")
-      .attr("class", "gauge");
-    var svg3 = stpbox.append("svg")
-      .attr("width", 70)
-      .attr("height", 100)
-      .attr("id", "gauge3")
-      .attr("class", "gauge");
-    var svg4 = stpbox.append("svg")
-      .attr("width", 70)
-      .attr("height", 100)
-      .attr("id", "gauge4")
-      .attr("class", "gauge");
+    var gaugeWidth = 85;
+    var gaugeHeight = 85;
+    var gaugeLabels = ["totaal", "optie", "verdere optie", "AVO"];
+    for (i = 1; i <= 4; i++) {
+      gauges.append("svg")
+        .attr("width", gaugeWidth)
+        .attr("height", gaugeHeight)
+        .attr("id", "gauge" + i)
+        .attr("class", "gauge")
+        .append("text")
+          .text(gaugeLabels[i - 1])
+          .attr("x", gaugeWidth / 2)
+          .attr("y", gaugeHeight - 5)
+          .attr("text-anchor", "middle");
+    }
 
     // put gauge in each svg
     var config1 = liquidFillGaugeDefaultSettings();
@@ -1481,60 +1472,47 @@ d3.csv("cw-6.csv").then(function (data) {
     config4.toomuchValue = 15;
     var gauge4 = loadLiquidFillGauge("gauge4", 0, config4);
 
-    //append a label
-    svg1.append("text")
-      .text("Totaal")
-      .attr("y", 95)
-      .attr("x", 15);
-    svg2.append("text")
-      .text("Optie")
-      .attr("y", 95)
-      .attr("x", 15);
-    svg3.append("text")
-      .text("Verdere optie")
-      .attr("y", 95)
-      .attr("x", 0)
-      .style("font-size", "11.6px");
-    svg4.append("text")
-      .text("AVO")
-      .attr("y", 95)
-      .attr("x", 20);
+    function updateGauges() {
+      var verdereOptie = extraOptionNames[2];
+      var AVO = extraOptionNames[3];
 
-    function updateStpbox() {
       // haal alle gekozen vakken
       var chosen1 = hypergraph.selectAll(".chosen-master1").data();
       var chosen2 = hypergraph.selectAll(".chosen-master2").data();
-      var chosen = [...chosen1, ...chosen2];
-      var option = hypergraph.select(".option-chosen").data()[0].ID;
+      var chosen = chosen1.concat(chosen2);
+      var chosenOption = hypergraph.select(".option-chosen").datum().ID;
 
       // bereken totaal aantal studiepunten
       var total = getTotalStp(chosen);
 
-      var inOption = chosen.filter(function (d) {
-        return (0 < d[option]) && (getCourseOptions(d).length < optionNames.length);
-      });
+      var inOption = chosen
+        .filter(d => 0 < d[chosenOption])
+        .filter(d => !coursesCompulsoryForAllOptions.includes(d));
+
       // komt uit verdere optie of uit eigen keuze of andere opties
-      var inOptionExtra = chosen.filter(function (d) {
-        return d[option] == 0 && (0 < d["Verdere optie"] || (getCourseOptions(d).length < optionNames.length && d["Algemeen vormende en onderzoeksondersteunende groep"] == 0));
-      });
-      var inAVO = chosen.filter(function (d) {
-        return (0 < d["Algemeen vormende en onderzoeksondersteunende groep"]);
-      });
+      var inOptionExtra = chosen
+        .filter(d => d[chosenOption] == 0)
+        .filter(function (d) {
+          return (0 < d[verdereOptie]) || (!coursesCompulsoryForAllOptions.includes(d) && d[AVO] == 0);
+        });
+      var inAVO = chosen.filter(d => 0 < d[AVO]);
 
       inOption = getTotalStp(inOption);
       inOptionExtra = getTotalStp(inOptionExtra);
       inAVO = getTotalStp(inAVO);
       // overflow binnen eigen optie telt mee voor verdere optie
-      if (inOption > 18) inOptionExtra += (inOption - 18);
+      if (inOption > 18) {
+        inOptionExtra += (inOption - 18);
+      }
 
       gauge1.update(total);
       gauge2.update(inOption);
       gauge3.update(inOptionExtra);
       gauge4.update(inAVO);
-
     }
 
-
+    function getTotalStp(courses) {
+     return courses.reduce((total, c) => total + parseInt(c.Studiepunten), 0);
+    }
   });
-
 });

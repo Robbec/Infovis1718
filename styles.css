@@ -375,7 +375,8 @@ input:checked + .slider:before {
 }
 
 .hypergraph-text,
-.barchart-text {
+.barchart-text,
+.gauge text {
   fill: #90a4ae;
   font-size: 0.875rem;
   font-weight: bold;
@@ -385,11 +386,7 @@ input:checked + .slider:before {
   font-weight: normal;
 }
 
-/**
-* Stp counter
-*/
-
-.stpbox{
+.gauges {
   display: flex;
   flex-flow: row;
 }
