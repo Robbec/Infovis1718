@@ -188,7 +188,7 @@ body > div {
 }
 
 .legenda {
-  margin-top: 2rem;
+  margin-top: 0rem;
 }
 
 .legenda-item {
@@ -250,6 +250,37 @@ body > div {
   left: 0;
   position: absolute;
   top: 0;
+}
+
+.optionlist {
+  list-style-type: none;
+  margin: 2rem 0;
+  overflow-y: scroll;
+  padding: 0;
+}
+
+.optionlist li {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  margin-bottom: 0.75rem;
+  min-height: 15px;
+  padding-left: calc(15px + 1rem);
+  position: relative;
+}
+
+.optionlist li:last-child {
+  margin-bottom: 0;
+}
+
+.optionlist li:hover {
+  text-decoration: underline;
+}
+
+.optionlist svg {
+  left: 0;
+  position: absolute;
+  top: 3;
 }
 
 .semester-rect {
