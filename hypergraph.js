@@ -364,8 +364,9 @@ d3.csv("cw-6.csv").then(function (data) {
       var size = 2 * courseRadius;
 
       var course = hypergraph.selectAll(".course-node")
-        .data(data, d => d.ID)
-        .enter()
+        .data(data, d => d.ID);
+
+      var courseEnter = course.enter()
         .append("svg")
         .attr("height", size)
         .attr("width", size)
@@ -395,13 +396,8 @@ d3.csv("cw-6.csv").then(function (data) {
           courseClicked(d3.select(this));
         });
 
-      var courseG = course.append("g")
+      var courseG = courseEnter.append("g")
         .attr("transform", "translate(" + (size / 2) + "," + (size / 2) + ")");
-
-      var pie = d3.pie()
-        .value(function (d, i) {
-          return d;
-        });
 
       // pie chart voor elk vak
       courseG.selectAll("course-piece")
