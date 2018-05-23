@@ -887,11 +887,13 @@ d3.csv("cw-6.csv").then(function (data) {
       var c = course.datum();
       var infoboxCourseTitle = infobox.append("div")
         .classed("infoboxCourseTitle", true);
-      //Semester, ik wil dit eigenlijk langs de titel, want langs de studiepunten ziet er niet mooi uit
+      // titel
+      infoboxCourseTitle.append("h3")
+        .text(c.OPO)
       var size = optionRadius * 2.5;
-      var sem = infoboxCourseTitle.append("svg")
+      var sem = infobox.append("svg")
         .attr("height", size)
-        .attr("width", size);
+        .attr("width", 1000);
       sem.append("circle")
         .attr("r", optionRadius)
         .attr("cx", size / 2)
@@ -903,18 +905,13 @@ d3.csv("cw-6.csv").then(function (data) {
         .attr("height", size)
         .attr("width", size / 2)
         .attr("x", d => (size / 2) * (2 - c.Semester));
-      // titel
-      infoboxCourseTitle.append("h3")
-        .text(c.OPO)
-      // studiepunten
-      var points = infobox.append("svg")
-        .attr("height", size);
+      //studiepunten
       var infoBarHeight = optionRadius * 2;
       var rounding = barRound * infoBarHeight / barHeight;
-      var x = 0;
-      var projectLength = c.Project * creditLength;
+      var x = size + 10;
+      var projectLength = c.Studiepunten * creditLength;
       if (projectLength > 0) {
-        points.append("rect")
+        sem.append("rect")
           .attr("x", x)
           .attr("y", (size - infoBarHeight) / 2)
           .attr("width", projectLength)
@@ -924,22 +921,44 @@ d3.csv("cw-6.csv").then(function (data) {
           .attr("fill", defaultGray);
         x += projectLength + barSpacing;
       }
-      var examLength = c.Examen * creditLength;
-      if (examLength > 0) {
-        points.append("rect")
-          .attr("x", x)
-          .attr("y", (size - infoBarHeight) / 2)
-          .attr("width", examLength)
-          .attr("height", infoBarHeight)
-          .attr("rx", rounding)
-          .attr("ry", rounding)
-          .attr("fill", defaultGray);
-        x += examLength + 5;
-      }
-      points.append("text")
+      sem.append("text")
         .text(c.Studiepunten)
         .attr("x", x)
         .attr("y", infoBarHeight);
+      // studiepunten
+      // var points = infobox.append("svg")
+      //   .attr("height", size);
+      // var infoBarHeight = optionRadius * 2;
+      // var rounding = barRound * infoBarHeight / barHeight;
+      // var x = 0;
+      // var projectLength = c.Project * creditLength;
+      // if (projectLength > 0) {
+      //   points.append("rect")
+      //     .attr("x", x)
+      //     .attr("y", (size - infoBarHeight) / 2)
+      //     .attr("width", projectLength)
+      //     .attr("height", infoBarHeight)
+      //     .attr("rx", rounding)
+      //     .attr("ry", rounding)
+      //     .attr("fill", defaultGray);
+      //   x += projectLength + barSpacing;
+      // }
+      // var examLength = c.Examen * creditLength;
+      // if (examLength > 0) {
+      //   points.append("rect")
+      //     .attr("x", x)
+      //     .attr("y", (size - infoBarHeight) / 2)
+      //     .attr("width", examLength)
+      //     .attr("height", infoBarHeight)
+      //     .attr("rx", rounding)
+      //     .attr("ry", rounding)
+      //     .attr("fill", defaultGray);
+      //   x += examLength + 5;
+      // }
+      // points.append("text")
+      //   .text(c.Studiepunten)
+      //   .attr("x", x)
+      //   .attr("y", infoBarHeight);
       // studiepunten
       // infobox.append("div")
       //   .attr("class", "points")

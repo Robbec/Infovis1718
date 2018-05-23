@@ -449,8 +449,7 @@ input:checked + .slider:before {
 }
 
 .infoboxCourseTitle {
-  min-height: 60px;
-  align-items: center;
+  min-height: 55px;
   display: flex;
   flex-flow: row;
 }
