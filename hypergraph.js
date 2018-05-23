@@ -1154,40 +1154,24 @@ d3.csv("cw-6.csv").then(function (data) {
       });
 
   var sem1Button = body.append("div")
+    .classed("semButton", true)
     .on("click", highlightSemester(1));
 
   var sem2Button = body.append("div")
-    .text("test")
+    .classed("semButton", true)
     .on("click", highlightSemester(2));
 
   var sem3Button = body.append("div")
+    .classed("semButton", true)
     .on("click", highlightSemester(3));
 
   function highlightSemester(semester) {
-    if (semester == 1) {
-        hypergraph.selectAll(".course-node")
-          .each(function (c) {
-            if (c.Semester != 1) {
-              this.classList.toggle("filteredOut");
-            }
-          })
-      }
-      if (semester == 2) {
-        hypergraph.selectAll(".course-node")
-          .each(function (c) {
-            if (c.Semester != 2) {
-              this.classList.toggle("filteredOut");
-            }
-          })
-      }
-      if (semester == 3) {
-        hypergraph.selectAll(".course-node")
-          .each(function (c) {
-            if (c.Semester != 3) {
-              this.classList.toggle("filteredOut");
-            }
-          })
-      }
+    hypergraph.selectAll(".course-node")
+      .each(function (c) {
+        if (c.Semester == semester) {
+          this.classList.toggle("filteredOut");
+        }
+      })
   }
 
 
