@@ -4,7 +4,7 @@ function liquidFillGaugeDefaultSettings() {
         maxValue: 100, // The gauge maximum value.
         toomuchValue: Infinity,
         enoughValue: Infinity,
-        circleThickness: 0.05, // The outer circle thickness as a percentage of it's radius.
+        circleThickness: 0.17, // The outer circle thickness as a percentage of it's radius.
         circleFillGap: 0.05, // The size of the gap between the outer circle and wave circle as a percentage of the outer circles radius.
         circleColor: 'red', // The color of the outer circle.
         circleColorFull: 'green',
@@ -117,7 +117,7 @@ function loadLiquidFillGauge(elementId, value, config) {
 
     // Center the gauge within the parent SVG.
     var gaugeGroup = gauge.append('g')
-        .attr('transform', 'translate(' + locationX + ',' + locationY + ')');
+        .attr('transform', 'translate(' + locationX + ',' + 0 + ')');
 
     // Draw the outer circle.
     var gaugeCircleArc = d3.arc()
