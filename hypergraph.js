@@ -1260,6 +1260,7 @@ d3.csv("cw-6.csv").then(function (data) {
         links = links.filter(l => !courseLinks.includes(l));
         if (course.classed("active")) {
           toggleHighlightCourse(c);
+          toggleScheduleOverlap(course);
         }
         emptyInfobox();
         updateHypergraph();
@@ -1305,6 +1306,7 @@ d3.csv("cw-6.csv").then(function (data) {
         var activeCourse = hypergraph.select(".course-node.active.not-interested");
         if (!activeCourse.empty()) {
           toggleHighlightCourse(activeCourse.datum());
+          toggleScheduleOverlap(activeCourse);
           emptyInfobox();
         }
         updateHypergraph();
