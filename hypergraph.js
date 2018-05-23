@@ -1153,6 +1153,79 @@ d3.csv("cw-6.csv").then(function (data) {
         return colors[options.indexOf(options.filter(o => o.ID == d)[0])];
       });
 
+    var semesterOptions = [0, 1, 2, 3];
+
+  var select = body.select(".semesterFilter")
+    .append('select')
+    	.attr('class','select')
+      .on('change',onchange)
+
+  var dropDownoptions = select
+    .selectAll('option')
+  	.data(semesterOptions).enter()
+  	.append('option')
+  		.text(function (d) {
+        var dropText;
+        if (d == 0){
+          dropText = "Niet filteren op semester";
+      }
+        else if (d == 1) {
+        dropText = "Semester 1"
+      }
+        else if (d == 2) {
+        dropText = "Semester 2"
+      }
+        else {
+          dropText = "Jaarvak"
+        }
+        return dropText;
+      });
+
+  function onchange() {
+  	selectValue = d3.select('select').property('value')
+  	if (selectValue == "Semester 1") {
+      hypergraph.selectAll(".course-node")
+        .each(function (c) {
+          if (c.Semester != 1) {
+            this.classList.add("filteredOut");
+          }
+          else {
+            this.classList.remove("filteredOut");
+          }
+        })
+    }
+    if (selectValue == "Semester 2") {
+      hypergraph.selectAll(".course-node")
+        .each(function (c) {
+          if (c.Semester != 2) {
+            this.classList.add("filteredOut");
+          }
+          else {
+            this.classList.remove("filteredOut");
+          }
+        })
+    }
+    if (selectValue == "Jaarvak") {
+      hypergraph.selectAll(".course-node")
+        .each(function (c) {
+          if (c.Semester != 3) {
+            this.classList.add("filteredOut");
+          }
+          else {
+            this.classList.remove("filteredOut");
+          }
+        })
+    }
+    if (selectValue == "Niet filteren op semester") {
+      hypergraph.selectAll(".course-node")
+        .each(function (c) {
+
+            this.classList.remove("filteredOut");
+          
+        })
+    }
+  };
+
     /**
     * 8. Interactie met de infobox
     */
