@@ -38,7 +38,7 @@ var options = [];
 var links = [];
 var hiddenCourses = [];
 var hiddenLinks = [];
-var courseRadius = 12.5;
+var courseRadius = 13;
 var courseBandWidth = 5;
 var optionRadius = courseRadius / 1.5;
 var transition = d3.transition()
@@ -874,13 +874,13 @@ d3.csv("cw-6.csv").then(function (data) {
     }
 
     function addSemesterSymbol(o, courses) {
-      var size = courseRadius * 2.5;
+      var size = 2 * courseRadius;
       var svg = courses.append("svg")
         .attr("height", size)
         .attr("width", size);
 
       svg.append("circle")
-        .attr("r", courseRadius)
+        .attr("r", courseRadius - (courseBandWidth / 2))
         .attr("cx", size / 2)
         .attr("cy", size / 2)
         .classed("node course-node", true)
