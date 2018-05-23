@@ -620,14 +620,14 @@ d3.csv("cw-6.csv").then(function (data) {
         var scheduleOverlappingCourses = getScheduleOverlappingCourses(course.datum()["ID"]);
         if (scheduleOverlappingCourses.size > 0) {
           body.selectAll(".overlap-warning")
-            .each( function () {
-            this.classList.toggle("invisible");
-          });
-        hypergraph.selectAll(".course-node")
-          .filter(c => scheduleOverlappingCourses.has(c.ID))
-          .each(function () {
-            this.classList.toggle("schedule-overlap");
-          })
+            .each(function () {
+              this.classList.toggle("invisible");
+            });
+          hypergraph.selectAll(".course-node")
+            .filter(c => scheduleOverlappingCourses.has(c.ID))
+            .each(function () {
+              this.classList.toggle("schedule-overlap");
+            })
         }
       }
     }
@@ -1357,11 +1357,11 @@ d3.csv("cw-6.csv").then(function (data) {
       }
     }
 
-    function enableStap1(){
+    function enableStap1() {
       infobox.selectAll(".stap1_text").classed("hidden", false);
       infobox.selectAll(".stap2_text").classed("hidden", true);
     }
-    function enableStap2(){
+    function enableStap2() {
       infobox.selectAll(".stap1_text").classed("hidden", true);
       infobox.selectAll(".stap2_text").classed("hidden", false);
     }
@@ -1540,18 +1540,56 @@ d3.csv("cw-6.csv").then(function (data) {
     var gaugeWidth = 85;
     var gaugeHeight = 85;
     var gaugeLabels = ["totaal", "optie", "verdere optie", "AVO"];
-    for (i = 1; i <= 4; i++) {
-      gauges.append("svg")
-        .attr("width", gaugeWidth)
-        .attr("height", gaugeHeight)
-        .attr("id", "gauge" + i)
-        .attr("class", "gauge")
-        .append("text")
-        .text(gaugeLabels[i - 1])
-        .attr("x", gaugeWidth / 2)
-        .attr("y", gaugeHeight - 5)
-        .attr("text-anchor", "middle");
-    }
+
+    gauges.append("svg")
+      .attr("width", gaugeWidth)
+      .attr("height", gaugeHeight)
+      .attr("id", "gauge1")
+      .attr("class", "gauge")
+      .on("mouseover", (d, a, b) => showTooltipGauge(b,0))
+      .on("mouseout", hideTooltipGauge)
+      .append("text")
+      .text(gaugeLabels[0])
+      .attr("x", gaugeWidth / 2)
+      .attr("y", gaugeHeight - 5)
+      .attr("text-anchor", "middle");
+    gauges.append("svg")
+      .attr("width", gaugeWidth)
+      .attr("height", gaugeHeight)
+      .attr("id", "gauge2")
+      .attr("class", "gauge")
+      .on("mouseover", () => (d, a, b) => showTooltipGauge(b,1))
+      .on("mouseout", hideTooltipGauge)
+      .append("text")
+      .text(gaugeLabels[1])
+      .attr("x", gaugeWidth / 2)
+      .attr("y", gaugeHeight - 5)
+      .attr("text-anchor", "middle");
+    gauges.append("svg")
+      .attr("width", gaugeWidth)
+      .attr("height", gaugeHeight)
+      .attr("id", "gauge3")
+      .attr("class", "gauge")
+      .on("mouseover", () => (d, a, b) => showTooltipGauge(b, 2))
+      .on("mouseout", hideTooltipGauge)
+      .append("text")
+      .text(gaugeLabels[2])
+      .attr("x", gaugeWidth / 2)
+      .attr("y", gaugeHeight - 5)
+      .attr("text-anchor", "middle");
+    gauges.append("svg")
+      .attr("width", gaugeWidth)
+      .attr("height", gaugeHeight)
+      .attr("id", "gauge4")
+      .attr("class", "gauge")
+      .on("mouseover", (d, a, b) => showTooltipGauge(b, 3))
+      .on("mouseout", hideTooltipGauge)
+      .append("text")
+      .text(gaugeLabels[3])
+      .attr("x", gaugeWidth / 2)
+      .attr("y", gaugeHeight - 5)
+      .attr("text-anchor", "middle");
+
 
     // put gauge in each svg
     var config1 = liquidFillGaugeDefaultSettings();
@@ -1573,6 +1611,39 @@ d3.csv("cw-6.csv").then(function (data) {
     config4.suffix = "";
     config4.toomuchValue = 15;
     var gauge4 = loadLiquidFillGauge("gauge4", 0, config4);
+
+    // create tooltip
+    var tooltipGauge = gaugesContainer.select(".gauges-svg").append("div")
+      .attr("class", "tooltip");
+
+    // toon een tooltip die na 1s weer verdwijnt voor de gegeven node
+    function showTooltipGauge(b, i) {
+      var tekst;
+      var rect = b[0].getBoundingClientRect();
+      switch (i) {
+        case 0:
+          tekst = "Kies voor minstens 120 stp."
+          break;
+        case 1:
+          tekst = "Kies voor minstens 18 stp uit je gekozen optie."
+          break;
+        case 2:
+          tekst = "Kies voor minstens 18 stp uit alle opties of verdere optie."
+          break;
+        case 3:
+          tekst = "Kies voor minstens 12 stp en maximum 14 stp uit AVO."
+          break;
+      }
+      tooltipGauge.classed("active", true)
+        .text(tekst)
+        .style("left", rect.left + "px")
+        .style("top", rect.top + "px");
+    }
+
+    // verberg de tooltip
+    function hideTooltipGauge() {
+      tooltipGauge.classed("active", false);
+    }
 
     function updateGauges() {
       var verdereOptie = extraOptionNames[2];
