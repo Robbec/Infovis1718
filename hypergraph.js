@@ -30,7 +30,8 @@ var barchartContainer = body.select(".barchart-container");
 var barchart = barchartContainer.select(".barchart");
 var switchInterested = body.select(".switch-interested").select("input");
 var infobox = body.select(".infobox");
-var gauges = body.select(".gauges");
+var gauges = body.select(".gauges-svg");
+var gaugesContainer = body.select(".gauges");
 
 // globale variabelen voor de opbouw van de hypergraf
 var options = [];
@@ -1109,11 +1110,15 @@ d3.csv("cw-6.csv").then(function (data) {
           .duration(1000)
           .style("opacity", 0)
           .on("end", showChooseBachelor);
+        enableStap2();
       } else if (optionChosen) {
         moveHypergraph(250);
         showExtraCourses();
+        updateGauges();
+        enableStap2();
       } else {
         hideExtraCourses(250);
+        enableStap1();
       }
     }
 
@@ -1322,6 +1327,15 @@ d3.csv("cw-6.csv").then(function (data) {
       }
     }
 
+    function enableStap1(){
+      infobox.selectAll(".stap1_text").classed("hidden", false);
+      infobox.selectAll(".stap2_text").classed("hidden", true);
+    }
+    function enableStap2(){
+      infobox.selectAll(".stap1_text").classed("hidden", true);
+      infobox.selectAll(".stap2_text").classed("hidden", false);
+    }
+
     /**
     * 9. Switch
     */
@@ -1492,8 +1506,6 @@ d3.csv("cw-6.csv").then(function (data) {
    * 13. visualisatie aantal studiepunten
    */
 
-    var stpbox = right.select(".stpbox");
-
     // create svg's for each bar
     var gaugeWidth = 85;
     var gaugeHeight = 85;
@@ -1541,6 +1553,8 @@ d3.csv("cw-6.csv").then(function (data) {
       var chosen2 = hypergraph.selectAll(".chosen-master2").data();
       var chosen = chosen1.concat(chosen2);
       var chosenOption = hypergraph.select(".option-chosen").datum().ID;
+
+      gaugesContainer.classed("hidden", chosen.length == 0);
 
       // bereken totaal aantal studiepunten
       var total = getTotalStp(chosen);
