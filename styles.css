@@ -72,21 +72,14 @@ body > div {
 }
 
 .node {
-  fill-opacity: 1;
-  stroke-width: 5;
-}
-
-.node {
   cursor: pointer;
+    fill-opacity: 1;
   transition: 0.3s linear;
 }
 
-.option-node {
-  stroke-width: 0;
-}
-
 .compulsory {
-  fill-opacity: 0.25;
+  fill: #eceff1;
+  fill-opacity: 0.75;
 }
 
 .schedule-overlap {

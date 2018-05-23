@@ -37,7 +37,8 @@ var options = [];
 var links = [];
 var hiddenCourses = [];
 var hiddenLinks = [];
-var courseRadius = 10;
+var courseRadius = 12.5;
+var courseBandWidth = 5;
 var optionRadius = courseRadius / 1.5;
 var transition = d3.transition()
   .duration(750)
@@ -180,7 +181,7 @@ d3.csv("cw-6.csv").then(function (data) {
     */
 
     // force simulation bepaalt de positie van alle nodes
-    var forceCollide = d3.forceCollide(courseRadius * 1.3).strength(1);
+    var forceCollide = d3.forceCollide(courseRadius + 2).strength(1).iterations(2);
 
     var hypergraphData = data
       .filter(d => !extraData.includes(d))
@@ -202,7 +203,7 @@ d3.csv("cw-6.csv").then(function (data) {
       .force("collide", forceCollide)
       // duw verbonden elementen uit elkaar
       .force("link", d3.forceLink(links)
-        .distance(40)
+        .distance(courseRadius * 4)
         .strength(0.5)
       )
       // roep ticked() op in elke iteratiestap van de simulatie
@@ -213,8 +214,8 @@ d3.csv("cw-6.csv").then(function (data) {
       // pas de positie aan van de course nodes
       hypergraph.selectAll(".course-node")
         .attr("transform", function (d) {
-          var courseX = boxBoundedX(d.x);
-          var courseY = boxBoundedY(d.y);
+          var courseX = boxBoundedX(d.x - courseRadius);
+          var courseY = boxBoundedY(d.y - courseRadius);
           return "translate(" + courseX + "," + courseY + ")";
         });
 
@@ -230,7 +231,7 @@ d3.csv("cw-6.csv").then(function (data) {
         var dy = line.attr("y2") - line.attr("y1");
         var l = Math.sqrt(dx * dx + dy * dy);
         var a = optionRadius / l;
-        var b = (courseRadius + 2.5) / l;
+        var b = courseRadius / l;
         var x1Offset = a * dx;
         var y1Offset = a * dy;
         var x2Offset = b * dx;
@@ -360,13 +361,21 @@ d3.csv("cw-6.csv").then(function (data) {
 
     // updatepatroon voor de course nodes
     function updateCourseNodes() {
-      var courseSvg = hypergraph.selectAll(".course-svg")
+      var size = 2 * courseRadius;
+
+      var course = hypergraph.selectAll(".course-node")
         .data(data, d => d.ID)
         .enter()
         .append("svg")
-        .attr("height", 25)
-        .attr("width", 25)
+        .attr("height", size)
+        .attr("width", size)
         .classed("node course-node", true)
+        // .classed("compulsory", function (d) {
+        //   return checkCompulsoryOrOptional(d, 1);
+        // })
+        // .classed("optional", function (d) {
+        //   return checkCompulsoryOrOptional(d, 2);
+        // })
         .classed("not-interested", switchInterested.property("checked"))
         .classed("extra-course-node", d => extraData.includes(d))
         .style("display", function (d) {
@@ -384,36 +393,51 @@ d3.csv("cw-6.csv").then(function (data) {
         })
         .on("click", function () {
           courseClicked(d3.select(this));
-        })
-        .append("g")
-        .attr("transform", "translate(" + 12.5 + "," + 12.5 + ")");
+        });
 
-      courseSvg.selectAll("path")
-        .data(d => d3.pie()(d3.values(d)
+      var courseG = course.append("g")
+        .attr("transform", "translate(" + (size / 2) + "," + (size / 2) + ")");
+
+      var pie = d3.pie()
+        .value(function (d, i) {
+          return d;
+        });
+
+      // pie chart voor elk vak
+      courseG.selectAll("course-piece")
+        .data(function (d) {
+          var values = d3.values(d)
             .splice(indexFirstOption, optionNames.length)
-            .map(e => (e > 0) ? 1 : 0))
-        )
+            .map(e => (e > 0) ? 1 : 0);
+          return d3.pie()(values);
+        })
         .enter()
         .append("path")
-        .attr("d", d => d3.arc().innerRadius(0).outerRadius(12.5)(d))
-        .attr("fill", (d, i) => colors[i])
-        // .attr("stroke", (d, i) => colors[i])
-        // .attr("class", "course-piece")
-        // .classed("compulsory", function (d) {
-        //   return checkCompulsoryOrOptional(d, 1);
-        // })
-        // .classed("optional", function (d) {
-        //   return checkCompulsoryOrOptional(d, 2);
-        // })
-        // .attr("fill", function (d) {
-        //   return colorOfCourse(d);
-        // })
-        // .attr("stroke", function (d) {
-        //   return colorOfCourse(d);
-        // })
-        ;
+        .attr("class", "course-piece")
+        .attr("d", function (d) {
+          var arc = d3.arc().innerRadius(0).outerRadius(courseRadius);
+          return arc(d);
+        })
+        .attr("fill", (d, i) => colors[i]);
 
-      // courseSvg.exit().remove();
+      // extra doorzichtige pie chart die de pie chart voor verplichte vakken afschermt
+      courseG.selectAll("course-compulsory-piece")
+        .data(function (d) {
+          var values = d3.values(d)
+            .splice(indexFirstOption, optionNames.length);
+          return d3.pie().value(d => (d > 1) ? 1 : d)(values);
+        })
+        .enter()
+        .append("path")
+        .classed("course-compulsory-piece", true)
+        .classed("compulsory", d => d.data == 1)
+        .attr("d", function (d) {
+          var arc = d3.arc().innerRadius(0).outerRadius(courseRadius - courseBandWidth);
+          return arc(d);
+        })
+        .attr("fill", (d, i) => colors[i]);
+
+      course.exit().remove();
     }
 
     function updateHypergraph() {
@@ -627,17 +651,24 @@ d3.csv("cw-6.csv").then(function (data) {
 
     // verander de straal van de gegeven course node met de gegeven factor
     function resizeCourseNode(course, factor) {
-      var newRadius = course.attr("r") * factor;
-      course.transition(transition).attr("r", newRadius);
       forceCollide.radius(function (d, i) {
         if (d == course.datum()) {
-          return newRadius + 5;
+          return courseRadius * factor;
         } else {
-          return 15;
+          return courseRadius + 2;
         }
       });
       simulationNodes.alpha(0.05).restart();
       simulationOptionNodes.alpha(0.05).restart();
+    }
+
+    function arcTween(outerRadius, delay) {
+      return function() {
+        d3.select(this).transition().delay(delay).attrTween("d", function(d) {
+          var i = d3.interpolate(d.outerRadius, outerRadius);
+          return function(t) { d.outerRadius = i(t); return arc(d); };
+        });
+      };
     }
 
     // bepaal het gedrag bij het hoveren van een vak
