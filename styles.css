@@ -441,6 +441,13 @@ input:checked + .slider:before {
   display: flex;
 }
 
+.warning {
+  min-height: 60;
+  align-items: center;
+  display: flex;
+  flex-flow: row;
+}
+
 
 .hidden {
   display: none;

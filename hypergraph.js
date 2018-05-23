@@ -616,12 +616,20 @@ d3.csv("cw-6.csv").then(function (data) {
     }
 
     function toggleScheduleOverlap(course) {
-      var scheduleOverlappingCourses = getScheduleOverlappingCourses(course.datum()["ID"]);
-      hypergraph.selectAll(".course-node")
-        .filter(c => scheduleOverlappingCourses.has(c.ID))
-        .each(function () {
-          this.classList.toggle("schedule-overlap");
-        })
+      if (optionChosen) {
+        var scheduleOverlappingCourses = getScheduleOverlappingCourses(course.datum()["ID"]);
+        if (scheduleOverlappingCourses.size > 0) {
+          body.selectAll(".overlap-warning")
+            .each( function () {
+            this.classList.toggle("hidden");
+          });
+        hypergraph.selectAll(".course-node")
+          .filter(c => scheduleOverlappingCourses.has(c.ID))
+          .each(function () {
+            this.classList.toggle("schedule-overlap");
+          })
+        }
+      }
     }
 
     // verander de straal van de gegeven course node met de gegeven factor
@@ -756,7 +764,7 @@ d3.csv("cw-6.csv").then(function (data) {
       clearTimeout(timeout);
       timeout = setTimeout(function () {
         tooltip.classed("active", false);
-      }, 1000);
+      }, 2000);
     }
 
     // verberg de tooltip
