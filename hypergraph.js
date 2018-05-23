@@ -305,12 +305,12 @@ d3.csv("cw-6.csv").then(function (data) {
 
     // bound the given x coordinate to the visible part of the hypergraph
     function boxBoundedX(x) {
-      return Math.max(courseRadius + 2.5, Math.min(svgWidth - courseRadius - 2.5, x));
+      return Math.max(courseRadius * 1.5, Math.min(svgWidth - (courseRadius * 1.5), x));
     }
 
     // bound the given y coordinate to the visible part of the hypergraph
     function boxBoundedY(y) {
-      return Math.max(courseRadius + 2.5, Math.min(svgHeight - courseRadius - 2.5, y));
+      return Math.max(courseRadius * 1.5, Math.min(svgHeight - (courseRadius * 1.5), y));
     }
 
     /**
@@ -779,8 +779,8 @@ d3.csv("cw-6.csv").then(function (data) {
     function showTooltip(d) {
       tooltip.classed("active", true)
         .text(d.OPO)
-        .style("left", (boxBoundedX(d.x) + 20) + "px")
-        .style("top", (boxBoundedY(d.y) - 12) + "px");
+        .style("left", (d.x + courseRadius * 1.5) + "px")
+        .style("top", (d.y - courseRadius) + "px");
       clearTimeout(timeout);
       timeout = setTimeout(function () {
         tooltip.classed("active", false);

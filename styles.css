@@ -73,11 +73,16 @@ body > div {
 
 .node {
   cursor: pointer;
-    fill-opacity: 1;
+  fill-opacity: 1;
   transition: 0.3s linear;
 }
 
-.compulsory {
+.node.compulsory {
+  fill-opacity: 0.25;
+  stroke-width: 5;
+}
+
+path.compulsory {
   fill: #eceff1;
   fill-opacity: 0.75;
 }
