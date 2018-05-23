@@ -372,12 +372,6 @@ d3.csv("cw-6.csv").then(function (data) {
         .attr("height", size)
         .attr("width", size)
         .classed("node course-node", true)
-        // .classed("compulsory", function (d) {
-        //   return checkCompulsoryOrOptional(d, 1);
-        // })
-        // .classed("optional", function (d) {
-        //   return checkCompulsoryOrOptional(d, 2);
-        // })
         .classed("not-interested", switchInterested.property("checked"))
         .classed("extra-course-node", d => extraData.includes(d))
         .style("display", function (d) {
@@ -403,9 +397,16 @@ d3.csv("cw-6.csv").then(function (data) {
       // pie chart voor elk vak
       courseG.selectAll("course-piece")
         .data(function (d) {
+          var nbOptions = optionNames.length;
           var values = d3.values(d)
-            .splice(indexFirstOption, optionNames.length)
+            .splice(indexFirstOption, nbOptions)
             .map(e => (e > 0) ? 1 : 0);
+          // trick: the last integer indicates whether the course should be totally gray
+          var sum = d3.sum(values);
+          if (sum == nbOptions || sum == 0) {
+            values = values.map(d => 0);
+            values.push(1);
+          }
           return d3.pie()(values);
         })
         .enter()
@@ -415,13 +416,20 @@ d3.csv("cw-6.csv").then(function (data) {
           var arc = d3.arc().innerRadius(0).outerRadius(courseRadius);
           return arc(d);
         })
-        .attr("fill", (d, i) => colors[i]);
+        .attr("fill", (d, i) => (i < optionNames.length) ? colors[i] : defaultGray);
 
       // extra doorzichtige pie chart die de pie chart voor verplichte vakken afschermt
       courseG.selectAll("course-compulsory-piece")
         .data(function (d) {
+          var nbOptions = optionNames.length;
           var values = d3.values(d)
-            .splice(indexFirstOption, optionNames.length);
+            .splice(indexFirstOption, nbOptions);
+          // trick: the last integer indicates whether the course should be totally gray
+          var sum = d3.sum(values.map(e => (e > 0) ? 1 : 0));
+          if (sum == nbOptions || d[extraOptionNames[0]] > 0 || d[extraOptionNames[1]] > 0) {
+            values = values.map(d => 0);
+            values.push(1);
+          }
           return d3.pie().value(d => (d > 1) ? 1 : d)(values);
         })
         .enter()
@@ -432,7 +440,7 @@ d3.csv("cw-6.csv").then(function (data) {
           var arc = d3.arc().innerRadius(0).outerRadius(courseRadius - courseBandWidth);
           return arc(d);
         })
-        .attr("fill", (d, i) => colors[i]);
+        .attr("fill", (d, i) => (i < optionNames.length) ? colors[i] : defaultGray);
 
       course.exit().remove();
     }
