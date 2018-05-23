@@ -24,13 +24,13 @@ OVERZICHT
 var body = d3.select("body");
 var left = d3.select(".left");
 var right = d3.select(".right");
-var hypergraphContainer = left.select(".hypergraph-container");
+var hypergraphContainer = body.select(".hypergraph-container");
 var hypergraph = hypergraphContainer.select(".hypergraph");
-var barchartContainer = left.select(".barchart-container");
+var barchartContainer = body.select(".barchart-container");
 var barchart = barchartContainer.select(".barchart");
-var switchInterested = right.select(".switch-interested").select("input");
-var infobox = right.select(".infobox");
-var gauges = right.select(".gauges");
+var switchInterested = body.select(".switch-interested").select("input");
+var infobox = body.select(".infobox");
+var gauges = body.select(".gauges");
 
 // globale variabelen voor de opbouw van de hypergraf
 var options = [];
@@ -1063,7 +1063,7 @@ d3.csv("cw-6.csv").then(function (data) {
 
     function showChooseBachelor() {
       hypergraph.attr("display", "none");
-      var chooseBachelorContainer = left.insert("div", ":first-child")
+      var chooseBachelorContainer = hypergraphContainer.insert("div", ":first-child")
         .attr("class", "choose-bachelor-container");
       var chooseBachelor = chooseBachelorContainer.append("div")
         .attr("class", "choose-bachelor")
@@ -1100,7 +1100,7 @@ d3.csv("cw-6.csv").then(function (data) {
     }
 
     function hideChooseBachelor() {
-      var chooseBachelorContainer = left.select(".choose-bachelor-container");
+      var chooseBachelorContainer = hypergraphContainer.select(".choose-bachelor-container");
       chooseBachelorContainer.transition()
         .duration(1000)
         .style("opacity", 0)
