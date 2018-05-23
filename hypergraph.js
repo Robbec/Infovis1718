@@ -568,12 +568,14 @@ d3.csv("cw-6.csv").then(function (data) {
         resizeCourseNode(course, 2 / 3);
         toggleActive(course);
         emptyInfobox();
+        toggleScheduleOverlap(course);
       } else if (activeCourseExists) {
         var ac = activeCourse.datum();
         // opmerking: de highlights voor de betrokken vakken moeten nu aangepast worden
         resizeCourseNode(activeCourse, 2 / 3);
         toggleHighlightCourse(ac);
         toggleActive(activeCourse);
+        toggleScheduleOverlap(course);
         resizeCourseNode(course, 1.5);
         toggleHighlightCourse(c);
         toggleScheduleOverlap(activeCourse);
@@ -583,6 +585,7 @@ d3.csv("cw-6.csv").then(function (data) {
         // opmerking: de prerequisites zijn al gehighlightet vanwege de hover
         toggleActive(activeOption);
         resizeCourseNode(course, 1.5);
+        toggleScheduleOverlap(course);
         toggleActive(course);
         fillInfoboxForCourse(course);
         toggleClickabilityOptions(ao);
@@ -590,11 +593,10 @@ d3.csv("cw-6.csv").then(function (data) {
       } else if (!activeNodeExists()) {
         // opmerking: de prerequisites zijn al gehighlightet vanwege de hover
         resizeCourseNode(course, 1.5);
+        toggleScheduleOverlap(course);
         toggleActive(course);
         fillInfoboxForCourse(course);
       }
-
-      toggleScheduleOverlap(course);
 
       // // sla alle vakken op die overlappen met het actieve vak
       // if (!activeCourse.empty()) {
