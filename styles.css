@@ -448,6 +448,17 @@ input:checked + .slider:before {
   flex-flow: row;
 }
 
+.infoboxCourseTitle {
+  min-height: 60px;
+  align-items: center;
+  display: flex;
+  flex-flow: row;
+}
+
+.courseBulletPoint {
+  top: 0;
+}
+
 
 .hidden {
   display: none;

@@ -885,9 +885,11 @@ d3.csv("cw-6.csv").then(function (data) {
     function fillInfoboxForCourse(course) {
       emptyInfobox();
       var c = course.datum();
+      var infoboxCourseTitle = infobox.append("div")
+        .classed("infoboxCourseTitle", true);
       //Semester, ik wil dit eigenlijk langs de titel, want langs de studiepunten ziet er niet mooi uit
       var size = optionRadius * 2.5;
-      var sem = infobox.append("svg")
+      var sem = infoboxCourseTitle.append("svg")
         .attr("height", size)
         .attr("width", size);
       sem.append("circle")
@@ -902,7 +904,7 @@ d3.csv("cw-6.csv").then(function (data) {
         .attr("width", size / 2)
         .attr("x", d => (size / 2) * (2 - c.Semester));
       // titel
-      infobox.append("h3")
+      infoboxCourseTitle.append("h3")
         .text(c.OPO)
       // studiepunten
       var points = infobox.append("svg")
