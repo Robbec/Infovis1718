@@ -1015,21 +1015,17 @@ d3.csv("cw-6.csv").then(function (data) {
         radiobuttonChoose2.on("change", toggleStatusRadioButtons);
       }
     }
+
     updateOptionList();
+
     // Stap 1 vullen met opties
     function updateOptionList() {
+      // infobox.select(".optionlist").selectAll(li).remove();
+
       var li = infobox.select(".optionlist").selectAll(li)
-        .data(function () {
-          if (optionChosen) {
-            return [hypergraph.select(".option-chosen").datum().ID];
-          } else {
-            return optionNames;
-          }
-        })
+        .data(optionNames);
 
-      li.exit().remove();
-
-      var liEnter = li.enter().merge(li)
+      var liEnter = li.enter()
         .append("li")
         .text(d => d)
         .on("mouseover", function (d) {
@@ -1064,52 +1060,52 @@ d3.csv("cw-6.csv").then(function (data) {
           return colors[options.indexOf(options.filter(o => o.ID == d)[0])];
         });
       }
-
-      updateChosenOptionList();
-      // Stap 1 vullen met opties
-      function updateChosenOptionList() {
-        var li = infobox.select(".chosen-option").selectAll(li)
-          .data(function () {
-              return [hypergraph.select(".option-chosen").datum().ID];
-          })
-
-        li.exit().remove();
-
-        var liEnter = li.enter().merge(li)
-          .append("li")
-          .text(d => d)
-          .on("mouseover", function (d) {
-            var opt = hypergraph.selectAll(".option-node")
-              .filter(o => o.ID == d);
-            toggleHighlightOption(opt.datum());
-          })
-          .on("mouseout", function (d) {
-            var opt = hypergraph.selectAll(".option-node")
-              .filter(o => o.ID == d);
-            toggleHighlightOption(opt.datum());
-          })
-          .on("click", function (d) {
-            var opt = hypergraph.selectAll(".option-node")
-              .filter(o => o.ID == d);
-            toggleActive(opt);
-            fillInfoboxForOption(opt);
-            toggleClickabilityOptions(opt.datum());
-            toggleClickabilityCourses(opt.datum());
-            toggleHighlightOption(opt.datum());
-          });
-        var size = optionRadius * 2.5;
-        var svg = liEnter.append("svg")
-          .attr("height", size)
-          .attr("width", size);
-
-        svg.append("circle")
-          .attr("r", optionRadius)
-          .attr("cx", size / 2)
-          .attr("cy", size / 2)
-          .attr("fill", d => {
-            return colors[options.indexOf(options.filter(o => o.ID == d)[0])];
-          });
-        }
+      //
+      // updateChosenOptionList();
+      // // Stap 1 vullen met opties
+      // function updateChosenOptionList() {
+      //   var li = infobox.select(".chosen-option").selectAll(li)
+      //     .data(function () {
+      //         return [hypergraph.select(".option-chosen").datum().ID];
+      //     })
+      //
+      //   li.exit().remove();
+      //
+      //   var liEnter = li.enter().merge(li)
+      //     .append("li")
+      //     .text(d => d)
+      //     .on("mouseover", function (d) {
+      //       var opt = hypergraph.selectAll(".option-node")
+      //         .filter(o => o.ID == d);
+      //       toggleHighlightOption(opt.datum());
+      //     })
+      //     .on("mouseout", function (d) {
+      //       var opt = hypergraph.selectAll(".option-node")
+      //         .filter(o => o.ID == d);
+      //       toggleHighlightOption(opt.datum());
+      //     })
+      //     .on("click", function (d) {
+      //       var opt = hypergraph.selectAll(".option-node")
+      //         .filter(o => o.ID == d);
+      //       toggleActive(opt);
+      //       fillInfoboxForOption(opt);
+      //       toggleClickabilityOptions(opt.datum());
+      //       toggleClickabilityCourses(opt.datum());
+      //       toggleHighlightOption(opt.datum());
+      //     });
+      //   var size = optionRadius * 2.5;
+      //   var svg = liEnter.append("svg")
+      //     .attr("height", size)
+      //     .attr("width", size);
+      //
+      //   svg.append("circle")
+      //     .attr("r", optionRadius)
+      //     .attr("cx", size / 2)
+      //     .attr("cy", size / 2)
+      //     .attr("fill", d => {
+      //       return colors[options.indexOf(options.filter(o => o.ID == d)[0])];
+      //     });
+      //   }
 
     /**
     * 8. Interactie met de infobox
