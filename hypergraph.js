@@ -214,7 +214,7 @@ d3.csv("cw-6.csv").then(function (data) {
     function ticked() {
       // pas de positie aan van de course nodes
       hypergraph.selectAll(".course-node")
-        .filter(d => !extraData.includes(d))
+        // .filter(d => !extraData.includes(d))
         .attr("transform", function (d) {
           var courseX = boxBoundedX(d.x - courseRadius);
           var courseY = boxBoundedY(d.y - courseRadius);
