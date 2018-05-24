@@ -196,7 +196,7 @@ d3.csv("cw-6.csv").then(function (data) {
           if (d.ID == "Master") {
             return -100;
           } else {
-            return -50;
+            return -75;
           }
         })
       )
@@ -205,7 +205,7 @@ d3.csv("cw-6.csv").then(function (data) {
       // duw verbonden elementen uit elkaar
       .force("link", d3.forceLink(links)
         .distance(courseRadius * 4)
-        .strength(0.5)
+        .strength(0.6)
       )
       // roep ticked() op in elke iteratiestap van de simulatie
       .on("tick", ticked);
@@ -214,11 +214,12 @@ d3.csv("cw-6.csv").then(function (data) {
     function ticked() {
       // pas de positie aan van de course nodes
       hypergraph.selectAll(".course-node")
-        // .filter(d => !extraData.includes(d))
         .attr("transform", function (d) {
-          var courseX = boxBoundedX(d.x - courseRadius);
-          var courseY = boxBoundedY(d.y - courseRadius);
-          return "translate(" + courseX + "," + courseY + ")";
+          if (d.x && d.y) {
+            var courseX = boxBoundedX(d.x - courseRadius);
+            var courseY = boxBoundedY(d.y - courseRadius);
+            return "translate(" + courseX + "," + courseY + ")";
+          }
         });
 
       // pas de positie aan van de option nodes
@@ -272,12 +273,12 @@ d3.csv("cw-6.csv").then(function (data) {
     var simulationOptionNodes = d3.forceSimulation(options)
       // laat option nodes elkaar sterk afstoten
       .force("charge", d3.forceManyBody()
-        .strength(-300)
+        .strength(-500)
       );
 
     function simulateExtraCourses() {
-      var labelY = 50;
-      var spacing = 30;
+      var extraCoursesLabelY = 50;
+      var extraCoursesSpacing = 30;
       for (name of extraOptionGroupNames) {
         if (extraOptionGroupNames.indexOf(name) == 0) {
           var extra = coursesCompulsoryForAllOptions
@@ -286,33 +287,26 @@ d3.csv("cw-6.csv").then(function (data) {
           var extra = extraData.filter(d => d[name] > 0);
         }
 
-        hypergraph.append("text")
-          .text(name)
-          .attr("class", "hypergraph-text")
-          .attr("x", 30 - courseRadius)
-          .attr("y", labelY)
-          .style("display", "none");
-
         d3.forceSimulation(extra)
           .force("x", d3.forceX(function (d) {
             return 30 + (extra.indexOf(d) % 7) * 35;
           }))
           .force("y", d3.forceY(function (d) {
-            return labelY + spacing + Math.floor(extra.indexOf(d) / 7) * 35;
+            return extraCoursesLabelY + extraCoursesSpacing + Math.floor(extra.indexOf(d) / 7) * 35;
           }));
 
-        labelY += (Math.ceil(extra.length / 7) * 35 + 2 * spacing);
+        extraCoursesLabelY += (Math.ceil(extra.length / 7) * 35 + 2 * extraCoursesSpacing);
       }
     }
 
     // bound the given x coordinate to the visible part of the hypergraph
     function boxBoundedX(x) {
-      return Math.max(courseRadius * 1.5, Math.min(svgWidth - (courseRadius * 1.5), x));
+      return Math.max(courseRadius * 1.5, Math.min(svgWidth - (courseRadius * 3), x));
     }
 
     // bound the given y coordinate to the visible part of the hypergraph
     function boxBoundedY(y) {
-      return Math.max(courseRadius * 1.5, Math.min(svgHeight - (courseRadius * 1.5), y));
+      return Math.max(courseRadius * 1.5, Math.min(svgHeight - (courseRadius * 3), y));
     }
 
     /**
@@ -376,7 +370,7 @@ d3.csv("cw-6.csv").then(function (data) {
         .classed("not-interested", switchInterested.property("checked"))
         .classed("extra-course-node", d => extraData.includes(d))
         .style("display", function (d) {
-          if (extraData.includes(d)) {
+          if (extraData.includes(d) && !optionChosen) {
             return "none";
           }
         })
@@ -923,15 +917,19 @@ d3.csv("cw-6.csv").then(function (data) {
         .text(c.OPO)
 
       if (optionChosen) {
-        var size = optionRadius * 2.5;
-        var sem = infobox.append("svg")
+        var courseDetails = infobox.append("div")
+          .attr("class", "course-details");
+
+        var size = 2 * courseRadius + courseBandWidth;
+        var sem = courseDetails.append("svg")
           .attr("height", size)
-          .attr("width", 350);
+          .attr("width", size);
         sem.append("circle")
-          .attr("r", optionRadius)
+          .attr("r", courseRadius - (courseBandWidth / 2))
           .attr("cx", size / 2)
           .attr("cy", size / 2)
-          .classed("courseBulletPoint", true)
+          .attr("class", "node")
+          .attr("stroke", defaultGray)
           .attr("fill", defaultGray);
         sem.append("rect")
           .attr("class", "semester-rect")
@@ -940,8 +938,8 @@ d3.csv("cw-6.csv").then(function (data) {
           .attr("x", d => (size / 2) * (2 - c.Semester));
 
         //studiepunten
-        infobox.append("div")
-        .attr("class", "points")
+        courseDetails.append("div")
+        .attr("class", "course-points")
         .text(c.Studiepunten + " studiepunten");
       }
 
@@ -974,8 +972,10 @@ d3.csv("cw-6.csv").then(function (data) {
         .classed("hidden", function () {
           if (optionChosen) {
             var chosenOption = hypergraph.select(".option-chosen").datum().ID;
+            var isBachelorExtending1 = c[extraOptionNames[0]] == 1;
+            var isBachelorExtending2 = c[extraOptionNames[1]] == 1;
             var isCompulsory = c[chosenOption] == 1;
-            return isCompulsory && getCourseOptionsNames(c).includes(chosenOption);
+            return isCompulsory || isBachelorExtending1 || isBachelorExtending2;
           }
         })
         .append("input")
@@ -1172,11 +1172,32 @@ d3.csv("cw-6.csv").then(function (data) {
 
     function bachelorChosen(chosen, notChosen) {
       bachelor = chosen;
-      hypergraph.selectAll(".course-node")
-        .filter(d => d[notChosen] > 0)
-        .remove();
+      data = data.filter(d => d[notChosen] == 0);
+      drawExtraCoursesLabels();
       simulateExtraCourses();
       hideChooseBachelor();
+    }
+
+    function drawExtraCoursesLabels() {
+      var extraCoursesLabelY = 50;
+      var extraCoursesSpacing = 30;
+      for (name of extraOptionGroupNames) {
+        if (extraOptionGroupNames.indexOf(name) == 0) {
+          var extra = coursesCompulsoryForAllOptions
+            .concat(data.filter(d => d[bachelor] > 0));
+        } else {
+          var extra = extraData.filter(d => d[name] > 0);
+        }
+
+        hypergraph.append("text")
+          .text(name)
+          .attr("class", "hypergraph-text")
+          .attr("x", 30 - courseRadius)
+          .attr("y", extraCoursesLabelY)
+          .style("display", "none");
+
+        extraCoursesLabelY += (Math.ceil(extra.length / 7) * 35 + 2 * extraCoursesSpacing);
+      }
     }
 
     function hideChooseBachelor() {
