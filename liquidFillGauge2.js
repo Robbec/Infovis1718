@@ -6,8 +6,8 @@ function liquidFillGaugeDefaultSettings() {
         enoughValue: Infinity,
         circleThickness: 0.17, // The outer circle thickness as a percentage of it's radius.
         circleFillGap: 0.05, // The size of the gap between the outer circle and wave circle as a percentage of the outer circles radius.
-        circleColor: 'red', // The color of the outer circle.
-        circleColorFull: 'green',
+        circleColor: '#e41a1c', // The color of the outer circle.
+        circleColorFull: '#4daf4a',
         waveHeight: 0.05, // The wave height as a percentage of the radius of the wave circle.
         waveCount: 1, // The number of full waves per width of the wave circle.
         waveRiseTime: 1000, // The amount of time in milliseconds for the wave to rise from 0 to it's final height.

@@ -12,12 +12,24 @@
 </head>
 
 <body>
-  <div class="warning overlap-warning invisible">
-    <div>
-    Opgepast: de lessen van dit opleidingsonderdeel vallen samen met
-    </div><svg width="30" height="30">
-      <circle r="10" cx="15" cy="15" fill="#cfd8dc" stroke="#cfd8dc" class="node course-node schedule-overlap" />
-    </svg>
+  <div class="warning-container">
+    <div class="warning overlap-warning invisible">
+      Opgelet, de lessen van dit vak vallen samen met andere lessen.
+    </div>
+  </div>
+  <div class="legenda">
+    <div class="legenda-item">
+      <svg width="30" height="30">
+        <circle r="10" cx="15" cy="15" class="node course-node" />
+      </svg>
+      keuzevak
+    </div>
+    <div class="legenda-item">
+      <svg width="30" height="30">
+        <circle r="10" cx="15" cy="15" class="node course-node compulsory" />
+      </svg>
+      verplicht vak
+    </div>
   </div>
   <label class="switch switch-interested">
     Toon vakken die je niet interesseren
@@ -32,34 +44,28 @@
   </div>
   <div class="infobox">
     <div class="help">
-
       <div class="stap1">
-        <h3 class="stap1_text">Stap 1: Verken de opties en hun vakken</h3>
-        <h3 class="stap2_text hidden">Stap 2: Stel je programma samen</h3>
-        Klik hiervoor op:
-        <div class="legenda">
-          <div class="legenda-item hidden">
-            <svg width="30" height="30">
-              <circle r="6.66" cx="15" cy="15" class="node option-node" />
-            </svg>
-            opties
-          </div>
-          <div class="legenda-item">
-            <svg width="30" height="30">
-              <circle r="10" cx="15" cy="15" class="node course-node" />
-            </svg>
-            keuzevakken
-          </div>
-          <div class="legenda-item">
-            <svg width="30" height="30">
-              <circle r="10" cx="15" cy="15" class="node course-node compulsory" />
-            </svg>
-            verplichte vakken
-          </div>
-        </div>
-
+        <h3>Verken opties en vakken</h3>
+        <p>
+          Met deze visualisatie stel je jouw vakkenpakket samen voor <b class="highlight">Master in de ingenieurswetenschappen: computerwetenschappen</b> aan KU Leuven.
+        </p>
+        <p>
+          Er zijn <b class="highlight option-number"></b> hoofdopties:
+        </p>
         <div class="optionlist"></div>
-        <span class="stap1_text">Kies hierna de optie die je het meeste aanspreekt.</span>
+        <p>
+          Klik hiernaast op de bolletjes voor meer informatie over de opties en de bijhorende vakken. Verberg vakken die je niet interesseren en kies daarna je favoriete optie.
+        </p>
+      </div>
+      <div class="stap2 hidden">
+        <h3>Stel je programma samen</h3>
+        <p>
+          Je koos voor de hoofdoptie
+        </p>
+        <div class="chosen-option"></div>
+        <p>
+          Kies nu verder je favoriete vakken. Hou rekening met de voorwaarden van het programma, overlap in het uurrooster en volgtijdelijkheidsvoorwaarden.
+        </p>
       </div>
     </div>
 
@@ -69,7 +75,7 @@
     <div class="gauges-svg"></div>
   </div>
 
-  </div>
+</div>
 </body>
 
 </html>
