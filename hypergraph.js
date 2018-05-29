@@ -795,9 +795,9 @@ d3.csv("cw-6.csv").then(function (data) {
      * 7. Opbouw van de infobox
      */
 
-   infobox.select(".option-number")
-     .append("text")
-     .text(optionNames.length);
+    infobox.select(".option-number")
+      .append("text")
+      .text(optionNames.length);
 
     // verwijder alle vakgerelateerde inhoud in de infobox
     function emptyInfobox() {
@@ -939,8 +939,8 @@ d3.csv("cw-6.csv").then(function (data) {
 
         //studiepunten
         courseDetails.append("div")
-        .attr("class", "course-points")
-        .text(c.Studiepunten + " studiepunten");
+          .attr("class", "course-points")
+          .text(c.Studiepunten + " studiepunten");
       }
 
       // beschrijving
@@ -1059,53 +1059,53 @@ d3.csv("cw-6.csv").then(function (data) {
         .attr("fill", d => {
           return colors[options.indexOf(options.filter(o => o.ID == d)[0])];
         });
-      }
-      //
-      // updateChosenOptionList();
-      // // Stap 1 vullen met opties
-      // function updateChosenOptionList() {
-      //   var li = infobox.select(".chosen-option").selectAll(li)
-      //     .data(function () {
-      //         return [hypergraph.select(".option-chosen").datum().ID];
-      //     })
-      //
-      //   li.exit().remove();
-      //
-      //   var liEnter = li.enter().merge(li)
-      //     .append("li")
-      //     .text(d => d)
-      //     .on("mouseover", function (d) {
-      //       var opt = hypergraph.selectAll(".option-node")
-      //         .filter(o => o.ID == d);
-      //       toggleHighlightOption(opt.datum());
-      //     })
-      //     .on("mouseout", function (d) {
-      //       var opt = hypergraph.selectAll(".option-node")
-      //         .filter(o => o.ID == d);
-      //       toggleHighlightOption(opt.datum());
-      //     })
-      //     .on("click", function (d) {
-      //       var opt = hypergraph.selectAll(".option-node")
-      //         .filter(o => o.ID == d);
-      //       toggleActive(opt);
-      //       fillInfoboxForOption(opt);
-      //       toggleClickabilityOptions(opt.datum());
-      //       toggleClickabilityCourses(opt.datum());
-      //       toggleHighlightOption(opt.datum());
-      //     });
-      //   var size = optionRadius * 2.5;
-      //   var svg = liEnter.append("svg")
-      //     .attr("height", size)
-      //     .attr("width", size);
-      //
-      //   svg.append("circle")
-      //     .attr("r", optionRadius)
-      //     .attr("cx", size / 2)
-      //     .attr("cy", size / 2)
-      //     .attr("fill", d => {
-      //       return colors[options.indexOf(options.filter(o => o.ID == d)[0])];
-      //     });
-      //   }
+    }
+    //
+    // updateChosenOptionList();
+    // // Stap 1 vullen met opties
+    // function updateChosenOptionList() {
+    //   var li = infobox.select(".chosen-option").selectAll(li)
+    //     .data(function () {
+    //         return [hypergraph.select(".option-chosen").datum().ID];
+    //     })
+    //
+    //   li.exit().remove();
+    //
+    //   var liEnter = li.enter().merge(li)
+    //     .append("li")
+    //     .text(d => d)
+    //     .on("mouseover", function (d) {
+    //       var opt = hypergraph.selectAll(".option-node")
+    //         .filter(o => o.ID == d);
+    //       toggleHighlightOption(opt.datum());
+    //     })
+    //     .on("mouseout", function (d) {
+    //       var opt = hypergraph.selectAll(".option-node")
+    //         .filter(o => o.ID == d);
+    //       toggleHighlightOption(opt.datum());
+    //     })
+    //     .on("click", function (d) {
+    //       var opt = hypergraph.selectAll(".option-node")
+    //         .filter(o => o.ID == d);
+    //       toggleActive(opt);
+    //       fillInfoboxForOption(opt);
+    //       toggleClickabilityOptions(opt.datum());
+    //       toggleClickabilityCourses(opt.datum());
+    //       toggleHighlightOption(opt.datum());
+    //     });
+    //   var size = optionRadius * 2.5;
+    //   var svg = liEnter.append("svg")
+    //     .attr("height", size)
+    //     .attr("width", size);
+    //
+    //   svg.append("circle")
+    //     .attr("r", optionRadius)
+    //     .attr("cx", size / 2)
+    //     .attr("cy", size / 2)
+    //     .attr("fill", d => {
+    //       return colors[options.indexOf(options.filter(o => o.ID == d)[0])];
+    //     });
+    //   }
 
     /**
     * 8. Interactie met de infobox
@@ -1562,7 +1562,7 @@ d3.csv("cw-6.csv").then(function (data) {
       .attr("height", gaugeHeight)
       .attr("id", "gauge1")
       .attr("class", "gauge")
-      .on("mouseover", (d, a, b) => showTooltipGauge(b,0))
+      .on("mouseover", (d, a, b) => showTooltipGauge(b, 0))
       .on("mouseout", hideTooltipGauge)
       .append("text")
       .text(gaugeLabels[0])
@@ -1574,7 +1574,7 @@ d3.csv("cw-6.csv").then(function (data) {
       .attr("height", gaugeHeight)
       .attr("id", "gauge2")
       .attr("class", "gauge")
-      .on("mouseover", (d, a, b) => showTooltipGauge(b,1))
+      .on("mouseover", (d, a, b) => showTooltipGauge(b, 1))
       .on("mouseout", hideTooltipGauge)
       .append("text")
       .text(gaugeLabels[1])
@@ -1687,7 +1687,7 @@ d3.csv("cw-6.csv").then(function (data) {
       var inOptionExtra = chosen
         .filter(d => d[chosenOption] == 0)
         .filter(function (d) {
-          return (0 < d[verdereOptie]) || (!coursesCompulsoryForAllOptions.includes(d) && d[AVO] == 0);
+          return (0 < d[verdereOptie]) || (d["Bachelorverbredend pakket (bachelor in de ingenieurswetenschappen: computerwetenschappen)"] == 0 && d["Bachelorverbredend pakket (bachelor in informatica)"] == 0 && !coursesCompulsoryForAllOptions.includes(d) && d[AVO] == 0);
         });
       var inAVO = chosen.filter(d => 0 < d[AVO]);
 
