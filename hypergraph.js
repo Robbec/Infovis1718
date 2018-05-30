@@ -77,7 +77,7 @@ var tooltip = hypergraphContainer.append("div")
 // switch standaard uitschakelen
 switchInterested.property("checked", false);
 
-d3.csv("cw-6.csv").then(function (data) {
+d3.csv("cw.csv").then(function (data) {
   d3.csv("uniekeReserveringen.csv").then(function (scheduleData) {
     var columnNames = d3.keys(d3.values(data)[0]);
     var indexFirstOption = 13;
